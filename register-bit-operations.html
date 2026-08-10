@@ -1,0 +1,3111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bit Lab — bit manipulation for embedded engineers</title>
+  <style>
+    :root {
+      --bg: #0a0f1a;
+      --bg-1: #111827;
+      --bg-2: #1a2434;
+      --bg-3: #232f42;
+
+      --tx-1: #f3f4f6;
+      --tx-2: #9ca3af;
+      --tx-3: #6b7280;
+
+      --bd-1: #2b3648;
+      --bd-2: #374151;
+
+      --accent: #60a5fa;
+      --accent-dim: rgba(96, 165, 250, 0.15);
+
+      --on: #4ade80;
+      --on-bg: rgba(34, 197, 94, 0.16);
+      --on-bd: rgba(34, 197, 94, 0.4);
+
+      --set: #22c55e;
+      --clr: #f87171;
+      --hl: #fbbf24;
+      --fill: #38bdf8;
+      --unk: #c084fc;
+
+      --r-sm: 5px;
+      --r-md: 8px;
+      --r-lg: 14px;
+
+      --font-sans: Inter, system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--tx-1);
+      background: var(--bg);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 4rem;
+    }
+
+    /* ---------- header / tabs ---------- */
+    .masthead {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .masthead h1 {
+      font-size: 19px;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+    }
+
+    .masthead .sub {
+      font-size: 13px;
+      color: var(--tx-3);
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--bd-1);
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 8px 15px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--tx-2);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+      transition: color .15s, background .15s;
+    }
+
+    .tab.active {
+      color: var(--tx-1);
+      border-bottom-color: var(--accent);
+      font-weight: 550;
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--tx-1);
+      background: rgba(255, 255, 255, .03);
+    }
+
+    .card {
+      background: var(--bg-1);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-lg);
+      padding: 1.25rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 8px 24px rgba(0, 0, 0, .18);
+    }
+
+    .card+.card {
+      margin-top: 1rem;
+    }
+
+    h2 {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--r-md);
+      white-space: nowrap;
+    }
+
+    .badge-easy {
+      background: rgba(34, 197, 94, .15);
+      color: #86efac;
+    }
+
+    .badge-medium {
+      background: rgba(245, 158, 11, .15);
+      color: #fcd34d;
+    }
+
+    .badge-hard {
+      background: rgba(239, 68, 68, .15);
+      color: #fca5a5;
+    }
+
+    .badge-expert {
+      background: rgba(139, 92, 246, .15);
+      color: #c4b5fd;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin: 16px 0 6px;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
+    }
+
+    /* ---------- bit diagram grid ---------- */
+    .bdg-wrap {
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+
+    .bdg {
+      display: grid;
+      align-items: center;
+      row-gap: 3px;
+      column-gap: 2px;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 10px 12px;
+      margin: 6px 0;
+    }
+
+    .bdg.w32 {
+      --bfs: 10px;
+      --lblw: 58px;
+      --hexw: 96px;
+      min-width: 700px;
+    }
+
+    .bdg.w16 {
+      --bfs: 12px;
+      --lblw: 70px;
+      --hexw: 110px;
+      min-width: 520px;
+    }
+
+    .bdg.w8 {
+      --bfs: 13px;
+      --lblw: 78px;
+      --hexw: 120px;
+      min-width: 420px;
+    }
+
+    .bdg.w12 {
+      --bfs: 12px;
+      --lblw: 70px;
+      --hexw: 110px;
+      min-width: 470px;
+    }
+
+    .blbl {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--tx-2);
+      text-align: right;
+      padding-right: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .blbl.op {
+      font-size: 15px;
+      color: var(--hl);
+      font-weight: 700;
+    }
+
+    .bhex {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--tx-2);
+      text-align: left;
+      padding-left: 9px;
+      white-space: nowrap;
+    }
+
+    .bhex b {
+      color: var(--tx-1);
+      font-weight: 600;
+    }
+
+    .bhex i {
+      color: var(--tx-3);
+      font-style: normal;
+    }
+
+    .bcell {
+      height: 26px;
+      border-radius: var(--r-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: var(--bfs);
+      font-weight: 600;
+      background: var(--bg-3);
+      color: var(--tx-3);
+      border: 1px solid transparent;
+      transition: background .12s, color .12s, border-color .12s;
+    }
+
+    .bcell.on {
+      background: var(--on-bg);
+      color: var(--on);
+      border-color: var(--on-bd);
+    }
+
+    .bcell.mk-set {
+      background: rgba(34, 197, 94, .3);
+      color: #bbf7d0;
+      border-color: var(--set);
+      box-shadow: 0 0 0 1px var(--set), 0 0 10px rgba(34, 197, 94, .35);
+    }
+
+    .bcell.mk-clr {
+      background: rgba(248, 113, 113, .2);
+      color: #fecaca;
+      border-color: var(--clr);
+      box-shadow: 0 0 0 1px var(--clr);
+    }
+
+    .bcell.mk-hl {
+      border-color: var(--hl);
+      box-shadow: 0 0 0 1px rgba(251, 191, 36, .55);
+    }
+
+    .bcell.mk-fill {
+      background: rgba(56, 189, 248, .18);
+      color: #bae6fd;
+      border-color: var(--fill);
+    }
+
+    .bcell.mk-drop {
+      background: transparent;
+      color: var(--tx-3);
+      border: 1px dashed var(--bd-2);
+      opacity: .55;
+      text-decoration: line-through;
+    }
+
+    .bcell.mk-q {
+      background: rgba(192, 132, 252, .12);
+      color: var(--unk);
+      border: 1px dashed rgba(192, 132, 252, .5);
+    }
+
+    .bcell.mk-dim {
+      opacity: .35;
+    }
+
+    .bcell.click {
+      cursor: pointer;
+    }
+
+    .bcell.click:hover {
+      border-color: var(--accent);
+    }
+
+    .bidx {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--tx-3);
+      text-align: center;
+      line-height: 1;
+    }
+
+    .bwt {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--tx-3);
+      text-align: center;
+      line-height: 1;
+    }
+
+    .bwt.lit {
+      color: var(--on);
+    }
+
+    .bmark {
+      font-size: 10px;
+      text-align: center;
+      line-height: 1;
+      height: 11px;
+    }
+
+    .bmark.set {
+      color: var(--set);
+    }
+
+    .bmark.clr {
+      color: var(--clr);
+    }
+
+    .bmark.same {
+      color: var(--tx-3);
+      opacity: .4;
+    }
+
+    .brule {
+      height: 1px;
+      background: var(--bd-2);
+      margin: 3px 0;
+    }
+
+    .fspan {
+      font-size: 9px;
+      font-family: var(--font-mono);
+      text-align: center;
+      border-radius: 3px 3px 0 0;
+      padding: 2px 1px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border-bottom: 2px solid currentColor;
+    }
+
+    .fspan.res {
+      border-bottom-color: var(--bd-1);
+      color: var(--tx-3);
+    }
+
+    .fspan.t0 {
+      color: #7dd3fc;
+      background: rgba(56, 189, 248, .1);
+    }
+
+    .fspan.t1 {
+      color: #fcd34d;
+      background: rgba(251, 191, 36, .1);
+    }
+
+    .fspan.t2 {
+      color: #c4b5fd;
+      background: rgba(167, 139, 250, .1);
+    }
+
+    .fspan.t3 {
+      color: #86efac;
+      background: rgba(74, 222, 128, .1);
+    }
+
+    .fspan.t4 {
+      color: #f9a8d4;
+      background: rgba(244, 114, 182, .1);
+    }
+
+    .fspan.t5 {
+      color: #fdba74;
+      background: rgba(251, 146, 60, .1);
+    }
+
+    .nhex {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--tx-2);
+      text-align: center;
+      background: rgba(255, 255, 255, .04);
+      border-radius: 3px;
+      padding: 1px 0;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--tx-2);
+      margin-top: 8px;
+      padding-left: 2px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .swatch {
+      width: 11px;
+      height: 11px;
+      border-radius: 3px;
+      border: 1px solid;
+      display: inline-block;
+    }
+
+    .sw-on {
+      background: var(--on-bg);
+      border-color: var(--on-bd);
+    }
+
+    .sw-set {
+      background: rgba(34, 197, 94, .3);
+      border-color: var(--set);
+    }
+
+    .sw-clr {
+      background: rgba(248, 113, 113, .2);
+      border-color: var(--clr);
+    }
+
+    .sw-hl {
+      background: transparent;
+      border-color: var(--hl);
+    }
+
+    .sw-fill {
+      background: rgba(56, 189, 248, .18);
+      border-color: var(--fill);
+    }
+
+    .sw-drop {
+      background: transparent;
+      border-color: var(--bd-2);
+      border-style: dashed;
+    }
+
+    .sw-q {
+      background: rgba(192, 132, 252, .12);
+      border-color: rgba(192, 132, 252, .5);
+      border-style: dashed;
+    }
+
+    /* ---------- code / notes ---------- */
+    .code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 10px 13px;
+      margin: 6px 0;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+
+    .code .k {
+      color: #c4b5fd;
+    }
+
+    .code .n {
+      color: #7dd3fc;
+    }
+
+    .code .c {
+      color: var(--tx-3);
+    }
+
+    .code .h {
+      color: var(--hl);
+    }
+
+    .note {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--tx-2);
+      background: rgba(96, 165, 250, .07);
+      border-left: 2px solid var(--accent);
+      border-radius: 0 var(--r-md) var(--r-md) 0;
+      padding: 9px 13px;
+      margin: 8px 0;
+    }
+
+    .note b {
+      color: var(--tx-1);
+      font-weight: 600;
+    }
+
+    .note code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--hl);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .chip {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      color: var(--tx-2);
+    }
+
+    .chip b {
+      color: var(--tx-1);
+    }
+
+    .chip.hot {
+      border-color: var(--hl);
+      color: #fcd34d;
+    }
+
+    .chip.cool {
+      border-color: var(--fill);
+      color: #bae6fd;
+    }
+
+    /* ---------- memory table ---------- */
+    .memtbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin: 6px 0;
+    }
+
+    .memtbl th {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--tx-3);
+      text-align: left;
+      padding: 4px 8px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--bd-1);
+    }
+
+    .memtbl td {
+      padding: 5px 8px;
+      border-bottom: 1px solid var(--bd-1);
+      color: var(--tx-2);
+    }
+
+    .memtbl td.addr {
+      color: var(--tx-3);
+    }
+
+    .memtbl td.val {
+      color: var(--tx-1);
+      font-weight: 600;
+    }
+
+    .memtbl tr:last-child td {
+      border-bottom: none;
+    }
+
+    .bsrc0 {
+      background: rgba(56, 189, 248, .13);
+    }
+
+    .bsrc1 {
+      background: rgba(251, 191, 36, .13);
+    }
+
+    .bsrc2 {
+      background: rgba(167, 139, 250, .13);
+    }
+
+    .bsrc3 {
+      background: rgba(74, 222, 128, .13);
+    }
+
+    /* ---------- controls ---------- */
+    .answer-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    input[type=text],
+    select {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      padding: 8px 10px;
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      background: var(--bg-2);
+      color: var(--tx-1);
+      outline: none;
+    }
+
+    input[type=text] {
+      width: 300px;
+    }
+
+    select {
+      font-family: var(--font-sans);
+      cursor: pointer;
+    }
+
+    input[type=text]:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .btn {
+      padding: 8px 15px;
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      background: transparent;
+      color: var(--tx-1);
+      cursor: pointer;
+      font-size: 14px;
+      font-family: inherit;
+      transition: background .1s, border-color .1s;
+    }
+
+    .btn:hover {
+      background: var(--bg-2);
+      border-color: #4b5563;
+    }
+
+    .btn:active {
+      transform: scale(.98);
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+
+    .btn.mono {
+      font-family: var(--font-mono);
+    }
+
+    .linkbtn {
+      font-size: 12px;
+      color: var(--tx-2);
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+      font-family: inherit;
+    }
+
+    .linkbtn:hover {
+      color: var(--tx-1);
+    }
+
+    .feedback {
+      margin-top: 10px;
+      padding: 10px 14px;
+      border-radius: var(--r-md);
+      font-size: 13px;
+      border: 1px solid transparent;
+      line-height: 1.6;
+    }
+
+    .feedback.correct {
+      background: rgba(34, 197, 94, .12);
+      color: #86efac;
+      border-color: rgba(34, 197, 94, .25);
+    }
+
+    .feedback.wrong {
+      background: rgba(239, 68, 68, .12);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, .25);
+    }
+
+    .feedback.hint {
+      background: rgba(245, 158, 11, .12);
+      color: #fcd34d;
+      border-color: rgba(245, 158, 11, .25);
+    }
+
+    .feedback b {
+      color: inherit;
+    }
+
+    .feedback .mono {
+      color: inherit;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: var(--bg-2);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+      border-radius: 999px;
+      transition: width .3s ease;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+
+    .stat {
+      background: var(--bg-1);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 22px;
+      font-weight: 650;
+    }
+
+    .stat-lbl {
+      font-size: 12px;
+      color: var(--tx-2);
+      margin-top: 2px;
+    }
+
+    .problem-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .crumb {
+      font-size: 12px;
+      color: var(--tx-3);
+      margin-bottom: 3px;
+    }
+
+    .ask {
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 10px 0 4px;
+    }
+
+    .plist {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .pitem {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 13px;
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: background .1s, border-color .1s;
+      background: var(--bg-1);
+    }
+
+    .pitem:hover {
+      background: var(--bg-2);
+      border-color: var(--bd-2);
+    }
+
+    .pitem.solved {
+      border-color: rgba(34, 197, 94, .35);
+    }
+
+    .pitem.current {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-dim);
+    }
+
+    .pi-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+    }
+
+    .pi-icon.yes {
+      background: rgba(34, 197, 94, .15);
+      color: #86efac;
+    }
+
+    .pi-icon.no {
+      background: var(--bg-3);
+      color: var(--tx-3);
+    }
+
+    .pi-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .pi-title {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .pi-sub {
+      font-size: 12px;
+      color: var(--tx-3);
+      margin-top: 1px;
+    }
+
+    .modhead {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 0 6px;
+    }
+
+    .modhead:first-child {
+      padding-top: 0;
+    }
+
+    .modhead .t {
+      font-size: 12px;
+      font-weight: 650;
+      color: var(--tx-2);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .modhead .c {
+      font-size: 11px;
+      color: var(--tx-3);
+      font-family: var(--font-mono);
+    }
+
+    .modhead .line {
+      flex: 1;
+      height: 1px;
+      background: var(--bd-1);
+    }
+
+    .modcard {
+      background: linear-gradient(180deg, rgba(96, 165, 250, .08), transparent);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-lg);
+      padding: 14px 16px;
+      margin-bottom: 1rem;
+    }
+
+    .modcard .t {
+      font-size: 12px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 650;
+    }
+
+    .modcard h2 {
+      margin: 3px 0 5px;
+    }
+
+    .modcard p {
+      font-size: 13px;
+      color: var(--tx-2);
+      line-height: 1.6;
+    }
+
+    .navrow {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .spacer {
+      margin-left: auto;
+    }
+
+    .reftbl {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0;
+      font-size: 13px;
+    }
+
+    .reftbl>div {
+      padding: 6px 0;
+      border-bottom: 1px solid var(--bd-1);
+    }
+
+    .reftbl>div:nth-child(2n) {
+      text-align: right;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--hl);
+      padding-left: 16px;
+    }
+
+    .reftbl>div:nth-last-child(-n+2) {
+      border-bottom: none;
+    }
+
+    .labgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+      margin: 8px 0;
+    }
+
+    .labfield {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .labfield label {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .oprow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin: 6px 0;
+    }
+
+    .oprow input[type=text] {
+      width: 96px;
+    }
+
+    .histlog {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--tx-2);
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .histlog div {
+      padding: 3px 0;
+      border-bottom: 1px solid var(--bd-1);
+    }
+
+    .histlog div:last-child {
+      border-bottom: none;
+    }
+
+    .histlog .arrow {
+      color: var(--tx-3);
+    }
+
+    .histlog .res {
+      color: var(--tx-1);
+    }
+
+    @media (max-width: 760px) {
+      .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .app {
+        padding: 1rem .6rem 3rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1 class="sr-only">Bit manipulation trainer for embedded systems</h1>
+  <div class="app" id="app"></div>
+  <script>
+    /* ============================================================
+       PART 1 — numeric helpers
+       ============================================================ */
+    const U = v => v >>> 0;
+    const maskW = w => w >= 32 ? 0xFFFFFFFF : U((1 << w) - 1);
+    const clampW = (v, w) => U(U(v) & maskW(w));   // the extra U matters: x & 0xFFFFFFFF is signed in JS
+
+    function bin(v, w) {return U(v).toString(2).padStart(w, '0').slice(-w);}
+    function hx(v, w) {return '0x' + U(v).toString(16).toUpperCase().padStart(Math.ceil(w / 4), '0');}
+    function fieldMask(hi, lo) {
+      const n = hi - lo + 1;
+      return U(n >= 32 ? 0xFFFFFFFF : ((1 << n) - 1) << lo);
+    }
+    function getBit(v, i) {return (U(v) >>> i) & 1;}
+    function popcount(v) {let c = 0, x = U(v); while (x) {x &= x - 1; c++;} return c;}
+    function ctz(v) {if (!U(v)) return -1; let i = 0; while (!getBit(v, i)) i++; return i;}
+    function msbIndex(v) {if (!U(v)) return -1; let i = 31; while (!getBit(v, i)) i--; return i;}
+    function revByte(v) {let r = 0; for (let i = 0; i < 8; i++) if (getBit(v, i)) r |= 1 << (7 - i); return r & 0xFF;}
+    function parityBit(v) {let x = U(v), p = 0; while (x) {p ^= x & 1; x >>>= 1;} return p;}
+    function signed(v, w) {const m = 1 << (w - 1); const x = clampW(v, w); return (x & m) ? x - (1 << w) : x;}
+    function rol(v, r, w) {r %= w; return clampW((U(v) << r) | (U(v) >>> (w - r)), w);}
+    function ror(v, r, w) {r %= w; return clampW((U(v) >>> r) | (U(v) << (w - r)), w);}
+
+    const rnd = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+    const pick = arr => arr[rnd(0, arr.length - 1)];
+    const rndByte = () => rnd(0, 255);
+    function rndNZ(w = 8) {let v = 0; while (!v) v = rnd(0, maskW(w)); return v;}
+    function rndBits(count, w = 8, from = 0) {
+      const s = new Set();
+      while (s.size < count) s.add(rnd(from, w - 1));
+      return [...s].sort((a, b) => a - b);
+    }
+    function shuffle(a) {const r = a.slice(); for (let i = r.length - 1; i > 0; i--) {const j = rnd(0, i);[r[i], r[j]] = [r[j], r[i]];} return r;}
+
+    /* ============================================================
+       PART 2 — the bit diagram engine
+
+       Every visual is one CSS grid so that field bands, bit indices,
+       value rows, markers and hex columns all line up exactly:
+
+         col 1          -> row label
+         cols 2..w+1    -> bit w-1 .. bit 0  (MSB on the left)
+         col w+2        -> hex / decimal readout
+       ============================================================ */
+    const colOf = (i, w) => 2 + (w - 1 - i);       // grid column for bit index i
+
+    function esc(s) {return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');}
+
+    // rows: array of row descriptors. Returns full diagram markup.
+    function diagram(w, rows) {
+      const cols = `var(--lblw) repeat(${w}, minmax(0,1fr)) var(--hexw)`;
+      let h = `<div class="bdg-wrap"><div class="bdg w${w}" style="grid-template-columns:${cols}">`;
+      for (const r of rows) h += rowHTML(w, r);
+      return h + '</div></div>';
+    }
+
+    function lbl(text, cls = '') {return `<div class="blbl ${cls}" style="grid-column:1">${esc(text)}</div>`;}
+    function tail(html) {return `<div class="bhex">${html}</div>`;}
+
+    function rowHTML(w, r) {
+      switch (r.type) {
+        case 'fields': return lbl(r.label || '') + fieldSpans(w, r.fields) + tail('');
+
+        case 'index': {
+          let h = lbl(r.label || '');
+          for (let i = w - 1; i >= 0; i--) h += `<div class="bidx" style="grid-column:${colOf(i, w)}">${i}</div>`;
+          return h + tail(r.tail || '');
+        }
+
+        case 'weights': {
+          let h = lbl(r.label || 'weight');
+          for (let i = w - 1; i >= 0; i--) {
+            const on = getBit(r.value, i);
+            h += `<div class="bwt ${on ? 'lit' : ''}" style="grid-column:${colOf(i, w)}">${Math.pow(2, i)}</div>`;
+          }
+          return h + tail(r.tail || '');
+        }
+
+        case 'bits': {
+          const marks = r.marks || {};
+          let h = lbl(r.label || '', r.op ? 'op' : '');
+          for (let i = w - 1; i >= 0; i--) {
+            const mk = marks[i] ? ' mk-' + marks[i] : '';
+            const ch = r.unknown ? '?' : bin(r.value, w)[w - 1 - i];
+            const on = !r.unknown && ch === '1' ? ' on' : '';
+            const click = r.click ? ` class="bcell${on}${mk} click" onclick="${r.click}(${i})"` : ` class="bcell${on}${mk}"`;
+            h += `<div${click} style="grid-column:${colOf(i, w)}" title="bit ${i}">${ch}</div>`;
+          }
+          return h + tail(r.unknown ? '<i>?</i>' : (r.tail !== undefined ? r.tail : readout(r.value, w)));
+        }
+
+        case 'marks': {
+          let h = lbl(r.label || '');
+          for (let i = w - 1; i >= 0; i--) {
+            const m = (r.marks || {})[i];
+            const g = m === 'set' ? '&#9650;' : m === 'clr' ? '&#9660;' : m === 'same' ? '&middot;' : '';
+            h += `<div class="bmark ${m || ''}" style="grid-column:${colOf(i, w)}">${g}</div>`;
+          }
+          return h + tail(r.tail || '');
+        }
+
+        case 'nibhex': {
+          let h = lbl(r.label || 'hex');
+          for (let n = w / 4 - 1; n >= 0; n--) {
+            const d = (U(r.value) >>> (n * 4)) & 0xF;
+            h += `<div class="nhex" style="grid-column:${colOf(n * 4 + 3, w)}/span 4">${d.toString(16).toUpperCase()}</div>`;
+          }
+          return h + tail(r.tail || '');
+        }
+
+        case 'rule': return lbl(r.op || '', 'op') + `<div class="brule" style="grid-column:2/span ${w}"></div>` + tail('');
+
+        case 'gap': return `<div style="grid-column:1/span ${w + 2};height:${r.h || 4}px"></div>`;
+
+        default: return '';
+      }
+    }
+
+    function readout(v, w) {
+      return `<b>${hx(v, w)}</b> <i>${U(v) >>> 0}</i>`;
+    }
+
+    function fieldSpans(w, fields) {
+      let out = '', i = w - 1;
+      const at = b => fields.find(f => b <= f.hi && b >= f.lo);
+      while (i >= 0) {
+        const f = at(i);
+        if (f) {
+          const hi = Math.min(f.hi, w - 1), lo = Math.max(f.lo, 0);
+          out += `<div class="fspan t${f.tone === undefined ? 0 : f.tone % 6}" title="${esc(f.title || f.name)} [${hi}:${lo}]" style="grid-column:${colOf(hi, w)}/span ${hi - lo + 1}">${esc(f.name)}</div>`;
+          i = lo - 1;
+        } else {
+          let j = i; while (j >= 0 && !at(j)) j--;
+          out += `<div class="fspan res" style="grid-column:${colOf(i, w)}/span ${i - j}"></div>`;
+          i = j;
+        }
+      }
+      return out;
+    }
+
+    /* mark helpers */
+    function diffMarks(before, after, w) {
+      const m = {};
+      for (let i = 0; i < w; i++) {
+        const b = getBit(before, i), a = getBit(after, i);
+        m[i] = b === a ? 'same' : (a ? 'set' : 'clr');
+      }
+      return m;
+    }
+    function cellMarks(before, after, w) {
+      const m = {};
+      for (let i = 0; i < w; i++) {
+        const b = getBit(before, i), a = getBit(after, i);
+        if (b !== a) m[i] = a ? 'set' : 'clr';
+      }
+      return m;
+    }
+    function maskMarks(mask, w, cls = 'hl') {
+      const m = {};
+      for (let i = 0; i < w; i++) if (getBit(mask, i)) m[i] = cls;
+      return m;
+    }
+    function rangeMarks(lo, hi, cls = 'hl') {
+      const m = {};
+      for (let i = lo; i <= hi; i++) m[i] = cls;
+      return m;
+    }
+    function mergeMarks(...ms) {return Object.assign({}, ...ms);}
+
+    function legend(items) {
+      const map = {
+        on: ['sw-on', '1 bit'], off: ['', '0 bit'],
+        set: ['sw-set', 'turned 0&rarr;1'], clr: ['sw-clr', 'turned 1&rarr;0'],
+        hl: ['sw-hl', 'bits the mask selects'], fill: ['sw-fill', 'shifted in'],
+        drop: ['sw-drop', 'shifted out (lost)'], q: ['sw-q', 'you work this out']
+      };
+      return `<div class="legend">${items.map(k => {
+        const [c, t] = map[k];
+        return `<span><i class="swatch ${c}"></i>${t}</span>`;
+      }).join('')}</div>`;
+    }
+    /* ============================================================
+       PART 3 — composite boards
+       Each board answers one question: "what did this operation do
+       to the register?"  All of them hide the result until solved.
+       ============================================================ */
+
+    /* a OP b -> result, with the mask bits highlighted and the
+       changed bits marked once revealed. */
+    function opBoard(w, a, b, sym, res, shown, o = {}) {
+      const hi = maskMarks(b, w, 'hl');
+      const rows = [
+        {type: 'index'},
+        {type: 'bits', label: o.la || 'value', value: a},
+        {type: 'bits', label: sym, value: b, op: true, marks: o.plain ? {} : hi},
+        {type: 'rule', op: '='},
+        {type: 'bits', label: o.lr || 'result', value: res, unknown: !shown, marks: shown ? cellMarks(a, res, w) : {}}
+      ];
+      if (shown) rows.push({type: 'marks', marks: diffMarks(a, res, w), tail: changeSummary(a, res, w)});
+      return diagram(w, rows) + legend(shown ? ['on', 'hl', 'set', 'clr'] : ['on', 'hl', 'q']);
+    }
+
+    function changeSummary(a, b, w) {
+      let s = 0, c = 0;
+      for (let i = 0; i < w; i++) {const x = getBit(a, i), y = getBit(b, i); if (x !== y) (y ? s++ : c++);}
+      if (!s && !c) return '<i>no change</i>';
+      return `<i>${s ? '+' + s : ''}${s && c ? ' / ' : ''}${c ? '-' + c : ''}</i>`;
+    }
+
+    /* single value, optionally with a field map above it */
+    function valBoard(w, v, o = {}) {
+      const rows = [];
+      if (o.fields) rows.push({type: 'fields', fields: o.fields, label: o.fieldLabel || ''});
+      rows.push({type: 'index'});
+      rows.push({type: 'bits', label: o.label || 'value', value: v, marks: o.marks || {}, click: o.click, unknown: o.unknown, tail: o.tail});
+      if (o.weights) rows.push({type: 'weights', value: v});
+      if (o.nibhex) rows.push({type: 'nibhex', value: v});
+      return diagram(w, rows) + (o.legend ? legend(o.legend) : '');
+    }
+
+    /* before -> after, e.g. a whole read-modify-write sequence */
+    function transBoard(w, before, after, shown, o = {}) {
+      const rows = [];
+      if (o.fields) rows.push({type: 'fields', fields: o.fields});
+      rows.push({type: 'index'});
+      rows.push({type: 'bits', label: o.lb || 'before', value: before, marks: o.beforeMarks || {}});
+      if (shown) {
+        rows.push({type: 'marks', marks: diffMarks(before, after, w)});
+        rows.push({type: 'bits', label: o.la || 'after', value: after, marks: cellMarks(before, after, w), tail: readout(after, w)});
+      } else {
+        rows.push({type: 'marks', marks: {}});
+        rows.push({type: 'bits', label: o.la || 'after', value: after, unknown: true});
+      }
+      return diagram(w, rows) + legend(shown ? ['on', 'set', 'clr'] : ['on', 'q']);
+    }
+
+    /* shifts and rotates: shows what falls off the end and what feeds in */
+    function shiftBoard(w, v, n, kind, res, shown) {
+      const left = kind === 'shl' || kind === 'rol';
+      const dropped = left ? (U(v) >>> (w - n)) & maskW(n) : U(v) & maskW(n);
+      const fill = {};
+      for (let i = 0; i < n; i++) fill[left ? i : w - 1 - i] = 'fill';
+
+      const outLbl = left ? `bits ${w - 1}..${w - n} fall off the top` : `bits ${n - 1}..0 fall off the bottom`;
+      const inLbl = {
+        shl: `${n} zero${n > 1 ? 's' : ''} feed in at the bottom`,
+        shr: `${n} zero${n > 1 ? 's' : ''} feed in at the top (logical)`,
+        sar: `${n} copies of the sign bit feed in at the top`,
+        rol: `the ${n} bit${n > 1 ? 's' : ''} that fell off the top re-enter at the bottom`,
+        ror: `the ${n} bit${n > 1 ? 's' : ''} that fell off the bottom re-enter at the top`
+      }[kind];
+
+      const rows = [
+        {type: 'index'},
+        {type: 'bits', label: 'in', value: v, marks: left ? maskMarks(fieldMask(w - 1, w - n), w, 'drop') : maskMarks(maskW(n), w, 'drop')},
+        {type: 'rule', op: left ? '≪' : '≫'},
+        {type: 'bits', label: 'out', value: res, unknown: !shown, marks: shown ? fill : {}}
+      ];
+      const arrow = left ? '&larr;' : '&rarr;';
+      return diagram(w, rows)
+        + `<div class="chips"><span class="chip">${arrow} shift by <b>${n}</b></span>`
+        + `<span class="chip hot">${outLbl}: <b>0b${bin(dropped, n)}</b></span>`
+        + `<span class="chip cool">${inLbl}</span></div>`
+        + legend(shown ? ['on', 'drop', 'fill'] : ['on', 'drop', 'q']);
+    }
+
+    /* how a multi-byte value actually sits in memory */
+    function memBoard(base, value, w, o = {}) {
+      const nb = w / 8;
+      const bytes = [];
+      for (let i = 0; i < nb; i++) bytes.push((U(value) >>> (i * 8)) & 0xFF);   // bytes[0] = LSB
+      const order = o.endian === 'big' ? bytes.slice().reverse() : bytes;
+      const idxOrder = o.endian === 'big' ? bytes.map((_, i) => nb - 1 - i) : bytes.map((_, i) => i);
+
+      let rowsHTML = '';
+      for (let a = 0; a < nb; a++) {
+        const bi = idxOrder[a];
+        rowsHTML += `<tr>
+          <td class="addr">${hx(base + a, 32)}</td>
+          <td class="val bsrc${bi % 4}">${hx(order[a], 8)}</td>
+          <td class="bsrc${bi % 4}">0b${bin(order[a], 8)}</td>
+          <td>${o.hideSrc ? '' : 'byte ' + bi + (bi === 0 ? ' (LSB)' : bi === nb - 1 ? ' (MSB)' : '')}</td>
+        </tr>`;
+      }
+      return `<table class="memtbl">
+        <tr><th>address</th><th>byte</th><th>binary</th><th>${o.hideSrc ? '' : 'source'}</th></tr>
+        ${rowsHTML}</table>`;
+    }
+
+    /* both byte orders next to each other */
+    function endianBoard(base, value, w) {
+      return `<div class="labgrid">
+        <div><div class="section-title">little-endian (ARM Cortex-M default)</div>${memBoard(base, value, w, {endian: 'little'})}</div>
+        <div><div class="section-title">big-endian (network order)</div>${memBoard(base, value, w, {endian: 'big'})}</div>
+      </div>`;
+    }
+
+    /* syntax-lit code block */
+    function code(src) {
+      let s = esc(src)
+        .replace(/(0x[0-9A-Fa-f]+|0b[01]+)/g, '<span class="h">$1</span>')
+        .replace(/\/\/[^\n]*/g, '<span class="c">$&</span>')
+        .replace(/\b(uint8_t|uint16_t|uint32_t|int8_t|int16_t|int32_t|volatile|if|else|while|for|return|unsigned|signed|char|int|void|static|const)\b/g, '<span class="k">$1</span>');
+      return `<div class="code">${s}</div>`;
+    }
+    function note(html) {return `<div class="note">${html}</div>`;}
+    function title(t) {return `<div class="section-title">${t}</div>`;}
+    function chips(list) {return `<div class="chips">${list.map(c => `<span class="chip ${c[2] || ''}">${c[0]} <b>${c[1]}</b></span>`).join('')}</div>`;}
+    /* ============================================================
+       PART 4 — curriculum
+       Modules run in dependency order: you never need an idea that a
+       later module introduces.
+       ============================================================ */
+    const MODULES = [
+      {id: 'repr', name: 'Representation', blurb: 'Hex, binary and bit weights. Everything later assumes you can move between these without thinking about it.'},
+      {id: 'bits', name: 'Single-bit operations', blurb: 'Test, set, clear and toggle. Four idioms that make up most of the register code you will ever write.'},
+      {id: 'fields', name: 'Masks & bit fields', blurb: 'Real registers pack several settings into one word. Build a mask, extract a field, and write one back without disturbing its neighbours.'},
+      {id: 'shifts', name: 'Shifts & rotates', blurb: 'What actually leaves the register and what feeds in. Logical vs arithmetic, and why the difference bites on signed data.'},
+      {id: 'signed', name: 'Signed values & overflow', blurb: "Two's complement, sign extension of sensor samples, and wraparound at the edges of a fixed-width type."},
+      {id: 'bytes', name: 'Bytes, words & memory', blurb: 'How a 32-bit value is laid out in memory, why byte order matters on the wire, and how to take a word apart and put it back together.'},
+      {id: 'regs', name: 'Peripheral registers', blurb: 'The access rules that hardware imposes: read-modify-write, write-1-to-clear, set/reset registers, and the hazards each one creates.'},
+      {id: 'tricks', name: 'Bit tricks', blurb: 'Branch-free idioms worth memorising: population count, lowest set bit, power-of-two tests, alignment, reversal and parity.'},
+      {id: 'applied', name: 'Applied patterns', blurb: 'The above, combined: packed protocol frames, ring buffers, checksums, debouncing and fixed-point scaling.'}
+    ];
+    const MOD_INDEX = Object.fromEntries(MODULES.map((m, i) => [m.id, i]));
+
+    /* register field maps reused by problems and by the Lab */
+    const REGMAPS = {
+      MODER: {
+        name: 'GPIOx_MODER', width: 32,
+        fields: Array.from({length: 16}, (_, p) => ({hi: 2 * p + 1, lo: 2 * p, name: 'M' + p, tone: p % 6, title: 'MODER' + p})),
+        legend: '00 input · 01 output · 10 alternate function · 11 analog'
+      },
+      AHB1ENR: {
+        name: 'RCC_AHB1ENR', width: 32,
+        fields: [
+          {hi: 0, lo: 0, name: 'A', tone: 0, title: 'GPIOAEN'}, {hi: 1, lo: 1, name: 'B', tone: 0, title: 'GPIOBEN'},
+          {hi: 2, lo: 2, name: 'C', tone: 0, title: 'GPIOCEN'}, {hi: 3, lo: 3, name: 'D', tone: 0, title: 'GPIODEN'},
+          {hi: 4, lo: 4, name: 'E', tone: 0, title: 'GPIOEEN'}, {hi: 5, lo: 5, name: 'F', tone: 0, title: 'GPIOFEN'},
+          {hi: 6, lo: 6, name: 'G', tone: 0, title: 'GPIOGEN'}, {hi: 7, lo: 7, name: 'H', tone: 0, title: 'GPIOHEN'},
+          {hi: 12, lo: 12, name: 'CRC', tone: 1}, {hi: 21, lo: 21, name: 'DMA1', tone: 2}, {hi: 22, lo: 22, name: 'DMA2', tone: 2}
+        ],
+        legend: 'one enable bit per peripheral clock'
+      },
+      CR1: {
+        name: 'USART_CR1', width: 32,
+        fields: [
+          {hi: 2, lo: 2, name: 'RE', tone: 3}, {hi: 3, lo: 3, name: 'TE', tone: 3},
+          {hi: 5, lo: 5, name: 'RXNEIE', tone: 4}, {hi: 6, lo: 6, name: 'TCIE', tone: 4}, {hi: 7, lo: 7, name: 'TXEIE', tone: 4},
+          {hi: 9, lo: 9, name: 'PS', tone: 1}, {hi: 10, lo: 10, name: 'PCE', tone: 1},
+          {hi: 12, lo: 12, name: 'M', tone: 2}, {hi: 13, lo: 13, name: 'UE', tone: 0}
+        ],
+        legend: 'UE enables the peripheral · TE/RE enable transmit/receive · *IE are interrupt enables'
+      },
+      TIM_CR1: {
+        name: 'TIMx_CR1', width: 16,
+        fields: [
+          {hi: 0, lo: 0, name: 'CEN', tone: 0}, {hi: 1, lo: 1, name: 'UDIS', tone: 1}, {hi: 2, lo: 2, name: 'URS', tone: 1},
+          {hi: 3, lo: 3, name: 'OPM', tone: 2}, {hi: 4, lo: 4, name: 'DIR', tone: 2},
+          {hi: 6, lo: 5, name: 'CMS', tone: 3}, {hi: 7, lo: 7, name: 'ARPE', tone: 4}, {hi: 9, lo: 8, name: 'CKD', tone: 5}
+        ],
+        legend: 'CEN starts the counter · CMS is a 2-bit centre-aligned mode field'
+      },
+      EXTI_PR: {
+        name: 'EXTI_PR', width: 32,
+        fields: Array.from({length: 16}, (_, p) => ({hi: p, lo: p, name: '' + p, tone: p % 6, title: 'PR' + p})),
+        legend: 'pending flags — write 1 to clear (W1C)'
+      }
+    };
+
+    const GPIO_CLK = ['GPIOAEN', 'GPIOBEN', 'GPIOCEN', 'GPIODEN', 'GPIOEEN', 'GPIOFEN', 'GPIOGEN', 'GPIOHEN'];
+
+    /* ---------- Module 1: representation ---------- */
+    const P_A = [
+      {
+        id: 'r1', mod: 'repr', diff: 'easy', title: 'Hex to binary', fmt: 'bin',
+        ask: 'Write this byte out in binary.',
+        hint: 'Each hex digit is exactly four bits. Convert the two digits separately and stick them together.',
+        concept: 'A hex digit maps 1:1 onto a nibble, so hex is just binary with the bits pre-grouped in fours. That is the whole reason datasheets use it.',
+        setup() {const v = rnd(0x11, 0xEF); return {v, answer: '0b' + bin(v, 8)};},
+        render(s, shown) {
+          return title(`byte = ${hx(s.v, 8)}`)
+            + valBoard(8, s.v, {label: 'value', unknown: !shown, nibhex: shown})
+            + note(`Split it: <code>${hx(s.v >> 4, 4)}</code> is the high nibble (bits 7:4), <code>${hx(s.v & 0xF, 4)}</code> is the low nibble (bits 3:0).`);
+        }
+      },
+      {
+        id: 'r2', mod: 'repr', diff: 'easy', title: 'Binary to hex', fmt: 'hex',
+        ask: 'Write this bit pattern as a hex byte.',
+        hint: 'Group the bits into two nibbles of four, then convert each group to one hex digit.',
+        concept: 'Going the other way: group from the LSB in fours. Grouping from the wrong end is the classic slip when the width is not a multiple of four.',
+        setup() {const v = rnd(0x11, 0xEF); return {v, answer: hx(v, 8)};},
+        render(s, shown) {
+          return valBoard(8, s.v, {label: 'value', nibhex: shown, tail: shown ? undefined : ''})
+            + (shown ? '' : note('Each group of four bits below becomes one hex digit. High nibble first.'));
+        }
+      },
+      {
+        id: 'r3', mod: 'repr', diff: 'easy', title: 'Bit weights', fmt: 'dec',
+        ask: 'What is the decimal value of this byte?',
+        hint: 'Add up the weight of every bit that is set. Bit i is worth 2^i.',
+        concept: 'A register value is just a sum of powers of two. Being able to eyeball "bit 6 is set, so at least 64" makes debugging register dumps much faster.',
+        setup() {const v = rnd(3, 250); return {v, answer: String(v)};},
+        render(s, shown) {
+          const set = [];
+          for (let i = 7; i >= 0; i--) if (getBit(s.v, i)) set.push(Math.pow(2, i));
+          return valBoard(8, s.v, {label: 'value', weights: true, tail: shown ? undefined : '<b>' + hx(s.v, 8) + '</b>'})
+            + (shown
+              ? note(`Set bits: ${set.join(' + ')} = <b>${s.v}</b>`)
+              : note('Only the highlighted weights count — sum the ones under a <code>1</code>.'));
+        }
+      },
+      {
+        id: 'r4', mod: 'repr', diff: 'easy', title: 'Which bit is that?', fmt: 'dec',
+        ask: 'A datasheet says this flag has the mask shown. Which bit number is it?',
+        hint: 'A single-bit mask of 2^i means bit i. Count how many times you can halve it.',
+        concept: 'Datasheets give you masks; code wants bit numbers. Converting between <code>0x20</code> and "bit 5" is a daily operation.',
+        setup() {const b = rnd(0, 7); return {b, m: 1 << b, answer: String(b)};},
+        render(s, shown) {
+          return title(`flag mask = ${hx(s.m, 8)}`)
+            + valBoard(8, s.m, {label: 'mask', weights: true, marks: shown ? {[s.b]: 'set'} : {}})
+            + (shown ? note(`${hx(s.m, 8)} = ${s.m} = 2<sup>${s.b}</sup>, so this is <b>bit ${s.b}</b>: <code>1 &lt;&lt; ${s.b}</code>.`) : '');
+        }
+      },
+      {
+        id: 'r5', mod: 'repr', diff: 'medium', title: 'Sizing a field', fmt: 'dec',
+        ask: 'How many bits does a field need to hold this many distinct values?',
+        hint: 'n bits hold 2^n values. Find the smallest n where 2^n is at least the count.',
+        concept: 'You do this whenever you design a packed message or read a field width from a table: a 3-bit field holds 0-7, not 0-8.',
+        setup() {const n = pick([3, 5, 6, 9, 12, 17, 20, 33, 48, 100, 200, 300]); return {n, answer: String(Math.max(1, Math.ceil(Math.log2(n))))};},
+        render(s, shown) {
+          const bits = Math.max(1, Math.ceil(Math.log2(s.n)));
+          return title(`need to store ${s.n} distinct values (0 … ${s.n - 1})`)
+            + chips([['1 bit holds', '2 values'], ['2 bits', '4'], ['3 bits', '8'], ['4 bits', '16'], ['5 bits', '32'], ['6 bits', '64'], ['7 bits', '128'], ['8 bits', '256']])
+            + (shown
+              ? valBoard(8, maskW(bits), {label: 'field', marks: maskMarks(maskW(bits), 8, 'hl')})
+              + note(`${bits} bits hold ${Math.pow(2, bits)} values, which covers ${s.n}. ${bits > 1 ? `${bits - 1} bits would only hold ${Math.pow(2, bits - 1)}.` : ''}`)
+              : '');
+        }
+      },
+
+      /* ---------- Module 2: single-bit operations ---------- */
+      {
+        id: 'b1', mod: 'bits', diff: 'easy', title: 'Test a bit', fmt: 'dec',
+        ask: 'Read the highlighted bit. Answer 0 or 1.',
+        hint: 'Shift the bit you want down to position 0, then mask everything else off with 1.',
+        concept: 'The canonical read: <code>(reg >> n) & 1</code>. The shift moves your bit to the bottom, the AND throws away every other bit.',
+        setup() {const v = rndByte(), b = rnd(0, 7); return {v, b, answer: String(getBit(v, b))};},
+        render(s, shown) {
+          const shifted = U(s.v) >>> s.b;
+          return valBoard(8, s.v, {label: 'reg', marks: {[s.b]: 'hl'}})
+            + code(`(reg >> ${s.b}) & 1`)
+            + (shown
+              ? title('step 1 — shift the bit down to position 0')
+              + valBoard(8, shifted & 0xFF, {label: `>> ${s.b}`, marks: {0: 'hl'}})
+              + title('step 2 — mask off everything above it')
+              + opBoard(8, shifted & 0xFF, 1, '&', shifted & 1, true, {lr: 'result'})
+              : note('The highlighted bit is the only one that survives both steps.'));
+        }
+      },
+      {
+        id: 'b2', mod: 'bits', diff: 'easy', title: 'Set a bit', fmt: 'hex',
+        ask: 'Set the highlighted bit and give the resulting register value in hex.',
+        hint: 'OR with a mask that has a single 1 in that position. OR never clears anything.',
+        concept: 'OR is the "turn on, leave everything else alone" operator: <code>reg |= (1 &lt;&lt; n)</code>.',
+        setup() {const b = rnd(0, 7); const v = rndNZ(8) & ~(1 << b) & 0xFF; return {v, b, m: 1 << b, answer: hx(v | (1 << b), 8)};},
+        render(s, shown) {
+          return code(`reg |= (1 << ${s.b});   // mask = ${hx(s.m, 8)}`)
+            + opBoard(8, s.v, s.m, '|', s.v | s.m, shown, {la: 'reg'})
+            + (shown ? note('Only the masked column changed. Every other column kept its old value, because <code>x | 0 == x</code>.') : '');
+        }
+      },
+      {
+        id: 'b3', mod: 'bits', diff: 'easy', title: 'Clear a bit', fmt: 'hex',
+        ask: 'Clear the highlighted bit and give the resulting register value in hex.',
+        hint: 'Build the single-bit mask, invert it, then AND. The inverted mask is all 1s except the bit you are killing.',
+        concept: '<code>reg &= ~(1 &lt;&lt; n)</code>. Beginners write <code>&amp; (1 &lt;&lt; n)</code> by mistake, which keeps only that bit and wipes the rest of the register.',
+        setup() {const b = rnd(0, 7), v = rndByte() | (1 << b); return {v, b, m: (~(1 << b)) & 0xFF, answer: hx(v & ~(1 << b) & 0xFF, 8)};},
+        render(s, shown) {
+          return code(`reg &= ~(1 << ${s.b});  // ~(1 << ${s.b}) = ${hx(s.m, 8)}`)
+            + title(`the mask is inverted first: ~${hx(1 << s.b, 8)} = ${hx(s.m, 8)}`)
+            + opBoard(8, s.v, s.m, '&', s.v & s.m, shown, {la: 'reg', plain: true})
+            + (shown ? note('Every column ANDed with 1 is unchanged; the single column ANDed with 0 is forced low.') : '');
+        }
+      },
+      {
+        id: 'b4', mod: 'bits', diff: 'easy', title: 'Toggle a bit', fmt: 'hex',
+        ask: 'Toggle the highlighted bit and give the resulting register value in hex.',
+        hint: 'XOR with a single-bit mask. XOR with 1 inverts, XOR with 0 leaves alone.',
+        concept: '<code>reg ^= (1 &lt;&lt; n)</code> — the usual way to blink an LED without reading the pin state first.',
+        setup() {const v = rndByte(), b = rnd(0, 7); return {v, b, m: 1 << b, answer: hx(v ^ (1 << b), 8)};},
+        render(s, shown) {
+          return code(`reg ^= (1 << ${s.b});   // blink pattern`)
+            + opBoard(8, s.v, s.m, '^', s.v ^ s.m, shown, {la: 'reg'})
+            + (shown ? note(`Bit ${s.b} was ${getBit(s.v, s.b)}, so it became ${getBit(s.v ^ s.m, s.b)}. Applying the same XOR again would restore the original value.`) : '');
+        }
+      },
+      {
+        id: 'b5', mod: 'bits', diff: 'medium', title: 'Set several bits at once', fmt: 'hex',
+        ask: 'Set all of the listed bits in one write. Give the resulting register value in hex.',
+        hint: 'OR the individual single-bit masks together first, then apply that combined mask once.',
+        concept: 'One read-modify-write instead of three. On a peripheral register that matters: each extra RMW is another window where an interrupt can land between the read and the write.',
+        setup() {
+          const bits = rndBits(3, 8);
+          const m = bits.reduce((a, b) => a | (1 << b), 0);
+          const v = rndByte() & ~m & 0xFF;
+          return {v, bits, m, answer: hx(v | m, 8)};
+        },
+        render(s, shown) {
+          return code(`reg |= ${s.bits.map(b => '(1 << ' + b + ')').join(' | ')};\n// combined mask = ${hx(s.m, 8)}`)
+            + opBoard(8, s.v, s.m, '|', s.v | s.m, shown, {la: 'reg'})
+            + (shown ? note(`Three separate <code>|=</code> statements would reach the same value, but this does it in a single store.`) : '');
+        }
+      },
+      {
+        id: 'b6', mod: 'bits', diff: 'medium', title: 'Clear several bits at once', fmt: 'hex',
+        ask: 'Clear all of the listed bits in one write. Give the resulting register value in hex.',
+        hint: 'Combine the masks with OR, then invert the whole thing once: ~(m1 | m2 | m3).',
+        concept: 'Note where the <code>~</code> goes. <code>~a | ~b</code> is not <code>~(a | b)</code> — De Morgan turns that into <code>~a &amp; ~b</code>.',
+        setup() {
+          const bits = rndBits(3, 8);
+          const m = bits.reduce((a, b) => a | (1 << b), 0);
+          const v = rndByte() | m;
+          return {v, bits, m, answer: hx(v & ~m & 0xFF, 8)};
+        },
+        render(s, shown) {
+          return code(`reg &= ~(${s.bits.map(b => '(1 << ' + b + ')').join(' | ')});\n// mask = ${hx(s.m, 8)}, ~mask = ${hx(~s.m & 0xFF, 8)}`)
+            + opBoard(8, s.v, ~s.m & 0xFF, '&', s.v & ~s.m & 0xFF, shown, {la: 'reg', plain: true})
+            + (shown ? note(`The inverted mask holds 0 exactly where you wanted bits cleared, and 1 everywhere you wanted preserved.`) : '');
+        }
+      },
+      {
+        id: 'b7', mod: 'bits', diff: 'medium', title: 'Is any flag set?', fmt: 'yesno',
+        ask: 'Is at least one of the highlighted flags currently set? Answer yes or no.',
+        hint: 'AND the register with the combined mask. Non-zero means at least one of them was set.',
+        concept: '<code>if (SR &amp; MASK)</code> is an <em>any</em> test. It is true when any single flag in the mask is set — a very common source of confusion with the <em>all</em> test.',
+        setup() {
+          const bits = rndBits(2, 8);
+          const m = bits.reduce((a, b) => a | (1 << b), 0);
+          const any = Math.random() < 0.5;
+          let v = rndByte();
+          v = any ? (v | (1 << pick(bits))) : (v & ~m & 0xFF);
+          return {v, m, bits, answer: (v & m) ? 'yes' : 'no'};
+        },
+        render(s, shown) {
+          return code(`if (SR & ${hx(s.m, 8)}) { /* at least one flag pending */ }`)
+            + opBoard(8, s.v, s.m, '&', s.v & s.m, shown, {la: 'SR', lr: 'SR & M'})
+            + (shown ? note(`Result is ${hx(s.v & s.m, 8)}, which is ${(s.v & s.m) ? 'non-zero &rarr; <b>yes</b>' : 'zero &rarr; <b>no</b>'}.`) : '');
+        }
+      },
+      {
+        id: 'b8', mod: 'bits', diff: 'medium', title: 'Are all flags set?', fmt: 'yesno',
+        ask: 'Are all of the highlighted flags set? Answer yes or no.',
+        hint: 'The all-test is (reg & mask) == mask, not just non-zero.',
+        concept: 'Waiting for several ready bits at once — e.g. "transmit empty AND transfer complete" — needs <code>(SR &amp; M) == M</code>. Using <code>if (SR &amp; M)</code> there proceeds as soon as <em>one</em> is ready.',
+        setup() {
+          const bits = rndBits(3, 8);
+          const m = bits.reduce((a, b) => a | (1 << b), 0);
+          const all = Math.random() < 0.5;
+          let v = rndByte();
+          v = all ? (v | m) : ((v | m) & ~(1 << pick(bits)) & 0xFF);
+          return {v, m, bits, answer: (v & m) === m ? 'yes' : 'no'};
+        },
+        render(s, shown) {
+          return code(`if ((SR & ${hx(s.m, 8)}) == ${hx(s.m, 8)}) { /* every flag ready */ }`)
+            + opBoard(8, s.v, s.m, '&', s.v & s.m, shown, {la: 'SR', lr: 'SR & M'})
+            + (shown ? note(`<code>${hx(s.v & s.m, 8)} ${(s.v & s.m) === s.m ? '==' : '!='} ${hx(s.m, 8)}</code> &rarr; <b>${(s.v & s.m) === s.m ? 'yes' : 'no'}</b>. ${(s.v & s.m) && (s.v & s.m) !== s.m ? 'Note the any-test would have said yes here.' : ''}`) : '');
+        }
+      },
+
+      /* ---------- Module 3: masks & bit fields ---------- */
+      {
+        id: 'f1', mod: 'fields', diff: 'medium', title: 'Build a field mask', fmt: 'hex',
+        ask: 'Build the mask that selects exactly the highlighted field. Give it in hex.',
+        hint: 'Make width ones with (1 << width) - 1, then slide them up to the field position.',
+        concept: 'The generic form <code>((1 &lt;&lt; width) - 1) &lt;&lt; lo</code> is worth memorising — every vendor header ends up expressing masks this way.',
+        setup() {const lo = rnd(1, 4), hi = lo + rnd(2, 3); return {lo, hi, answer: hx(fieldMask(hi, lo), 8)};},
+        render(s, shown) {
+          const w = s.hi - s.lo + 1, ones = maskW(w);
+          return title(`target field: bits [${s.hi}:${s.lo}], ${w} bits wide`)
+            + valBoard(8, 0, {label: 'reg', fields: [{hi: s.hi, lo: s.lo, name: 'FIELD', tone: 1}], marks: rangeMarks(s.lo, s.hi)})
+            + code(`mask = ((1 << ${w}) - 1) << ${s.lo};`)
+            + (shown
+              ? title(`step 1 — ${w} ones at the bottom`) + valBoard(8, ones, {label: `(1<<${w})-1`})
+              + title(`step 2 — slide up by ${s.lo}`) + valBoard(8, fieldMask(s.hi, s.lo), {label: 'mask', marks: maskMarks(fieldMask(s.hi, s.lo), 8, 'set')})
+              : '');
+        }
+      },
+      {
+        id: 'f2', mod: 'fields', diff: 'medium', title: 'Extract a field', fmt: 'dec',
+        ask: 'Read the highlighted field and give its value in decimal.',
+        hint: 'Shift right by the low bit index first, then mask to the field width. Shift first, then mask.',
+        concept: 'Order matters for readability, not correctness: <code>(reg &gt;&gt; lo) &amp; ((1&lt;&lt;w)-1)</code>. Masking first forces you to shift a wider constant.',
+        setup() {
+          const lo = rnd(2, 4), hi = lo + 3, f = rnd(0, 15);
+          const v = (rndByte() & ~fieldMask(hi, lo) | (f << lo)) & 0xFF;
+          return {v, lo, hi, f, answer: String(f)};
+        },
+        render(s, shown) {
+          const w = s.hi - s.lo + 1;
+          const sh = U(s.v) >>> s.lo;
+          return valBoard(8, s.v, {label: 'reg', fields: [{hi: s.hi, lo: s.lo, name: 'FIELD', tone: 1}], marks: rangeMarks(s.lo, s.hi)})
+            + code(`(reg >> ${s.lo}) & ${hx(maskW(w), 8)}`)
+            + (shown
+              ? title(`step 1 — shift the field down to bit 0`) + valBoard(8, sh & 0xFF, {label: `>> ${s.lo}`, marks: rangeMarks(0, w - 1)})
+              + title('step 2 — mask off the bits above it')
+              + opBoard(8, sh & 0xFF, maskW(w), '&', s.f, true, {lr: 'field'})
+              : '');
+        }
+      },
+      {
+        id: 'f3', mod: 'fields', diff: 'hard', title: 'Insert a field', fmt: 'hex',
+        ask: 'Replace the highlighted field with the new value, leaving every other bit alone. Give the whole register in hex.',
+        hint: 'Two steps: clear the field with & ~mask, then OR in (value << lo). Skipping the clear only ever sets bits.',
+        concept: 'This is the read-modify-write every driver performs. Forgetting the clear step is the classic bug: the old field value ORs with the new one and you get a nonsense mode.',
+        setup() {
+          const lo = rnd(1, 3), hi = lo + 3;
+          const v = rndByte();
+          const m = fieldMask(hi, lo);
+          const old = (v & m) >>> lo;
+          let nv = rnd(0, 15);
+          while (nv === old) nv = rnd(0, 15);   // the field must actually change
+          return {v, lo, hi, nv, m, answer: hx((v & ~m | (nv << lo)) & 0xFF, 8)};
+        },
+        render(s, shown) {
+          const cleared = s.v & ~s.m & 0xFF;
+          const fin = (cleared | (s.nv << s.lo)) & 0xFF;
+          const F = [{hi: s.hi, lo: s.lo, name: 'FIELD', tone: 1}];
+          let h = title(`write ${s.nv} (0b${bin(s.nv, s.hi - s.lo + 1)}) into bits [${s.hi}:${s.lo}]`)
+            + code(`reg = (reg & ~${hx(s.m, 8)}) | (${s.nv} << ${s.lo});`)
+            + valBoard(8, s.v, {label: 'reg', fields: F, marks: rangeMarks(s.lo, s.hi)});
+          if (shown) {
+            h += title('step 1 — clear the field, keep the neighbours')
+              + opBoard(8, s.v, ~s.m & 0xFF, '&', cleared, true, {la: 'reg', lr: 'cleared', plain: true})
+              + title('step 2 — OR the new field in')
+              + opBoard(8, cleared, s.nv << s.lo, '|', fin, true, {la: 'cleared', lr: 'reg'})
+              + title('net effect on the register')
+              + transBoard(8, s.v, fin, true, {fields: F});
+          } else {
+            h += note('Watch the bits outside the field — they must come through untouched.');
+          }
+          return h;
+        }
+      },
+      {
+        id: 'f4', mod: 'fields', diff: 'medium', title: 'Clear a field only', fmt: 'hex',
+        ask: 'Clear the highlighted field to zero without disturbing anything else. Give the register in hex.',
+        hint: 'AND with the inverse of the field mask.',
+        concept: 'Half of a read-modify-write on its own. Useful when the reset value of a field is what you want.',
+        setup() {
+          const lo = rnd(2, 4), hi = lo + rnd(1, 2);
+          const v = rndByte() | fieldMask(hi, lo);
+          return {v, lo, hi, m: fieldMask(hi, lo), answer: hx(v & ~fieldMask(hi, lo) & 0xFF, 8)};
+        },
+        render(s, shown) {
+          return code(`reg &= ~${hx(s.m, 8)};   // clear bits [${s.hi}:${s.lo}]`)
+            + opBoard(8, s.v, ~s.m & 0xFF, '&', s.v & ~s.m & 0xFF, shown, {la: 'reg', plain: true})
+            + (shown ? '' : note('The mask shown is already inverted — count which columns hold 0.'));
+        }
+      },
+      {
+        id: 'f5', mod: 'fields', diff: 'medium', title: 'Field overflow', fmt: 'hex',
+        ask: 'This value is too big for the field. What actually lands in the register, in hex?',
+        hint: 'The value gets truncated to the field width before it is shifted — mask it with (1<<width)-1.',
+        concept: 'Without <code>&amp; mask</code> on the incoming value, the excess bits spill into the neighbouring field and silently reconfigure something else. Vendor macros always mask the value.',
+        setup() {
+          const lo = rnd(1, 3), w = 3, hi = lo + w - 1;
+          const nv = rnd(9, 15);
+          const m = fieldMask(hi, lo);
+          return {lo, hi, w, nv, m, answer: hx(((nv & maskW(w)) << lo) & 0xFF, 8)};
+        },
+        render(s, shown) {
+          const safe = (s.nv & maskW(s.w)) << s.lo;
+          const spill = (s.nv << s.lo) & 0xFF;
+          return title(`field is bits [${s.hi}:${s.lo}] — only ${s.w} bits wide — and you are writing ${s.nv} (0b${bin(s.nv, 4)})`)
+            + code(`reg |= (value & ${hx(maskW(s.w), 8)}) << ${s.lo};   // masked, correct`)
+            + valBoard(8, 0, {label: 'layout', fields: [{hi: s.hi, lo: s.lo, name: 'FIELD', tone: 1}, {hi: 7, lo: s.hi + 1, name: 'NEIGHBOUR', tone: 4}]})
+            + (shown
+              ? title('masked value — stays inside the field')
+              + valBoard(8, safe, {label: 'correct', fields: [{hi: s.hi, lo: s.lo, name: 'FIELD', tone: 1}], marks: maskMarks(safe, 8, 'set')})
+              + title('unmasked — the top bit spills into the neighbour')
+              + valBoard(8, spill, {label: 'buggy', fields: [{hi: s.hi, lo: s.lo, name: 'FIELD', tone: 1}, {hi: 7, lo: s.hi + 1, name: 'NEIGHBOUR', tone: 4}], marks: maskMarks(spill & ~s.m & 0xFF, 8, 'clr')})
+              : note('Answer with the value that a correctly masked write puts in the register.'));
+        }
+      },
+      {
+        id: 'f6', mod: 'fields', diff: 'hard', title: 'Two fields, one word', fmt: 'hex',
+        ask: 'Update only the highlighted field to its new value. The other field must keep its current contents. Give the register in hex.',
+        hint: 'Mask covers only the target field. The other field sits inside ~mask, so AND leaves it alone.',
+        concept: 'Real registers are crowded. The mask is what protects the settings you did not come to change — including reserved bits you must not touch.',
+        setup() {
+          const a = rnd(0, 15), b = rnd(0, 15);
+          const v = ((a << 4) | b) & 0xFF;
+          const target = pick(['hi', 'lo']);
+          const lo = target === 'hi' ? 4 : 0, hi = lo + 3;
+          let nv = rnd(0, 15);
+          while (nv === (target === 'hi' ? a : b)) nv = rnd(0, 15);
+          const m = fieldMask(hi, lo);
+          return {v, a, b, nv, lo, hi, m, target, answer: hx((v & ~m | (nv << lo)) & 0xFF, 8)};
+        },
+        render(s, shown) {
+          const F = [{hi: 7, lo: 4, name: 'SPEED', tone: 1}, {hi: 3, lo: 0, name: 'CHANNEL', tone: 3}];
+          const fin = (s.v & ~s.m | (s.nv << s.lo)) & 0xFF;
+          return title(`set ${s.target === 'hi' ? 'SPEED' : 'CHANNEL'} = ${s.nv}, leave ${s.target === 'hi' ? 'CHANNEL' : 'SPEED'} as it is`)
+            + code(`reg = (reg & ~${hx(s.m, 8)}) | (${s.nv} << ${s.lo});`)
+            + transBoard(8, s.v, fin, shown, {fields: F, beforeMarks: rangeMarks(s.lo, s.hi)})
+            + (shown ? note(`SPEED went ${s.a} &rarr; ${(fin >> 4) & 0xF}, CHANNEL went ${s.b} &rarr; ${fin & 0xF}. Exactly one of them moved.`) : '');
+        }
+      }
+    ];
+    /* ---------- Module 4: shifts & rotates ---------- */
+    const P_B = [
+      {
+        id: 's1', mod: 'shifts', diff: 'medium', title: 'Left shift out of range', fmt: 'hex',
+        ask: 'Shift this 8-bit register left. Give the value that remains in the register, in hex.',
+        hint: 'Bits pushed past bit 7 are gone. Zeros feed in at the bottom.',
+        concept: 'In C the shift happens in <code>int</code> and the result is truncated on the way back into a <code>uint8_t</code>. The high bits are not "carried" anywhere — they simply disappear.',
+        setup() {const v = rnd(0x30, 0xFF), n = rnd(1, 4); return {v, n, answer: hx((v << n) & 0xFF, 8)};},
+        render(s, shown) {
+          return code(`uint8_t reg = ${hx(s.v, 8)};\nreg <<= ${s.n};`)
+            + shiftBoard(8, s.v, s.n, 'shl', (s.v << s.n) & 0xFF, shown)
+            + (shown ? note(`As a 32-bit int the result would be ${hx(s.v << s.n, 32)}; storing it back into a <code>uint8_t</code> keeps only the low 8 bits.`) : '');
+        }
+      },
+      {
+        id: 's2', mod: 'shifts', diff: 'medium', title: 'Right shift, unsigned', fmt: 'hex',
+        ask: 'Shift this unsigned register right. Give the result in hex.',
+        hint: 'Low bits fall off and are lost. Zeros feed in at the top because the type is unsigned.',
+        concept: 'On unsigned types <code>&gt;&gt;</code> is a logical shift: always zero-fill. This is the safe, portable case.',
+        setup() {const v = rnd(0x40, 0xFF), n = rnd(1, 4); return {v, n, answer: hx(U(v) >>> n, 8)};},
+        render(s, shown) {
+          return code(`uint8_t reg = ${hx(s.v, 8)};\nreg >>= ${s.n};`)
+            + shiftBoard(8, s.v, s.n, 'shr', U(s.v) >>> s.n, shown)
+            + (shown ? note(`The ${s.n} low bit${s.n > 1 ? 's are' : ' is'} discarded — this is why right-shift division truncates.`) : '');
+        }
+      },
+      {
+        id: 's3', mod: 'shifts', diff: 'hard', title: 'Arithmetic vs logical shift', fmt: 'dec',
+        ask: 'This is a signed 8-bit sample. What is its value in decimal after the arithmetic right shift?',
+        hint: 'On a signed type the sign bit is replicated into the top, so a negative number stays negative.',
+        concept: 'Signed right shift copies the sign bit in; unsigned zero-fills. Shifting a negative sample with the wrong type turns quiet audio into a huge positive number.',
+        setup() {
+          const v = rnd(0x81, 0xFF), n = rnd(1, 3);
+          return {v, n, answer: String(signed(v, 8) >> n)};
+        },
+        render(s, shown) {
+          const sv = signed(s.v, 8);
+          const ar = clampW(sv >> s.n, 8), lo = U(s.v) >>> s.n;
+          return code(`int8_t  sample = ${hx(s.v, 8)};   // = ${sv}\nsample >>= ${s.n};`)
+            + shiftBoard(8, s.v, s.n, 'sar', ar, shown)
+            + (shown
+              ? title('the same bits shifted as unsigned, for comparison')
+              + valBoard(8, lo, {label: 'logical', marks: maskMarks(fieldMask(7, 8 - s.n), 8, 'fill'), })
+              + note(`Arithmetic: <b>${sv} &gt;&gt; ${s.n} = ${sv >> s.n}</b> (still negative). Logical on the same bits gives ${lo} — a large positive number. The bit pattern alone does not tell you which is right; the type does.`)
+              : note('The sign bit is bit 7. Watch what feeds in behind it.'));
+        }
+      },
+      {
+        id: 's4', mod: 'shifts', diff: 'easy', title: 'Shift as multiply', fmt: 'dec',
+        ask: 'What is the decimal result of this shift?',
+        hint: 'Shifting left by n multiplies by 2^n, as long as nothing overflows the type.',
+        concept: 'Compilers do this for you now, but you still read it constantly in vendor code and in address arithmetic: <code>index &lt;&lt; 2</code> is "times four bytes per word".',
+        setup() {const v = rnd(3, 30), n = rnd(2, 5); return {v, n, answer: String(v << n)};},
+        render(s, shown) {
+          return code(`${s.v} << ${s.n}   // same as ${s.v} * ${Math.pow(2, s.n)}`)
+            + valBoard(16, s.v, {label: 'value'})
+            + (shown ? valBoard(16, s.v << s.n, {label: `<< ${s.n}`, marks: maskMarks((s.v << s.n) & ~s.v, 16, 'set')})
+              + note(`Every set bit moved up ${s.n} places, so every weight multiplied by ${Math.pow(2, s.n)}: ${s.v} &times; ${Math.pow(2, s.n)} = <b>${s.v << s.n}</b>.`)
+              : valBoard(16, 0, {label: `<< ${s.n}`, unknown: true}));
+        }
+      },
+      {
+        id: 's5', mod: 'shifts', diff: 'hard', title: 'Shift is not division', fmt: 'dec',
+        ask: 'What does this signed right shift produce, in decimal?',
+        hint: 'Right shift rounds towards negative infinity; C division rounds towards zero. They differ for negative values.',
+        concept: 'For negatives <code>x &gt;&gt; 1</code> and <code>x / 2</code> disagree: -7&gt;&gt;1 is -4 but -7/2 is -3. Replacing a division with a shift on signed data changes behaviour.',
+        setup() {const v = -rnd(3, 60), n = rnd(1, 2); return {v, n, answer: String(v >> n)};},
+        render(s, shown) {
+          const div = Math.trunc(s.v / Math.pow(2, s.n));
+          return code(`int8_t x = ${s.v};\nx >> ${s.n}   vs   x / ${Math.pow(2, s.n)}`)
+            + valBoard(8, clampW(s.v, 8), {label: 'x'})
+            + (shown
+              ? valBoard(8, clampW(s.v >> s.n, 8), {label: `x >> ${s.n}`})
+              + note(`<code>${s.v} &gt;&gt; ${s.n}</code> = <b>${s.v >> s.n}</b> (rounds down), but <code>${s.v} / ${Math.pow(2, s.n)}</code> = ${div} (rounds toward zero).${(s.v >> s.n) !== div ? ' They differ here.' : ' They happen to agree for this value.'}`)
+              : valBoard(8, 0, {label: `x >> ${s.n}`, unknown: true}));
+        }
+      },
+      {
+        id: 's6', mod: 'shifts', diff: 'hard', title: 'Rotate left', fmt: 'hex',
+        ask: 'Rotate this 8-bit value left. Give the result in hex.',
+        hint: 'The bits that leave the top come back in at the bottom: ((v << r) | (v >> (8 - r))) & 0xFF.',
+        concept: 'Rotation preserves every bit — nothing is lost. Cortex-M has a native ROR instruction; rotate-left is written as a rotate-right by (32 - r).',
+        setup() {const v = rndNZ(8), n = rnd(1, 6); return {v, n, answer: hx(rol(v, n, 8), 8)};},
+        render(s, shown) {
+          return code(`uint8_t rol8(uint8_t v, int r) {\n  return (v << r) | (v >> (8 - r));\n}\nrol8(${hx(s.v, 8)}, ${s.n})`)
+            + shiftBoard(8, s.v, s.n, 'rol', rol(s.v, s.n, 8), shown)
+            + (shown ? note(`Population count is unchanged: ${popcount(s.v)} bits set before, ${popcount(rol(s.v, s.n, 8))} after.`) : '');
+        }
+      },
+      {
+        id: 's7', mod: 'shifts', diff: 'hard', title: 'Shift count too large', fmt: 'hex',
+        ask: 'A 32-bit value is shifted left by the amount shown. What does the register hold, in hex?',
+        hint: 'A shift count of 32 or more on a 32-bit type is undefined behaviour in C — but here the count is legal. Just apply it.',
+        concept: 'On Cortex-M, <code>x &lt;&lt; 32</code> often produces <code>x</code> (the hardware uses only the low 5 bits of the count) while the compiler assumes it cannot happen. Never let a shift count reach the width of the type.',
+        setup() {const v = rnd(1, 0xFFFF), n = rnd(16, 31); return {v, n, answer: hx(U(v << n), 32)};},
+        render(s, shown) {
+          return code(`uint32_t reg = ${hx(s.v, 32)};\nreg <<= ${s.n};   // legal: count < 32`)
+            + shiftBoard(32, s.v, s.n, 'shl', U(s.v << s.n), shown)
+            + (shown ? note(`Only the low ${32 - s.n} bit${32 - s.n === 1 ? '' : 's'} of the original could survive; everything above bit ${31 - s.n} was pushed out. Shifting by 32 or more would be undefined behaviour, not zero.`) : '');
+        }
+      },
+
+      /* ---------- Module 5: signed values & overflow ---------- */
+      {
+        id: 'g1', mod: 'signed', diff: 'medium', title: "Two's complement negation", fmt: 'hex',
+        ask: 'Negate this 8-bit value. Give the bit pattern of the result in hex.',
+        hint: 'Invert every bit, then add one.',
+        concept: 'Negation is <code>~x + 1</code>. There is no separate sign flag on the value — the top bit only <em>means</em> "negative" because of how the arithmetic wraps.',
+        setup() {const v = rnd(1, 120); return {v, answer: hx((-v) & 0xFF, 8)};},
+        render(s, shown) {
+          const inv = ~s.v & 0xFF, neg = (-s.v) & 0xFF;
+          return code(`int8_t x = ${s.v};\n-x   // = ~x + 1`)
+            + valBoard(8, s.v, {label: 'x'})
+            + (shown
+              ? title('step 1 — invert every bit') + valBoard(8, inv, {label: '~x', marks: cellMarks(s.v, inv, 8)})
+              + title('step 2 — add one') + valBoard(8, neg, {label: '~x + 1', marks: cellMarks(inv, neg, 8)})
+              + note(`${hx(neg, 8)} read as signed 8-bit is <b>${signed(neg, 8)}</b>. Adding the two patterns gives ${hx((s.v + neg) & 0xFF, 8)} — they cancel, which is what negation means.`)
+              : note('Answer with the resulting bit pattern, not the decimal -x.'));
+        }
+      },
+      {
+        id: 'g2', mod: 'signed', diff: 'medium', title: 'Read a byte as signed', fmt: 'dec',
+        ask: 'Interpret this bit pattern as a signed 8-bit sample. Give the decimal value.',
+        hint: 'If bit 7 is set, the value is negative: subtract 256 from the unsigned reading.',
+        concept: 'The same bits are 200 or -56 depending only on the declared type. Sensor drivers get this wrong constantly when a raw byte is copied into a <code>uint8_t</code>.',
+        setup() {const v = Math.random() < 0.65 ? rnd(128, 255) : rnd(0, 127); return {v, answer: String(signed(v, 8))};},
+        render(s, shown) {
+          return valBoard(8, s.v, {label: 'raw', marks: {7: 'hl'}, weights: true, tail: '<b>' + hx(s.v, 8) + '</b>'})
+            + chips([['as uint8_t', String(s.v)], ['as int8_t', shown ? String(signed(s.v, 8)) : '?', 'hot']])
+            + (shown
+              ? note(getBit(s.v, 7)
+                ? `Bit 7 is set, so the value is negative: ${s.v} - 256 = <b>${signed(s.v, 8)}</b>. Equivalently the top bit carries weight -128 instead of +128.`
+                : `Bit 7 is clear, so signed and unsigned agree: <b>${s.v}</b>.`)
+              : note('Bit 7 is highlighted — in a signed type its weight is -128, not +128.'));
+        }
+      },
+      {
+        id: 'g3', mod: 'signed', diff: 'hard', title: 'Sign-extend a 12-bit ADC', fmt: 'dec',
+        ask: 'This differential ADC returns 12 bits in two\'s complement. What is the reading in decimal?',
+        hint: 'Bit 11 is the sign bit. If it is set, subtract 4096.',
+        concept: 'Any sub-word signed sample must be sign-extended before you do arithmetic on it. The portable trick is a shift pair: <code>(int32_t)(raw &lt;&lt; 20) &gt;&gt; 20</code>.',
+        setup() {const raw = Math.random() < 0.6 ? rnd(0x800, 0xFFF) : rnd(0, 0x7FF); return {raw, answer: String(signed(raw, 12))};},
+        render(s, shown) {
+          const ext = U(signed(s.raw, 12));
+          return code(`uint16_t raw = ${hx(s.raw, 12)};        // 12 significant bits\nint32_t v = (int32_t)(raw << 20) >> 20;`)
+            + valBoard(16, s.raw, {label: 'raw', fields: [{hi: 11, lo: 11, name: 'S', tone: 1}, {hi: 10, lo: 0, name: 'MAGNITUDE', tone: 0}], marks: {11: 'hl'}, tail: '<b>' + hx(s.raw, 12) + '</b>'})
+            + (shown
+              ? valBoard(16, ext & 0xFFFF, {label: 'extended', marks: maskMarks(fieldMask(15, 12), 16, getBit(s.raw, 11) ? 'set' : 'hl')})
+              + note(getBit(s.raw, 11)
+                ? `Bit 11 is set, so bits 15:12 are filled with 1s and the value is ${s.raw} - 4096 = <b>${signed(s.raw, 12)}</b>.`
+                : `Bit 11 is clear, so the upper bits fill with 0 and the value is simply <b>${s.raw}</b>.`)
+              : note('Only the low 12 bits are real data. What must the bits above them become?'));
+        }
+      },
+      {
+        id: 'g4', mod: 'signed', diff: 'medium', title: 'Unsigned wraparound', fmt: 'hex',
+        ask: 'Compute this subtraction in an 8-bit unsigned register. Give the result in hex.',
+        hint: 'Unsigned arithmetic wraps modulo 256 — it never goes negative.',
+        concept: 'Wraparound is defined behaviour for unsigned types, and it is what makes free-running timer differences work: <code>now - then</code> stays correct across the rollover.',
+        setup() {const a = rnd(2, 40), b = a + rnd(1, 60); return {a, b, answer: hx((a - b) & 0xFF, 8)};},
+        render(s, shown) {
+          const r = (s.a - s.b) & 0xFF;
+          return code(`uint8_t a = ${s.a}, b = ${s.b};\nuint8_t d = a - b;   // no negatives here`)
+            + valBoard(8, s.a, {label: 'a'})
+            + valBoard(8, s.b, {label: 'b'})
+            + (shown
+              ? valBoard(8, r, {label: 'a - b'})
+              + note(`${s.a} - ${s.b} = ${s.a - s.b}, and ${s.a - s.b} + 256 = ${r} = <b>${hx(r, 8)}</b>. The same bits read as <code>int8_t</code> would be ${signed(r, 8)}, which is the answer you probably expected.`)
+              : valBoard(8, 0, {label: 'a - b', unknown: true}));
+        }
+      },
+      {
+        id: 'g5', mod: 'signed', diff: 'hard', title: 'Signed overflow', fmt: 'yesno',
+        ask: 'Does this addition overflow a signed 8-bit accumulator? Answer yes or no.',
+        hint: 'Overflow happens only when both operands share a sign and the result has the opposite sign. Range is -128 to +127.',
+        concept: 'Signed overflow is undefined behaviour in C, not a wrap. Accumulators that sum sensor samples need a wider type or an explicit saturation check.',
+        setup() {
+          const over = Math.random() < 0.5;
+          let a, b;
+          if (over) {a = rnd(70, 127); b = rnd(128 - a, 127); if (Math.random() < 0.5) {a = -a; b = -b;} }
+          else {a = rnd(-60, 60); b = rnd(-60, 60);}
+          const sum = a + b;
+          return {a, b, sum, answer: (sum > 127 || sum < -128) ? 'yes' : 'no'};
+        },
+        render(s, shown) {
+          return code(`int8_t a = ${s.a}, b = ${s.b};\nint8_t sum = a + b;   // range is -128 .. +127`)
+            + valBoard(8, clampW(s.a, 8), {label: 'a', marks: {7: 'hl'}})
+            + valBoard(8, clampW(s.b, 8), {label: 'b', marks: {7: 'hl'}})
+            + (shown
+              ? valBoard(8, clampW(s.sum, 8), {label: 'a + b', marks: {7: 'hl'}})
+              + note(`True sum is ${s.sum}. ${s.answer === 'yes'
+                ? `That is outside -128..+127, so it <b>overflows</b> — the stored bits ${hx(clampW(s.sum, 8), 8)} read back as ${signed(clampW(s.sum, 8), 8)}. Note both operands had the same sign and the result's sign bit flipped.`
+                : `That fits in the range, so there is <b>no overflow</b>.`}`)
+              : note('Compare the sign bits (bit 7, highlighted) of the two operands.'));
+        }
+      },
+      {
+        id: 'g6', mod: 'signed', diff: 'hard', title: 'Integer promotion trap', fmt: 'hex',
+        ask: 'What value ends up in the 8-bit register after this assignment? Give it in hex.',
+        hint: 'The ~ happens in 32-bit int, producing lots of high 1s, but only the low 8 bits are stored.',
+        concept: 'Every operand narrower than <code>int</code> is promoted before the operator runs. That is harmless when you assign straight back to a narrow type, and dangerous the moment you compare instead: <code>if (~x == 0xF0)</code> is false even when the low byte matches.',
+        setup() {const v = rndByte(); return {v, answer: hx(~v & 0xFF, 8)};},
+        render(s, shown) {
+          return code(`uint8_t x = ${hx(s.v, 8)};\nuint8_t y = ~x;      // ~x is computed as int`)
+            + title('what the compiler actually evaluates — 32 bits wide')
+            + valBoard(32, U(~s.v), {label: '~x', marks: maskMarks(fieldMask(31, 8), 32, 'hl')})
+            + (shown
+              ? title('what survives the store into a uint8_t')
+              + valBoard(8, ~s.v & 0xFF, {label: 'y', marks: cellMarks(s.v, ~s.v & 0xFF, 8)})
+              + note(`The 24 highlighted bits are discarded by the narrowing store, so <code>y</code> is ${hx(~s.v & 0xFF, 8)}. But <code>~x == ${hx(~s.v & 0xFF, 8)}</code> would compare ${hx(U(~s.v), 32)} against ${hx(~s.v & 0xFF, 8)} and be <b>false</b>.`)
+              : note('The highlighted bits exist in the expression but not in the destination.'));
+        }
+      },
+
+      /* ---------- Module 6: bytes, words & memory ---------- */
+      {
+        id: 'e1', mod: 'bytes', diff: 'medium', title: 'Extract a byte from a word', fmt: 'hex',
+        ask: 'Pull the requested byte out of this 32-bit word. Give it in hex.',
+        hint: 'Shift the byte down by 8 * index, then mask with 0xFF.',
+        concept: 'Byte extraction is the same shift-and-mask as any other field — the field just happens to be 8 bits wide and aligned.',
+        setup() {const w = rnd(0x10000000, 0x7FFFFFFF), k = rnd(0, 3); return {w, k, answer: hx((U(w) >>> (k * 8)) & 0xFF, 8)};},
+        render(s, shown) {
+          const F = [3, 2, 1, 0].map(i => ({hi: i * 8 + 7, lo: i * 8, name: 'byte ' + i, tone: i}));
+          return code(`uint8_t b = (word >> ${s.k * 8}) & 0xFF;   // byte ${s.k}`)
+            + valBoard(32, s.w, {label: 'word', fields: F, marks: rangeMarks(s.k * 8, s.k * 8 + 7)})
+            + (shown
+              ? valBoard(8, (U(s.w) >>> (s.k * 8)) & 0xFF, {label: `byte ${s.k}`, marks: maskMarks(0xFF, 8, 'fill')})
+              + note(`Byte 0 is the least significant byte, whatever the memory order turns out to be.`)
+              : '');
+        }
+      },
+      {
+        id: 'e2', mod: 'bytes', diff: 'medium', title: 'Assemble a word', fmt: 'hex',
+        ask: 'Four bytes arrived over a link, most significant first. Assemble them into one 32-bit word, in hex.',
+        hint: 'Shift each byte to its slot and OR them together. Cast to uint32_t before shifting past bit 7.',
+        concept: 'The shift must happen in a 32-bit type: <code>(uint32_t)b3 &lt;&lt; 24</code>. Shifting a <code>uint8_t</code> by 24 promotes to <code>int</code> and can set the sign bit.',
+        setup() {
+          const b = [rndByte(), rndByte(), rndByte(), rndByte()];  // b[0] = MSB as received
+          const w = U((b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3]);
+          return {b, w, answer: hx(w, 32)};
+        },
+        render(s, shown) {
+          return code(`uint32_t w = ((uint32_t)rx[0] << 24) | ((uint32_t)rx[1] << 16)\n           | ((uint32_t)rx[2] <<  8) |  (uint32_t)rx[3];`)
+            + chips(s.b.map((x, i) => [`rx[${i}]`, hx(x, 8)]))
+            + (shown
+              ? valBoard(32, s.w, {label: 'word', fields: [3, 2, 1, 0].map(i => ({hi: i * 8 + 7, lo: i * 8, name: 'rx[' + (3 - i) + ']', tone: 3 - i}))})
+              + note(`Each byte lands in its own lane and the ORs never collide, because the lanes do not overlap.`)
+              : valBoard(32, 0, {label: 'word', unknown: true}));
+        }
+      },
+      {
+        id: 'e3', mod: 'bytes', diff: 'medium', title: 'Byte-swap 16 bits', fmt: 'hex',
+        ask: 'Swap the two bytes of this 16-bit value. Give the result in hex.',
+        hint: 'Shift the low byte up by 8 and the high byte down by 8, then OR.',
+        concept: 'This is <code>htons()</code>. Protocol fields are almost always big-endian, and your Cortex-M is little-endian, so every 16-bit field on the wire needs this.',
+        setup() {const v = rnd(0x0100, 0xFFFF); return {v, answer: hx(((v << 8) | (v >>> 8)) & 0xFFFF, 16)};},
+        render(s, shown) {
+          const r = ((s.v << 8) | (s.v >>> 8)) & 0xFFFF;
+          const F = [{hi: 15, lo: 8, name: 'high byte', tone: 0}, {hi: 7, lo: 0, name: 'low byte', tone: 1}];
+          return code(`uint16_t swapped = (v << 8) | (v >> 8);`)
+            + valBoard(16, s.v, {label: 'v', fields: F})
+            + (shown
+              ? valBoard(16, r, {label: 'swapped', fields: [{hi: 15, lo: 8, name: 'low byte', tone: 1}, {hi: 7, lo: 0, name: 'high byte', tone: 0}]})
+              + note(`${hx(s.v, 16)} &rarr; <b>${hx(r, 16)}</b>. The bits inside each byte keep their order; only the two lanes trade places.`)
+              : valBoard(16, 0, {label: 'swapped', unknown: true}));
+        }
+      },
+      {
+        id: 'e4', mod: 'bytes', diff: 'hard', title: 'Byte-swap 32 bits', fmt: 'hex',
+        ask: 'Reverse the byte order of this 32-bit word. Give the result in hex.',
+        hint: 'Byte 0 goes to byte 3, byte 1 to byte 2, and so on. Work in hex digit pairs.',
+        concept: 'The Cortex-M <code>REV</code> instruction does this in one cycle; the C expression below is what the compiler pattern-matches to it.',
+        setup() {
+          const v = U(rnd(0x01000000, 0x7FFFFFFF));
+          const r = U(((v & 0xFF) << 24) | ((v & 0xFF00) << 8) | ((v >>> 8) & 0xFF00) | (v >>> 24));
+          return {v, r, answer: hx(r, 32)};
+        },
+        render(s, shown) {
+          const F = i => [3, 2, 1, 0].map(k => ({hi: k * 8 + 7, lo: k * 8, name: 'B' + (i ? 3 - k : k), tone: i ? 3 - k : k}));
+          return code(`uint32_t rev = (v >> 24) | ((v >> 8) & 0xFF00)\n             | ((v << 8) & 0xFF0000) | (v << 24);`)
+            + valBoard(32, s.v, {label: 'v', fields: F(0)})
+            + (shown
+              ? valBoard(32, s.r, {label: 'rev', fields: F(1)})
+              + note(`${hx(s.v, 32)} &rarr; <b>${hx(s.r, 32)}</b> — read the hex digit pairs backwards to check it.`)
+              : valBoard(32, 0, {label: 'rev', unknown: true}));
+        }
+      },
+      {
+        id: 'e5', mod: 'bytes', diff: 'medium', title: 'Little-endian in memory', fmt: 'hex',
+        ask: 'This 32-bit word is stored at the address shown on a little-endian core. Which byte value sits at the requested address? Give it in hex.',
+        hint: 'Little-endian stores the least significant byte at the lowest address.',
+        concept: 'Byte order only becomes visible when you look at the same memory through two different types — a <code>uint32_t*</code> and a <code>uint8_t*</code>. This is why DMA buffers and struct overlays need care.',
+        setup() {
+          const w = U(rnd(0x11000000, 0x7EFFFFFF)), base = 0x20000000 + 4 * rnd(0, 200), off = rnd(0, 3);
+          return {w, base, off, answer: hx((U(w) >>> (off * 8)) & 0xFF, 8)};
+        },
+        render(s, shown) {
+          return code(`uint32_t *p = (uint32_t *)${hx(s.base, 32)};\n*p = ${hx(s.w, 32)};\nuint8_t b = *((uint8_t *)${hx(s.base + s.off, 32)});   // b = ?`)
+            + valBoard(32, s.w, {label: 'word', fields: [3, 2, 1, 0].map(i => ({hi: i * 8 + 7, lo: i * 8, name: 'byte ' + i, tone: i}))})
+            + (shown
+              ? title('memory contents, little-endian') + memBoard(s.base, s.w, 32, {endian: 'little'})
+              + note(`Address ${hx(s.base + s.off, 32)} is offset ${s.off}, which holds byte ${s.off} of the word: <b>${hx((U(s.w) >>> (s.off * 8)) & 0xFF, 8)}</b>.`)
+              : note(`You are reading the byte at offset ${s.off} from the base address.`));
+        }
+      },
+      {
+        id: 'e6', mod: 'bytes', diff: 'hard', title: 'Decode a little-endian field', fmt: 'hex',
+        ask: 'A sensor sends this 16-bit value as two bytes, low byte first. What is the 16-bit value in hex?',
+        hint: 'The first byte received is the low half. Combine as (hi << 8) | lo.',
+        concept: 'I2C and SPI sensors publish their byte order in the datasheet and it is frequently the opposite of the previous chip you used. Reassembling in the wrong order gives values that look almost plausible, which is the worst kind of bug.',
+        setup() {const lo = rndByte(), hi = rndByte(); return {lo, hi, answer: hx((hi << 8) | lo, 16)};},
+        render(s, shown) {
+          const v = (s.hi << 8) | s.lo;
+          return code(`uint8_t buf[2];\ni2c_read(SENSOR_OUT_L, buf, 2);   // low byte first\nuint16_t v = ((uint16_t)buf[1] << 8) | buf[0];`)
+            + title('bytes as received')
+            + `<table class="memtbl"><tr><th>index</th><th>byte</th><th>role</th></tr>
+               <tr><td class="addr">buf[0]</td><td class="val bsrc0">${hx(s.lo, 8)}</td><td>low half (arrives first)</td></tr>
+               <tr><td class="addr">buf[1]</td><td class="val bsrc1">${hx(s.hi, 8)}</td><td>high half</td></tr></table>`
+            + (shown
+              ? valBoard(16, v, {label: 'v', fields: [{hi: 15, lo: 8, name: 'buf[1]', tone: 1}, {hi: 7, lo: 0, name: 'buf[0]', tone: 0}]})
+              + note(`<b>${hx(v, 16)}</b>. Swapping the two would give ${hx(((s.lo << 8) | s.hi) & 0xFFFF, 16)} — also a valid-looking reading, which is why this bug survives testing.`)
+              : valBoard(16, 0, {label: 'v', unknown: true}));
+        }
+      },
+      {
+        id: 'e7', mod: 'bytes', diff: 'hard', title: 'Alignment check', fmt: 'yesno',
+        ask: 'Is this address suitably aligned for a 32-bit access? Answer yes or no.',
+        hint: 'A 4-byte aligned address has its low 2 bits clear: (addr & 3) == 0.',
+        concept: 'Alignment tests are pure bit masking: an address is aligned to a power of two <code>a</code> when <code>addr &amp; (a - 1)</code> is zero. On Cortex-M0 an unaligned word access faults outright.',
+        setup() {
+          const ok = Math.random() < 0.5;
+          const a = 0x20000000 + rnd(0, 500) * 4 + (ok ? 0 : rnd(1, 3));
+          return {a, answer: (a & 3) === 0 ? 'yes' : 'no'};
+        },
+        render(s, shown) {
+          return code(`if ((addr & 0x3) == 0) { /* safe for a 32-bit load */ }`)
+            + valBoard(32, s.a, {label: 'addr', marks: rangeMarks(0, 1), fields: [{hi: 1, lo: 0, name: 'align', tone: 1}]})
+            + (shown
+              ? opBoard(32, s.a, 3, '&', s.a & 3, true, {la: 'addr', lr: 'addr&3'})
+              + note(`Low two bits are 0b${bin(s.a & 3, 2)} &rarr; <b>${(s.a & 3) === 0 ? 'aligned' : 'not aligned'}</b>. To round up to the next 4-byte boundary: <code>(addr + 3) &amp; ~3</code> = ${hx((s.a + 3) & ~3, 32)}.`)
+              : note('Only the two highlighted bits matter.'));
+        }
+      }
+    ];
+    /* ---------- Module 7: peripheral registers ---------- */
+    const P_C = [
+      {
+        id: 'p1', mod: 'regs', diff: 'medium', title: 'Enable peripheral clocks', fmt: 'hex',
+        ask: 'Enable the listed GPIO port clocks. Give the value of RCC_AHB1ENR after the write, in hex.',
+        hint: 'One enable bit per port, ORed into whatever is already enabled.',
+        concept: 'Nothing about a peripheral responds until its clock is running — a register write to a gated peripheral reads back as zero. It is the first thing to check when a driver does nothing at all.',
+        setup() {
+          const ports = rndBits(2, 8);
+          const cur = pick([0, 1, 1 | (1 << 2)]);
+          const m = ports.reduce((a, b) => a | (1 << b), 0);
+          return {ports, cur, m, answer: hx(U(cur | m), 32)};
+        },
+        render(s, shown) {
+          return code(`RCC->AHB1ENR |= ${s.ports.map(p => 'RCC_AHB1ENR_' + GPIO_CLK[p]).join('\n              | ')};`)
+            + chips(s.ports.map(p => [GPIO_CLK[p], 'bit ' + p, 'hot']))
+            + valBoard(32, s.cur, {label: 'before', fields: REGMAPS.AHB1ENR.fields})
+            + (shown
+              ? transBoard(32, s.cur, U(s.cur | s.m), true, {fields: REGMAPS.AHB1ENR.fields})
+              + note(`Ports already enabled stay enabled — that is why the driver uses <code>|=</code> and not <code>=</code>. A plain assignment here would switch off every other peripheral clock in the register.`)
+              : valBoard(32, 0, {label: 'after', unknown: true}));
+        }
+      },
+      {
+        id: 'p2', mod: 'regs', diff: 'hard', title: 'GPIO mode, done properly', fmt: 'hex',
+        ask: 'Configure the given pin to the requested mode in MODER. Give the whole register value afterwards, in hex.',
+        hint: 'Each pin owns 2 bits at position 2*pin. Clear both, then OR the mode in.',
+        concept: 'The two-bit-per-pin layout is why <code>MODER |= (1 &lt;&lt; (2*pin))</code> alone is wrong: without clearing first you can only ever add bits, so switching from analog (11) to output (01) silently leaves you in analog.',
+        setup() {
+          const pin = rnd(0, 15);
+          const cur = U(rnd(0, 0xFFFF) | (rnd(0, 0xFFFF) << 16));
+          const m = fieldMask(2 * pin + 1, 2 * pin);
+          const old = (cur & m) >>> (2 * pin);
+          let mode = rnd(0, 3);
+          while (mode === old) mode = rnd(0, 3);   // always an actual change
+          return {pin, mode, cur, m, answer: hx(U((cur & ~m) | (mode << (2 * pin))), 32)};
+        },
+        render(s, shown) {
+          const names = ['input', 'output', 'alternate function', 'analog'];
+          const fin = U((s.cur & ~s.m) | (s.mode << (2 * s.pin)));
+          return code(`GPIOA->MODER &= ~(0x3 << (2 * ${s.pin}));\nGPIOA->MODER |=  (${s.mode} << (2 * ${s.pin}));   // ${names[s.mode]}`)
+            + chips([['pin', String(s.pin)], ['bits', `[${2 * s.pin + 1}:${2 * s.pin}]`, 'hot'], ['mode', `0b${bin(s.mode, 2)} — ${names[s.mode]}`, 'cool']])
+            + (shown
+              ? title('step 1 — clear both mode bits for this pin')
+              + opBoard(32, s.cur, U(~s.m), '&', U(s.cur & ~s.m), true, {la: 'MODER', lr: 'cleared', plain: true})
+              + title('step 2 — OR in the new mode')
+              + transBoard(32, s.cur, fin, true, {fields: REGMAPS.MODER.fields})
+              + note(`Only bits [${2 * s.pin + 1}:${2 * s.pin}] moved. The other 15 pins keep their configuration — several of them are probably driving something right now.`)
+              : valBoard(32, s.cur, {label: 'MODER', fields: REGMAPS.MODER.fields, marks: rangeMarks(2 * s.pin, 2 * s.pin + 1)})
+              + note(REGMAPS.MODER.legend));
+        }
+      },
+      {
+        id: 'p3', mod: 'regs', diff: 'hard', title: 'Atomic set and reset', fmt: 'hex',
+        ask: 'Using BSRR, drive one pin high and another low in a single write. What value do you write, in hex?',
+        hint: 'Low half sets, high half resets. Bit n sets pin n; bit n+16 resets pin n.',
+        concept: 'BSRR exists so you never need a read-modify-write on ODR. A single store cannot be interrupted halfway, so no ISR can observe or corrupt an intermediate state.',
+        setup() {
+          const a = rnd(0, 15); let b = rnd(0, 15); while (b === a) b = rnd(0, 15);
+          return {a, b, answer: hx(U((1 << a) | (1 << (b + 16))), 32)};
+        },
+        render(s, shown) {
+          const v = U((1 << s.a) | (1 << (s.b + 16)));
+          const F = [{hi: 31, lo: 16, name: 'BR — reset pins', tone: 4}, {hi: 15, lo: 0, name: 'BS — set pins', tone: 3}];
+          return code(`GPIOA->BSRR = (1 << ${s.a}) | (1 << (${s.b} + 16));\n// pin ${s.a} high, pin ${s.b} low, one store, no read`)
+            + valBoard(32, 0, {label: 'BSRR', fields: F})
+            + (shown
+              ? valBoard(32, v, {label: 'write', fields: F, marks: maskMarks(v, 32, 'set')})
+              + note(`Writing 0 to a BSRR bit does nothing at all, so this touches exactly two pins. If both halves name the same pin, reset wins.`)
+              : note('Both halves of the register are in play. Answer with the single 32-bit value to store.'));
+        }
+      },
+      {
+        id: 'p4', mod: 'regs', diff: 'hard', title: 'Write-1-to-clear', fmt: 'hex',
+        ask: 'Several interrupt flags are pending. Clear only the listed ones. What value do you write to the pending register, in hex?',
+        hint: 'W1C means the write value is simply the mask of flags you want to clear. Do not read the register first.',
+        concept: 'On a W1C register <code>reg |= mask</code> is a bug: the read pulls in every <em>other</em> pending flag, and the write then clears those too. You silently lose interrupts that arrived between the read and the write.',
+        setup() {
+          const pend = rndBits(4, 16);
+          const clr = shuffle(pend).slice(0, 2).sort((a, b) => a - b);
+          const cur = pend.reduce((a, b) => a | (1 << b), 0);
+          return {pend, clr, cur, answer: hx(U(clr.reduce((a, b) => a | (1 << b), 0)), 32)};
+        },
+        render(s, shown) {
+          const m = U(s.clr.reduce((a, b) => a | (1 << b), 0));
+          return code(`EXTI->PR = ${s.clr.map(b => '(1 << ' + b + ')').join(' | ')};   // NOT |=`)
+            + title('currently pending')
+            + valBoard(32, s.cur, {label: 'PR', fields: REGMAPS.EXTI_PR.fields, marks: maskMarks(m, 32, 'hl')})
+            + (shown
+              ? title('the value you write') + valBoard(32, m, {label: 'write', marks: maskMarks(m, 32, 'set')})
+              + title('resulting hardware state')
+              + transBoard(32, s.cur, U(s.cur & ~m), true, {fields: REGMAPS.EXTI_PR.fields})
+              + note(`Flags ${s.pend.filter(b => !s.clr.includes(b)).join(', ')} are still pending and will still interrupt. Using <code>|=</code> would have cleared them too.`)
+              : note('Pending flags are shown above; the highlighted ones are the ones to clear.'));
+        }
+      },
+      {
+        id: 'p5', mod: 'regs', diff: 'expert', title: 'The read-modify-write hazard', fmt: 'hex',
+        ask: 'A driver uses |= on this write-1-to-clear register while two flags are pending. Which flags end up cleared? Give the mask of cleared flags, in hex.',
+        hint: 'The read picks up every pending flag; the OR adds yours; the write then clears everything that was 1 in the written value.',
+        concept: 'This is the single most common peripheral bug in embedded code. The fix is a plain store of just your mask — never a read-modify-write on W1C.',
+        setup() {
+          const pend = rndBits(3, 8);
+          const mine = pend[0];
+          const cur = pend.reduce((a, b) => a | (1 << b), 0);
+          return {pend, mine, cur, answer: hx(cur, 8)};
+        },
+        render(s, shown) {
+          return code(`SR |= (1 << ${s.mine});   // intended: clear only flag ${s.mine}`)
+            + title('pending when the driver runs')
+            + valBoard(8, s.cur, {label: 'SR', marks: {[s.mine]: 'hl'}, tail: shown ? undefined : ''})
+            + (shown
+              ? title('step 1 — the read returns every pending flag')
+              + valBoard(8, s.cur, {label: 'read', marks: maskMarks(s.cur, 8, 'hl')})
+              + title(`step 2 — OR in (1 << ${s.mine}) changes nothing, it was already set`)
+              + valBoard(8, s.cur | (1 << s.mine), {label: 'value'})
+              + title('step 3 — the store clears every 1 in the written value')
+              + transBoard(8, s.cur, 0, true, {})
+              + note(`Flags ${s.pend.filter(b => b !== s.mine).join(' and ')} were cleared without ever being handled. The write value should have been just <code>${hx(1 << s.mine, 8)}</code>.`)
+              : note('Answer with the mask of every flag that actually gets cleared, not just the intended one.'));
+        }
+      },
+      {
+        id: 'p6', mod: 'regs', diff: 'expert', title: 'Alternate function register', fmt: 'hex',
+        ask: 'Select the alternate function for this pin. Give the value to OR into the correct AFR register, in hex.',
+        hint: 'Four bits per pin. Pins 0-7 live in AFR[0], pins 8-15 in AFR[1] at position 4*(pin-8).',
+        concept: 'The 4-bits-per-pin layout does not fit in 32 bits for 16 pins, so ST splits it into two registers. Getting the wrong half is a classic reason a UART pin stays a plain GPIO.',
+        setup() {const pin = rnd(0, 15), af = rnd(1, 15); return {pin, af, answer: hx(U(af << (4 * (pin % 8))), 32)};},
+        render(s, shown) {
+          const idx = s.pin < 8 ? 0 : 1, sh = 4 * (s.pin % 8);
+          const F = Array.from({length: 8}, (_, k) => ({hi: 4 * k + 3, lo: 4 * k, name: 'AF' + (idx * 8 + k), tone: k % 6}));
+          return code(`GPIOA->AFR[${idx}] |= (${s.af} << (4 * (${s.pin} % 8)));   // AF${s.af} on pin ${s.pin}`)
+            + chips([['pin', String(s.pin)], ['register', `AFR[${idx}]`, 'hot'], ['shift', String(sh), 'cool'], ['bits', `[${sh + 3}:${sh}]`]])
+            + (shown
+              ? valBoard(32, U(s.af << sh), {label: `AFR[${idx}]`, fields: F, marks: maskMarks(U(s.af << sh), 32, 'set')})
+              + note(`Pin ${s.pin} is in the ${idx ? 'upper' : 'lower'} half, so it uses AFR[${idx}] at bit offset ${sh}. A real driver clears bits [${sh + 3}:${sh}] first.`)
+              : valBoard(32, 0, {label: `AFR[${idx}]`, fields: F}));
+        }
+      },
+      {
+        id: 'p7', mod: 'regs', diff: 'hard', title: 'Interrupt priority field', fmt: 'hex',
+        ask: 'This core implements only the top 4 bits of each 8-bit priority register. What byte do you write for the given priority level, in hex?',
+        hint: 'The implemented bits are the high ones, so the level must be shifted up into bits 7:4.',
+        concept: 'Cortex-M implements priority bits from the top down and ties the rest to zero. Writing the raw level without shifting gives every interrupt priority 0 and your carefully designed preemption scheme silently collapses.',
+        setup() {const prio = rnd(1, 15); return {prio, answer: hx((prio << 4) & 0xFF, 8)};},
+        render(s, shown) {
+          const F = [{hi: 7, lo: 4, name: 'implemented', tone: 3}, {hi: 3, lo: 0, name: 'always 0', tone: 4}];
+          return code(`NVIC_SetPriority(USART2_IRQn, ${s.prio});\n// writes (${s.prio} << (8 - __NVIC_PRIO_BITS)) into NVIC->IP[n]`)
+            + valBoard(8, 0, {label: 'IP[n]', fields: F})
+            + (shown
+              ? valBoard(8, (s.prio << 4) & 0xFF, {label: 'write', fields: F, marks: maskMarks((s.prio << 4) & 0xFF, 8, 'set')})
+              + note(`Writing ${hx(s.prio, 8)} unshifted would land entirely in the read-only low nibble and read back as ${hx(0, 8)} — priority 0, the highest.`)
+              : note(`priority level ${s.prio}, 4 implemented bits`));
+        }
+      },
+
+      /* ---------- Module 8: bit tricks ---------- */
+      {
+        id: 't1', mod: 'tricks', diff: 'medium', title: 'Population count', fmt: 'dec',
+        ask: 'How many bits are set in this value?',
+        hint: "Count them, or clear the lowest set bit repeatedly with n &= (n-1) and count the iterations.",
+        concept: "Kernighan's loop runs once per set bit rather than once per bit position. Cortex-M has no POPCNT, so this is what the library does.",
+        setup() {const v = rndByte(); return {v, answer: String(popcount(v))};},
+        render(s, shown) {
+          let steps = '', x = s.v, n = 0;
+          while (x && n < 9) {const nx = x & (x - 1); steps += valBoard(8, x, {label: 'n=' + n, marks: {[ctz(x)]: 'clr'}}); x = nx; n++;}
+          return code(`int popcount(uint8_t n) {\n  int c = 0;\n  while (n) { n &= (n - 1); c++; }\n  return c;\n}`)
+            + valBoard(8, s.v, {label: 'value'})
+            + (shown ? title('each iteration removes exactly one set bit') + steps + note(`Loop ran <b>${popcount(s.v)}</b> times.`) : '');
+        }
+      },
+      {
+        id: 't2', mod: 'tricks', diff: 'hard', title: 'Isolate the lowest set bit', fmt: 'hex',
+        ask: 'Apply n & (-n). Give the result in hex.',
+        hint: 'Negation flips every bit above the lowest 1 and leaves that bit and the zeros below it alone, so only that bit survives the AND.',
+        concept: 'Used to pull the next pending item out of a bitmask scheduler: <code>lowest = mask &amp; -mask;</code> then <code>mask &amp;= mask - 1;</code>.',
+        setup() {const v = rndNZ(8); return {v, answer: hx(v & (-v) & 0xFF, 8)};},
+        render(s, shown) {
+          const neg = (-s.v) & 0xFF;
+          return code(`uint8_t lowest = n & (-n);   // -n = ~n + 1`)
+            + valBoard(8, s.v, {label: 'n'})
+            + valBoard(8, neg, {label: '-n', tail: shown ? undefined : ''})
+            + (shown
+              ? opBoard(8, s.v, neg, '&', s.v & neg & 0xFF, true, {la: 'n', lr: 'n & -n', plain: true})
+              + note(`The lowest set bit is bit ${ctz(s.v)}, so the result is <b>${hx(s.v & neg & 0xFF, 8)}</b>. Everything above it differs between n and -n and therefore ANDs to zero.`)
+              : valBoard(8, 0, {label: 'n & -n', unknown: true}));
+        }
+      },
+      {
+        id: 't3', mod: 'tricks', diff: 'medium', title: 'Clear the lowest set bit', fmt: 'hex',
+        ask: 'Apply n & (n-1). Give the result in hex.',
+        hint: 'Subtracting 1 turns the lowest 1 into 0 and all the zeros below it into 1s. ANDing keeps only the bits above.',
+        concept: 'The other half of the bitmask-scheduler idiom, and the engine of Kernighan popcount.',
+        setup() {const v = rndNZ(8); return {v, answer: hx(v & (v - 1) & 0xFF, 8)};},
+        render(s, shown) {
+          return code(`n &= (n - 1);`)
+            + valBoard(8, s.v, {label: 'n', marks: {[ctz(s.v)]: 'hl'}})
+            + valBoard(8, (s.v - 1) & 0xFF, {label: 'n - 1', marks: cellMarks(s.v, (s.v - 1) & 0xFF, 8), tail: shown ? undefined : ''})
+            + (shown
+              ? opBoard(8, s.v, (s.v - 1) & 0xFF, '&', s.v & (s.v - 1) & 0xFF, true, {la: 'n', lr: 'n & (n-1)', plain: true})
+              + note(`Bit ${ctz(s.v)} is gone and nothing else moved. Population count dropped from ${popcount(s.v)} to ${popcount(s.v & (s.v - 1))}.`)
+              : valBoard(8, 0, {label: 'n & (n-1)', unknown: true}));
+        }
+      },
+      {
+        id: 't4', mod: 'tricks', diff: 'medium', title: 'Power of two?', fmt: 'yesno',
+        ask: 'Is this value a power of two? Answer yes or no.',
+        hint: 'A power of two has exactly one bit set, so n & (n-1) is zero — but guard against n == 0.',
+        concept: 'Buffer sizes are kept powers of two so that wraparound can be a mask instead of a modulo. This test is how you assert it at compile time.',
+        setup() {
+          const p = Math.random() < 0.5;
+          const v = p ? (1 << rnd(0, 7)) : pick([0x03, 0x05, 0x06, 0x0A, 0x12, 0x21, 0x30, 0x48, 0x90, 0xC0, 0xFF, 0x6C]);
+          return {v, answer: (v > 0 && (v & (v - 1)) === 0) ? 'yes' : 'no'};
+        },
+        render(s, shown) {
+          return code(`bool is_pow2(uint32_t n) { return n && !(n & (n - 1)); }`)
+            + valBoard(8, s.v, {label: 'n'})
+            + (shown
+              ? opBoard(8, s.v, (s.v - 1) & 0xFF, '&', s.v & (s.v - 1) & 0xFF, true, {la: 'n', lr: 'n & (n-1)', plain: true})
+              + note(`${popcount(s.v)} bit${popcount(s.v) === 1 ? '' : 's'} set &rarr; <b>${s.answer}</b>.`)
+              : '');
+        }
+      },
+      {
+        id: 't5', mod: 'tricks', diff: 'medium', title: 'Which interrupt fired?', fmt: 'dec',
+        ask: 'Give the index of the lowest set bit — the highest-priority pending source.',
+        hint: 'Count trailing zeros: how many positions from bit 0 until the first 1.',
+        concept: 'An ISR that serves a bitmask of sources uses count-trailing-zeros to jump straight to the right handler. Cortex-M spells it <code>__builtin_ctz</code>, which compiles to RBIT+CLZ.',
+        setup() {const v = rndNZ(8); return {v, answer: String(ctz(v))};},
+        render(s, shown) {
+          return code(`uint32_t pending = ${hx(s.v, 8)};\nint src = __builtin_ctz(pending);   // index of lowest set bit`)
+            + valBoard(8, s.v, {label: 'pending', marks: shown ? {[ctz(s.v)]: 'set'} : {}})
+            + (shown ? note(`Bits 0..${ctz(s.v) - 1 < 0 ? '' : ctz(s.v) - 1} are clear, so the lowest set bit is <b>bit ${ctz(s.v)}</b>. Equivalently <code>n &amp; -n</code> = ${hx(s.v & -s.v & 0xFF, 8)} = 2<sup>${ctz(s.v)}</sup>.`) : '');
+        }
+      },
+      {
+        id: 't6', mod: 'tricks', diff: 'hard', title: 'Round up to a boundary', fmt: 'hex',
+        ask: 'Round this size up to the next multiple of the given power-of-two alignment. Give the result in hex.',
+        hint: '(x + a - 1) & ~(a - 1). Add just under a full alignment, then mask the low bits off.',
+        concept: 'Allocators, DMA buffers and flash page writes all need this. It works only because the alignment is a power of two, which makes <code>a - 1</code> a clean low mask.',
+        setup() {
+          const a = pick([4, 8, 16, 32, 64]);
+          const x = a * rnd(1, 5) + rnd(1, a - 1);   // never already aligned
+          return {a, x, answer: hx((x + a - 1) & ~(a - 1), 16)};
+        },
+        render(s, shown) {
+          const r = (s.x + s.a - 1) & ~(s.a - 1);
+          const lowBits = Math.log2(s.a);
+          return code(`size = (size + ${s.a - 1}) & ~${s.a - 1};   // align up to ${s.a}`)
+            + valBoard(16, s.x, {label: 'size', marks: rangeMarks(0, lowBits - 1), fields: [{hi: lowBits - 1, lo: 0, name: 'must end up 0', tone: 1}]})
+            + (shown
+              ? valBoard(16, s.x + s.a - 1, {label: `+ ${s.a - 1}`})
+              + valBoard(16, r, {label: 'aligned', marks: rangeMarks(0, lowBits - 1, 'clr')})
+              + note(`${s.x} &rarr; <b>${r}</b> (${hx(r, 16)}). The mask <code>~${s.a - 1}</code> clears the low ${lowBits} bits; the earlier addition is what pushes you over the boundary first.`)
+              : note(`alignment = ${s.a}, so the low ${lowBits} bits must finish clear`));
+        }
+      },
+      {
+        id: 't7', mod: 'tricks', diff: 'expert', title: 'Reverse a byte', fmt: 'hex',
+        ask: 'Reverse the bit order of this byte. Give the result in hex.',
+        hint: 'Bit 0 becomes bit 7, bit 1 becomes bit 6, and so on. Read the binary backwards.',
+        concept: 'Needed whenever a peripheral is LSB-first and your data is MSB-first — SPI displays, some CRC variants, and IR protocols. Cortex-M3 and up have an <code>RBIT</code> instruction.',
+        setup() {const v = rndByte(); return {v, answer: hx(revByte(v), 8)};},
+        render(s, shown) {
+          return code(`// bit i moves to position 7 - i\nfor (i = 0; i < 8; i++)\n  if (v & (1 << i)) r |= 1 << (7 - i);`)
+            + valBoard(8, s.v, {label: 'v'})
+            + (shown
+              ? valBoard(8, revByte(s.v), {label: 'reversed'})
+              + note(`0b${bin(s.v, 8)} read backwards is 0b${bin(revByte(s.v), 8)} = <b>${hx(revByte(s.v), 8)}</b>. Population count is unchanged at ${popcount(s.v)}.`)
+              : valBoard(8, 0, {label: 'reversed', unknown: true}));
+        }
+      },
+      {
+        id: 't8', mod: 'tricks', diff: 'hard', title: 'Parity bit', fmt: 'dec',
+        ask: 'What even-parity bit should be appended to this byte? Answer 0 or 1.',
+        hint: 'Even parity makes the total number of 1s even. XOR all the bits together.',
+        concept: 'UART parity and many sensor protocols use this. XOR-folding (<code>x ^= x &gt;&gt; 4; x ^= x &gt;&gt; 2; x ^= x &gt;&gt; 1;</code>) computes it in three steps instead of eight.',
+        setup() {const v = rndByte(); return {v, answer: String(parityBit(v))};},
+        render(s, shown) {
+          const f1 = (s.v ^ (s.v >> 4)) & 0xFF, f2 = (f1 ^ (f1 >> 2)) & 0xFF, f3 = (f2 ^ (f2 >> 1)) & 0xFF;
+          return code(`x ^= x >> 4;\nx ^= x >> 2;\nx ^= x >> 1;\nparity = x & 1;`)
+            + valBoard(8, s.v, {label: 'byte'})
+            + (shown
+              ? valBoard(8, f1, {label: '^= >>4'}) + valBoard(8, f2, {label: '^= >>2'})
+              + valBoard(8, f3, {label: '^= >>1', marks: {0: 'set'}})
+              + note(`${popcount(s.v)} bits are set — an ${popcount(s.v) % 2 ? 'odd' : 'even'} count — so the even-parity bit is <b>${parityBit(s.v)}</b>. Each fold XORs one half into the other, halving the width that still matters.`)
+              : note('Count the 1s, or follow the fold.'));
+        }
+      },
+      {
+        id: 't9', mod: 'tricks', diff: 'expert', title: 'Gray code', fmt: 'hex',
+        ask: 'Convert this binary value to Gray code with x ^ (x >> 1). Give the result in hex.',
+        hint: 'Shift right by one, then XOR with the original.',
+        concept: 'Consecutive Gray codes differ in exactly one bit, so a rotary encoder or an asynchronous counter can never be sampled mid-transition showing a wild intermediate value.',
+        setup() {const v = rndByte(); return {v, answer: hx(v ^ (v >> 1), 8)};},
+        render(s, shown) {
+          const g = s.v ^ (s.v >> 1);
+          return code(`uint8_t gray = v ^ (v >> 1);`)
+            + (shown
+              ? opBoard(8, s.v, s.v >> 1, '^', g, true, {la: 'v', lr: 'gray', plain: true})
+              + note(`Neighbouring values ${s.v} and ${(s.v + 1) & 0xFF} encode to ${hx(g, 8)} and ${hx(((s.v + 1) & 0xFF) ^ (((s.v + 1) & 0xFF) >> 1), 8)}, which differ in exactly one bit.`)
+              : valBoard(8, s.v, {label: 'v'}) + valBoard(8, s.v >> 1, {label: 'v >> 1'}) + valBoard(8, 0, {label: 'gray', unknown: true}));
+        }
+      },
+
+      /* ---------- Module 9: applied patterns ---------- */
+      {
+        id: 'a1', mod: 'applied', diff: 'medium', title: 'Ring buffer wraparound', fmt: 'dec',
+        ask: 'A ring buffer of the given power-of-two size advances its index. What is the next index?',
+        hint: 'idx = (idx + 1) & (SIZE - 1) — the mask replaces a modulo.',
+        concept: 'Masking is a single-cycle AND while <code>%</code> may call a division routine on a Cortex-M0. It only works when the size is a power of two, which is why UART ring buffers always are.',
+        setup() {const sz = pick([8, 16, 32, 64]); const idx = sz - 1 - rnd(0, 1); return {sz, idx, answer: String((idx + 1) & (sz - 1))};},
+        render(s, shown) {
+          const nx = (s.idx + 1) & (s.sz - 1);
+          const bits = Math.log2(s.sz);
+          return code(`#define SIZE ${s.sz}   // power of two\nhead = (head + 1) & (SIZE - 1);   // = & ${hx(s.sz - 1, 8)}`)
+            + chips([['head', String(s.idx)], ['SIZE', String(s.sz)], ['mask', hx(s.sz - 1, 8), 'hot']])
+            + (shown
+              ? opBoard(8, s.idx + 1, s.sz - 1, '&', nx, true, {la: 'head+1', lr: 'head'})
+              + note(`${s.idx} + 1 = ${s.idx + 1}${s.idx + 1 >= s.sz ? `, which needs ${bits + 1} bits — the mask drops the overflow bit and wraps to <b>0</b>.` : `, which still fits in ${bits} bits, so the mask changes nothing: <b>${nx}</b>.`}`)
+              : '');
+        }
+      },
+      {
+        id: 'a2', mod: 'applied', diff: 'hard', title: 'Pack a command byte', fmt: 'hex',
+        ask: 'Pack these three fields into one command byte. Give it in hex.',
+        hint: 'Shift each field to its own position and OR them together: (mode << 6) | (dev << 3) | ch.',
+        concept: 'The layout comes from the datasheet; your job is to place each field without letting one spill into another. Mask each value to its width if it comes from a variable.',
+        setup() {
+          const mode = rnd(0, 3), dev = rnd(0, 7), ch = rnd(0, 7);
+          return {mode, dev, ch, answer: hx((mode << 6) | (dev << 3) | ch, 8)};
+        },
+        render(s, shown) {
+          const F = [{hi: 7, lo: 6, name: 'MODE', tone: 1}, {hi: 5, lo: 3, name: 'DEVICE', tone: 2}, {hi: 2, lo: 0, name: 'CHANNEL', tone: 3}];
+          const v = (s.mode << 6) | (s.dev << 3) | s.ch;
+          return code(`cmd = (mode << 6) | (dev << 3) | ch;`)
+            + valBoard(8, 0, {label: 'layout', fields: F})
+            + chips([['MODE', `${s.mode} = 0b${bin(s.mode, 2)}`], ['DEVICE', `${s.dev} = 0b${bin(s.dev, 3)}`], ['CHANNEL', `${s.ch} = 0b${bin(s.ch, 3)}`]])
+            + (shown
+              ? valBoard(8, v, {label: 'cmd', fields: F, marks: maskMarks(v, 8, 'set')})
+              + note(`<b>${hx(v, 8)}</b>. The three shifted values have no overlapping bits, so OR is safe — with overlap you would need to clear first.`)
+              : valBoard(8, 0, {label: 'cmd', unknown: true}));
+        }
+      },
+      {
+        id: 'a3', mod: 'applied', diff: 'hard', title: 'Decode a sensor frame', fmt: 'dec',
+        ask: 'Decode the highlighted field out of this 16-bit sensor frame. Give it in decimal.',
+        hint: 'Shift right by the field offset, then mask to the field width.',
+        concept: 'Exactly the same extraction as a peripheral register — the only difference is that the layout came from a protocol spec instead of a reference manual.',
+        setup() {
+          const st = rnd(0, 3), ch = rnd(0, 7), data = rnd(0, 0x7F);
+          const frame = (st << 14) | (ch << 11) | (data << 4) | rnd(0, 15);
+          const which = pick(['STATUS', 'CH', 'DATA']);
+          const spec = {STATUS: [15, 14, st], CH: [13, 11, ch], DATA: [10, 4, data]}[which];
+          return {frame, which, hi: spec[0], lo: spec[1], answer: String(spec[2])};
+        },
+        render(s, shown) {
+          const F = [{hi: 15, lo: 14, name: 'STATUS', tone: 1}, {hi: 13, lo: 11, name: 'CH', tone: 2}, {hi: 10, lo: 4, name: 'DATA', tone: 3}, {hi: 3, lo: 0, name: 'CRC', tone: 4}];
+          const w = s.hi - s.lo + 1;
+          return title(`extract ${s.which} — bits [${s.hi}:${s.lo}]`)
+            + code(`uint8_t v = (frame >> ${s.lo}) & ${hx(maskW(w), 8)};`)
+            + valBoard(16, s.frame, {label: 'frame', fields: F, marks: rangeMarks(s.lo, s.hi)})
+            + (shown
+              ? valBoard(16, U(s.frame) >>> s.lo, {label: `>> ${s.lo}`, marks: rangeMarks(0, w - 1)})
+              + valBoard(16, (U(s.frame) >>> s.lo) & maskW(w), {label: 'field', marks: maskMarks(maskW(w), 16, 'fill')})
+              + note(`${s.which} = <b>${s.answer}</b>. Forgetting the mask would leave the higher fields attached to the top.`)
+              : '');
+        }
+      },
+      {
+        id: 'a4', mod: 'applied', diff: 'medium', title: 'XOR checksum', fmt: 'hex',
+        ask: 'Compute the XOR checksum of these bytes. Give it in hex.',
+        hint: 'XOR them all together in order. XOR is associative, so the order does not matter.',
+        concept: 'The cheapest integrity check there is, used by NMEA and many simple serial protocols. It catches single-bit errors but not a swapped pair of bytes.',
+        setup() {
+          const b = [rndByte(), rndByte(), rndByte(), rndByte()];
+          return {b, answer: hx(b.reduce((a, x) => a ^ x, 0), 8)};
+        },
+        render(s, shown) {
+          let h = code(`uint8_t cks = 0;\nfor (i = 0; i < len; i++) cks ^= buf[i];`)
+            + chips(s.b.map((x, i) => [`buf[${i}]`, hx(x, 8)]));
+          if (shown) {
+            let acc = 0;
+            s.b.forEach((x, i) => {const nx = acc ^ x; h += opBoard(8, acc, x, '^', nx, true, {la: i ? 'cks' : 'cks=0', lr: 'cks', plain: true}); acc = nx;});
+            h += note(`Checksum = <b>${hx(acc, 8)}</b>. XOR the checksum back in and you get 0 — that is how the receiver verifies it.`);
+          }
+          return h;
+        }
+      },
+      {
+        id: 'a5', mod: 'applied', diff: 'hard', title: 'Debounce shift register', fmt: 'hex',
+        ask: 'A button sampler shifts a new sample into an 8-bit history each tick. Give the new history value in hex.',
+        hint: 'history = (history << 1) | sample, kept to 8 bits.',
+        concept: 'When the history reads 0xFF or 0x00 the input has been stable for eight consecutive samples and you can accept the edge. No timers, no state machine.',
+        setup() {const h = rndByte(), sample = rnd(0, 1); return {h, sample, answer: hx(((h << 1) | sample) & 0xFF, 8)};},
+        render(s, shown) {
+          const nh = ((s.h << 1) | s.sample) & 0xFF;
+          return code(`hist = (hist << 1) | read_pin();   // ${s.sample}\nif (hist == 0xFF) pressed = true;\nif (hist == 0x00) pressed = false;`)
+            + valBoard(8, s.h, {label: 'hist', marks: {7: 'drop'}})
+            + (shown
+              ? valBoard(8, nh, {label: 'new', marks: {0: 'fill'}})
+              + note(`The oldest sample fell off the top and the new sample <b>${s.sample}</b> entered at bit 0. New value ${hx(nh, 8)} — ${nh === 0xFF ? 'eight consecutive 1s, so the press is confirmed.' : nh === 0 ? 'eight consecutive 0s, so the release is confirmed.' : 'still bouncing, no decision yet.'}`)
+              : valBoard(8, 0, {label: 'new', unknown: true}));
+        }
+      },
+      {
+        id: 'a6', mod: 'applied', diff: 'hard', title: 'Scale an ADC reading', fmt: 'dec',
+        ask: 'Convert this 12-bit ADC count to millivolts against a 3300 mV reference, using integer maths. Round down.',
+        hint: '(raw * 3300) >> 12. Multiply first, then shift — the other order throws the value away.',
+        concept: 'Multiply-then-shift keeps precision without floating point. The intermediate here reaches 13.5 million, so it must be computed in at least 32 bits.',
+        setup() {const raw = rnd(200, 4000); return {raw, answer: String((raw * 3300) >> 12)};},
+        render(s, shown) {
+          const prod = s.raw * 3300, mv = prod >> 12;
+          return code(`uint32_t mv = ((uint32_t)raw * 3300) >> 12;   // /4096`)
+            + chips([['raw', `${s.raw} (${hx(s.raw, 12)})`], ['Vref', '3300 mV']])
+            + valBoard(16, s.raw, {label: 'raw', fields: [{hi: 11, lo: 0, name: '12-bit result', tone: 0}]})
+            + (shown
+              ? valBoard(32, prod, {label: 'raw*3300', marks: rangeMarks(0, 11, 'drop')})
+              + note(`The product is ${prod}, needing ${msbIndex(prod) + 1} bits — a 16-bit intermediate would have overflowed. Shifting right by 12 discards the highlighted low bits and yields <b>${mv} mV</b>. Doing <code>(raw >> 12) * 3300</code> instead would give 0.`)
+              : note('Watch the width of the intermediate product.'));
+        }
+      },
+      {
+        id: 'a7', mod: 'applied', diff: 'expert', title: 'Fixed-point Q8.8', fmt: 'dec',
+        ask: 'This Q8.8 fixed-point temperature has 8 fractional bits. Give the value in milli-degrees, rounded down.',
+        hint: 'The integer part is the top 8 bits. To get milli-units: (raw * 1000) >> 8.',
+        concept: 'Q8.8 keeps 1/256 resolution with no FPU. The binary point is purely a convention you hold in your head — the hardware just sees a 16-bit integer.',
+        setup() {const raw = rnd(0x0100, 0x3FFF); return {raw, answer: String((raw * 1000) >> 8)};},
+        render(s, shown) {
+          const F = [{hi: 15, lo: 8, name: 'integer part', tone: 0}, {hi: 7, lo: 0, name: 'fraction /256', tone: 1}];
+          const milli = (s.raw * 1000) >> 8;
+          return code(`// Q8.8: value = raw / 256.0\nint32_t milli = ((int32_t)raw * 1000) >> 8;`)
+            + valBoard(16, s.raw, {label: 'raw', fields: F})
+            + (shown
+              ? chips([['integer part', String(s.raw >> 8)], ['fraction', `${s.raw & 0xFF}/256`], ['milli-units', String(milli), 'hot']])
+              + note(`${s.raw >> 8} + ${s.raw & 0xFF}/256 = ${(s.raw / 256).toFixed(4)} &rarr; <b>${milli}</b> milli-units. Scaling before the shift is what preserves the fractional bits.`)
+              : note('The top 8 bits are whole units; the bottom 8 are 256ths.'));
+        }
+      },
+      {
+        id: 'a8', mod: 'applied', diff: 'expert', title: 'One CRC-8 step', fmt: 'hex',
+        ask: 'Perform one bit-step of a CRC-8 with polynomial 0x07. Give the new CRC value in hex.',
+        hint: 'Shift left by one; if the bit that fell off the top was 1, XOR with 0x07.',
+        concept: 'A CRC is division in GF(2): shift, and conditionally subtract the polynomial — where subtraction is XOR. Table-driven CRCs just precompute eight of these steps at a time.',
+        setup() {const crc = rndByte(); return {crc, answer: hx(((crc << 1) ^ ((crc & 0x80) ? 0x07 : 0)) & 0xFF, 8)};},
+        render(s, shown) {
+          const msb = (s.crc & 0x80) ? 1 : 0;
+          const sh = (s.crc << 1) & 0xFF;
+          const res = (sh ^ (msb ? 0x07 : 0)) & 0xFF;
+          return code(`crc <<= 1;\nif (crc_msb_was_set) crc ^= 0x07;`)
+            + valBoard(8, s.crc, {label: 'crc', marks: {7: 'hl'}})
+            + (shown
+              ? title(`step 1 — shift left (bit 7 was ${msb})`)
+              + shiftBoard(8, s.crc, 1, 'shl', sh, true)
+              + title(msb ? 'step 2 — top bit was 1, so XOR the polynomial in' : 'step 2 — top bit was 0, so no XOR')
+              + (msb ? opBoard(8, sh, 0x07, '^', res, true, {la: 'shifted', lr: 'crc', plain: true})
+                : valBoard(8, res, {label: 'crc'}))
+              + note(`New CRC = <b>${hx(res, 8)}</b>. Eight of these steps consume one input byte.`)
+              : note('Bit 7 is highlighted — it decides whether the polynomial gets XORed in.'));
+        }
+      }
+    ];
+
+    const PROBLEMS = [...P_A, ...P_B, ...P_C]
+      .sort((a, b) => MOD_INDEX[a.mod] - MOD_INDEX[b.mod]);
+    const BY_ID = Object.fromEntries(PROBLEMS.map(p => [p.id, p]));
+    PROBLEMS.forEach(p => {p.s = p.setup();});
+    /* ============================================================
+       PART 5 — answer checking
+       Accept any reasonable spelling of the same number.
+       ============================================================ */
+    function norm(v) {return String(v).trim().toLowerCase().replace(/[\s_,]/g, '');}
+
+    function boolOf(s) {
+      if (['yes', 'y', 'true', 't'].includes(s)) return true;
+      if (['no', 'n', 'false', 'f'].includes(s)) return false;
+      return null;
+    }
+
+    function numOf(s) {
+      if (/^-?0x[0-9a-f]+$/.test(s)) return parseInt(s.replace('0x', ''), 16) * (s[0] === '-' ? -1 : 1);
+      if (/^-?0b[01]+$/.test(s)) return parseInt(s.replace('0b', ''), 2) * (s[0] === '-' ? -1 : 1);
+      if (/^-?\d+$/.test(s)) return parseInt(s, 10);
+      return null;
+    }
+
+    function accepts(expected, given) {
+      const e = norm(expected), g = norm(given);
+      if (!g) return false;
+      if (e === g) return true;
+
+      const eb = boolOf(e);
+      if (eb !== null) return boolOf(g) === eb;
+
+      // bare-digit forms of a prefixed expected answer ("2a" for 0x2A, "1011" for 0b1011)
+      if (/^0[xb]/.test(e) && e.slice(2) === g) return true;
+
+      const en = numOf(e), gn = numOf(g);
+      return en !== null && gn !== null && en === gn;
+    }
+
+    const FMT_HELP = {
+      hex: 'answer in hex, e.g. 0x2A',
+      dec: 'answer in decimal',
+      bin: 'answer in binary, e.g. 0b10110011',
+      yesno: 'answer yes or no'
+    };
+
+    /* ============================================================
+       PART 6 — application state
+       ============================================================ */
+    const STORE_KEY = 'bitlab.progress.v1';
+
+    const app = {
+      tab: 'learn',
+      cur: 0,
+      solved: new Set(),
+      tried: {},
+      feedback: {},
+      inputs: {},
+      hint: {},
+      reveal: {},
+      why: {},
+      lab: {
+        w: 32, value: 0x00000000, prev: 0x00000000, reg: 'MODER',
+        bit: 5, mask: '0x0000000F', shift: 2, hist: []
+      }
+    };
+
+    function save() {
+      try {localStorage.setItem(STORE_KEY, JSON.stringify([...app.solved]));} catch (e) { }
+    }
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) JSON.parse(raw).forEach(id => {if (BY_ID[id]) app.solved.add(id);});
+      } catch (e) { }
+    }
+
+    const isShown = p => app.feedback[p.id] === 'correct' || app.reveal[p.id];
+
+    /* ============================================================
+       PART 7 — views
+       ============================================================ */
+    function view() {
+      const solved = app.solved.size, total = PROBLEMS.length;
+      let h = `<div class="masthead">
+          <h1>Bit Lab</h1>
+          <span class="sub">bit manipulation for embedded engineers &mdash; ${total} problems across ${MODULES.length} modules</span>
+        </div>
+        <div class="tab-bar">
+          ${[['learn', 'Learn'], ['problems', `Problems (${solved}/${total})`], ['lab', 'Register lab'], ['ref', 'Reference']]
+          .map(([k, t]) => `<button class="tab ${app.tab === k ? 'active' : ''}" onclick="setTab('${k}')">${t}</button>`).join('')}
+        </div>`;
+
+      if (app.tab === 'learn') h += viewLearn();
+      else if (app.tab === 'problems') h += viewList();
+      else if (app.tab === 'lab') h += viewLab();
+      else h += viewRef();
+
+      document.getElementById('app').innerHTML = h;
+
+      if (app.tab === 'learn') {
+        const el = document.getElementById('ans');
+        if (el) el.focus();
+      }
+      if (app.focusId) {
+        const el = document.getElementById(app.focusId);
+        if (el) {el.focus(); if (el.setSelectionRange) {const n = el.value.length; el.setSelectionRange(n, n);} }
+        app.focusId = null;
+      }
+    }
+
+    function viewLearn() {
+      const p = PROBLEMS[app.cur];
+      const s = p.s;
+      const shown = isShown(p);
+      const mod = MODULES[MOD_INDEX[p.mod]];
+      const firstOfMod = PROBLEMS.findIndex(x => x.mod === p.mod) === app.cur;
+      const inMod = PROBLEMS.filter(x => x.mod === p.mod);
+      const posInMod = inMod.indexOf(p) + 1;
+
+      let h = '';
+      if (firstOfMod) {
+        h += `<div class="modcard">
+            <div class="t">Module ${MOD_INDEX[p.mod] + 1} of ${MODULES.length}</div>
+            <h2>${mod.name}</h2>
+            <p>${mod.blurb}</p>
+          </div>`;
+      }
+
+      h += `<div class="card">
+          <div class="problem-header">
+            <div>
+              <div class="crumb">${mod.name} &middot; ${posInMod} of ${inMod.length}</div>
+              <h3>${p.title}</h3>
+            </div>
+            <span class="badge badge-${p.diff}">${p.diff}</span>
+          </div>
+          <p class="ask">${p.ask}</p>
+          ${p.render(s, shown)}`;
+
+      if (!shown) {
+        h += `<div class="answer-row">
+            <input type="text" id="ans" placeholder="${FMT_HELP[p.fmt]}" value="${esc(app.inputs[p.id] || '')}"
+                   oninput="app.inputs['${p.id}']=this.value"
+                   onkeydown="if(event.key==='Enter')submit()">
+            <button class="btn btn-primary" onclick="submit()">Check</button>
+            <button class="linkbtn" onclick="tog('hint','${p.id}')">${app.hint[p.id] ? 'hide hint' : 'hint'}</button>
+            <button class="linkbtn" onclick="tog('reveal','${p.id}')">show me</button>
+          </div>`;
+        if (app.hint[p.id]) h += `<div class="feedback hint">${p.hint}</div>`;
+        if (app.feedback[p.id] === 'wrong') {
+          const n = app.tried[p.id] || 0;
+          h += `<div class="feedback wrong">Not quite &mdash; ${n >= 3 ? 'try the hint, or use <b>show me</b> to walk through it.' : 'have another go.'} <span style="opacity:.75">(${FMT_HELP[p.fmt]})</span></div>`;
+        }
+      } else {
+        const correct = app.feedback[p.id] === 'correct';
+        h += `<div class="feedback ${correct ? 'correct' : 'hint'}">
+            ${correct ? '&#10003; Correct' : 'Answer'}: <span class="mono"><b>${s.answer}</b></span>
+            &nbsp;<button class="linkbtn" style="color:inherit" onclick="tog('why','${p.id}')">${app.why[p.id] ? 'hide' : 'why this matters'}</button>
+            ${app.why[p.id] ? `<div style="margin-top:8px;color:var(--tx-2)">${p.concept}</div>` : ''}
+          </div>`;
+      }
+
+      h += `<div class="navrow">
+          <button class="btn btn-sm" onclick="nav(-1)" ${app.cur === 0 ? 'disabled style="opacity:.4"' : ''}>&larr; Prev</button>
+          <button class="btn btn-sm" onclick="nav(1)" ${app.cur === PROBLEMS.length - 1 ? 'disabled style="opacity:.4"' : ''}>Next &rarr;</button>
+          <button class="btn btn-sm" onclick="regen()">New numbers</button>
+          <span class="spacer"></span>
+          <span style="font-size:12px;color:var(--tx-3)">${app.cur + 1} / ${PROBLEMS.length}</span>
+        </div>
+      </div>`;
+      return h;
+    }
+
+    function viewList() {
+      const solved = app.solved.size, total = PROBLEMS.length;
+      const byDiff = d => PROBLEMS.filter(p => p.diff === d && app.solved.has(p.id)).length;
+      let h = `<div class="stat-grid">
+          <div class="stat"><div class="stat-val">${solved}</div><div class="stat-lbl">solved</div></div>
+          <div class="stat"><div class="stat-val">${total - solved}</div><div class="stat-lbl">remaining</div></div>
+          <div class="stat"><div class="stat-val">${Math.round(solved / total * 100)}%</div><div class="stat-lbl">complete</div></div>
+          <div class="stat"><div class="stat-val">${byDiff('hard') + byDiff('expert')}</div><div class="stat-lbl">hard+ solved</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${solved / total * 100}%"></div></div>
+        <div class="card"><div class="plist">`;
+
+      MODULES.forEach((m, mi) => {
+        const list = PROBLEMS.filter(p => p.mod === m.id);
+        const done = list.filter(p => app.solved.has(p.id)).length;
+        h += `<div class="modhead"><span class="t">${mi + 1}. ${m.name}</span><span class="line"></span><span class="c">${done}/${list.length}</span></div>`;
+        list.forEach(p => {
+          const i = PROBLEMS.indexOf(p), ok = app.solved.has(p.id);
+          h += `<div class="pitem ${ok ? 'solved' : ''} ${i === app.cur ? 'current' : ''}" onclick="go(${i})">
+              <div class="pi-icon ${ok ? 'yes' : 'no'}">${ok ? '&#10003;' : i + 1}</div>
+              <div class="pi-info"><div class="pi-title">${p.title}</div><div class="pi-sub">${p.ask}</div></div>
+              <span class="badge badge-${p.diff}">${p.diff}</span>
+            </div>`;
+        });
+      });
+
+      h += `</div><div class="navrow"><button class="btn btn-sm" onclick="resetAll()">Reset progress</button></div></div>`;
+      return h;
+    }
+
+    /* ---------- actions ---------- */
+    function setTab(t) {app.tab = t; view();}
+    function go(i) {app.cur = i; app.tab = 'learn'; view();}
+    function nav(d) {app.cur = Math.max(0, Math.min(PROBLEMS.length - 1, app.cur + d)); view();}
+    function tog(k, id) {app[k][id] = !app[k][id]; view();}
+
+    function submit() {
+      const p = PROBLEMS[app.cur];
+      const given = app.inputs[p.id] || '';
+      if (!given.trim()) return;
+      app.tried[p.id] = (app.tried[p.id] || 0) + 1;
+      const s = p.s;
+      const cands = [s.answer, ...(s.alts || [])];
+      if (cands.some(c => accepts(c, given))) {
+        app.feedback[p.id] = 'correct';
+        app.solved.add(p.id);
+        save();
+      } else {
+        app.feedback[p.id] = 'wrong';
+      }
+      view();
+    }
+
+    function regen() {
+      const p = PROBLEMS[app.cur];
+      p.s = p.setup();
+      app.feedback[p.id] = null;
+      app.reveal[p.id] = false;
+      app.inputs[p.id] = '';
+      app.tried[p.id] = 0;
+      view();
+    }
+
+    function resetAll() {
+      app.solved.clear(); app.feedback = {}; app.reveal = {}; app.inputs = {}; app.tried = {};
+      save(); view();
+    }
+    /* ============================================================
+       PART 8 — the register lab
+       A scratchpad: poke bits, apply an operation, and watch exactly
+       which bits moved and what that means in a real register.
+       ============================================================ */
+    function labApply(desc, nv) {
+      const L = app.lab;
+      L.prev = L.value;
+      L.value = clampW(nv, L.w);
+      L.hist.unshift({desc, from: L.prev, to: L.value, w: L.w});
+      if (L.hist.length > 12) L.hist.pop();
+      view();
+    }
+
+    function labBit(i) {
+      const L = app.lab;
+      labApply(`^= (1 << ${i})`, L.value ^ (1 << i));
+    }
+    function labWidth(w) {
+      const L = app.lab;
+      L.w = +w; L.value = clampW(L.value, L.w); L.prev = clampW(L.prev, L.w);
+      if (L.reg !== 'none' && REGMAPS[L.reg] && REGMAPS[L.reg].width !== L.w) L.reg = 'none';
+      view();
+    }
+    function labReg(name) {
+      const L = app.lab;
+      L.reg = name;
+      if (name !== 'none') {L.w = REGMAPS[name].width; L.value = clampW(L.value, L.w);}
+      view();
+    }
+    function labVal(str) {
+      const n = numOf(norm(str));
+      if (n === null) return;
+      const L = app.lab;
+      L.prev = L.value; L.value = clampW(n, L.w);
+      app.focusId = 'labval';
+      view();
+    }
+    function labField(k, v) {app.lab[k] = v;}
+
+    function labOp(kind) {
+      const L = app.lab, v = L.value, w = L.w;
+      const b = Math.min(w - 1, Math.max(0, parseInt(L.bit, 10) || 0));
+      const m = clampW(numOf(norm(L.mask)) || 0, w);
+      const n = Math.min(w - 1, Math.max(1, parseInt(L.shift, 10) || 1));
+      const ops = {
+        set: [`|= (1 << ${b})`, v | (1 << b)],
+        clr: [`&= ~(1 << ${b})`, v & ~(1 << b)],
+        tgl: [`^= (1 << ${b})`, v ^ (1 << b)],
+        and: [`&= ${hx(m, w)}`, v & m],
+        or: [`|= ${hx(m, w)}`, v | m],
+        xor: [`^= ${hx(m, w)}`, v ^ m],
+        andn: [`&= ~${hx(m, w)}`, v & ~m],
+        not: ['= ~value', ~v],
+        shl: [`<<= ${n}`, v << n],
+        shr: [`>>= ${n}  (logical)`, U(v) >>> n],
+        sar: [`>>= ${n}  (arithmetic)`, signed(v, w) >> n],
+        rol: [`rotate left ${n}`, rol(v, n, w)],
+        ror: [`rotate right ${n}`, ror(v, n, w)],
+        rev: ['byte swap', w === 32 ? U(((v & 0xFF) << 24) | ((v & 0xFF00) << 8) | ((v >>> 8) & 0xFF00) | (v >>> 24)) : w === 16 ? ((v << 8) | (v >>> 8)) & 0xFFFF : revByte(v)],
+        low: ['= value & -value', v & -v],
+        clrlow: ['&= (value - 1)', v & (v - 1)],
+        zero: ['= 0', 0],
+        all: [`= ${hx(maskW(w), w)}`, maskW(w)],
+        rand: ['= random', rnd(0, maskW(w))]
+      };
+      const [desc, nv] = ops[kind];
+      labApply(desc, nv);
+    }
+
+    function viewLab() {
+      const L = app.lab;
+      const map = L.reg !== 'none' ? REGMAPS[L.reg] : null;
+      const changed = L.prev !== L.value;
+
+      let h = `<div class="card">
+        <h3>Register lab</h3>
+        <p style="font-size:13px;color:var(--tx-2);margin-top:4px">Click any bit to toggle it, or apply an operation and watch which bits moved. Nothing here is graded &mdash; it is for building intuition about a specific register.</p>
+
+        <div class="labgrid">
+          <div class="labfield"><label>width</label>
+            <select onchange="labWidth(this.value)">
+              ${[8, 16, 32].map(w => `<option value="${w}" ${L.w === w ? 'selected' : ''}>${w}-bit</option>`).join('')}
+            </select>
+          </div>
+          <div class="labfield"><label>register overlay</label>
+            <select onchange="labReg(this.value)">
+              <option value="none" ${L.reg === 'none' ? 'selected' : ''}>plain register</option>
+              ${Object.entries(REGMAPS).map(([k, r]) => `<option value="${k}" ${L.reg === k ? 'selected' : ''}>${r.name} (${r.width}-bit)</option>`).join('')}
+            </select>
+          </div>
+          <div class="labfield"><label>value</label>
+            <input type="text" id="labval" value="${hx(L.value, L.w)}"
+                   onchange="labVal(this.value)" onkeydown="if(event.key==='Enter')labVal(this.value)">
+          </div>
+        </div>`;
+
+      h += title('current state')
+        + valBoard(L.w, L.value, {
+          label: map ? map.name.replace(/^.*_/, '') : 'reg',
+          fields: map ? map.fields : null,
+          click: 'labBit',
+          marks: changed ? cellMarks(L.prev, L.value, L.w) : {}
+        })
+        + (map ? note(map.legend) : '');
+
+      if (changed) {
+        h += title('what the last operation did')
+          + transBoard(L.w, L.prev, L.value, true, {fields: map ? map.fields : null, lb: 'before', la: 'after'});
+      }
+
+      h += title('operations')
+        + `<div class="oprow">
+            <span style="font-size:12px;color:var(--tx-3)">bit</span>
+            <input type="text" value="${L.bit}" oninput="labField('bit',this.value)" style="width:60px">
+            <button class="btn btn-sm mono" onclick="labOp('set')">|= 1&lt;&lt;n</button>
+            <button class="btn btn-sm mono" onclick="labOp('clr')">&amp;= ~(1&lt;&lt;n)</button>
+            <button class="btn btn-sm mono" onclick="labOp('tgl')">^= 1&lt;&lt;n</button>
+          </div>
+          <div class="oprow">
+            <span style="font-size:12px;color:var(--tx-3)">mask</span>
+            <input type="text" value="${esc(L.mask)}" oninput="labField('mask',this.value)">
+            <button class="btn btn-sm mono" onclick="labOp('and')">&amp;=</button>
+            <button class="btn btn-sm mono" onclick="labOp('or')">|=</button>
+            <button class="btn btn-sm mono" onclick="labOp('xor')">^=</button>
+            <button class="btn btn-sm mono" onclick="labOp('andn')">&amp;= ~m</button>
+            <button class="btn btn-sm mono" onclick="labOp('not')">~</button>
+          </div>
+          <div class="oprow">
+            <span style="font-size:12px;color:var(--tx-3)">shift</span>
+            <input type="text" value="${L.shift}" oninput="labField('shift',this.value)" style="width:60px">
+            <button class="btn btn-sm mono" onclick="labOp('shl')">&lt;&lt;</button>
+            <button class="btn btn-sm mono" onclick="labOp('shr')">&gt;&gt; logical</button>
+            <button class="btn btn-sm mono" onclick="labOp('sar')">&gt;&gt; arith</button>
+            <button class="btn btn-sm mono" onclick="labOp('rol')">rol</button>
+            <button class="btn btn-sm mono" onclick="labOp('ror')">ror</button>
+            <button class="btn btn-sm mono" onclick="labOp('rev')">byte swap</button>
+          </div>
+          <div class="oprow">
+            <span style="font-size:12px;color:var(--tx-3)">tricks</span>
+            <button class="btn btn-sm mono" onclick="labOp('low')">n &amp; -n</button>
+            <button class="btn btn-sm mono" onclick="labOp('clrlow')">n &amp; (n-1)</button>
+            <button class="btn btn-sm" onclick="labOp('zero')">clear all</button>
+            <button class="btn btn-sm" onclick="labOp('all')">set all</button>
+            <button class="btn btn-sm" onclick="labOp('rand')">randomise</button>
+          </div>`;
+
+      h += title('readouts')
+        + chips([
+          ['hex', hx(L.value, L.w)],
+          ['unsigned', String(U(L.value))],
+          ['signed', String(signed(L.value, L.w))],
+          ['bits set', String(popcount(L.value))],
+          ['lowest set', L.value ? 'bit ' + ctz(L.value) : '—'],
+          ['highest set', L.value ? 'bit ' + msbIndex(L.value) : '—'],
+          ['power of 2', L.value && !(L.value & (L.value - 1)) ? 'yes' : 'no']
+        ]);
+
+      if (map) {
+        h += title('decoded fields')
+          + `<table class="memtbl"><tr><th>field</th><th>bits</th><th>binary</th><th>value</th></tr>`
+          + map.fields.filter(f => ((U(L.value) & fieldMask(f.hi, f.lo)) !== 0) || map.fields.length <= 12)
+            .map(f => {
+              const v = (U(L.value) & fieldMask(f.hi, f.lo)) >>> f.lo;
+              return `<tr><td class="val">${esc(f.title || f.name)}</td><td class="addr">[${f.hi}:${f.lo}]</td>
+                <td>0b${bin(v, f.hi - f.lo + 1)}</td><td class="val">${v}</td></tr>`;
+            }).join('')
+          + `</table>`;
+      }
+
+      if (L.w > 8) {
+        h += title('how this word sits in memory') + endianBoard(0x20000000, L.value, L.w);
+      }
+
+      if (L.hist.length) {
+        h += title('history') + `<div class="histlog">`
+          + L.hist.map(e => `<div><span class="res">${hx(e.from, e.w)}</span> <span class="arrow">${esc(e.desc)} &rarr;</span> <span class="res">${hx(e.to, e.w)}</span></div>`).join('')
+          + `</div>`;
+      }
+
+      return h + `</div>`;
+    }
+
+    /* ============================================================
+       PART 9 — reference
+       ============================================================ */
+    function refTable(rows) {
+      return `<div class="reftbl">${rows.map(([a, b]) => `<div>${a}</div><div>${esc(b)}</div>`).join('')}</div>`;
+    }
+
+    function viewRef() {
+      return `<div class="card">
+        <h3 style="margin-bottom:10px">Core idioms</h3>
+        ${refTable([
+        ['Test bit n', '(reg >> n) & 1'],
+        ['Set bit n', 'reg |= (1u << n)'],
+        ['Clear bit n', 'reg &= ~(1u << n)'],
+        ['Toggle bit n', 'reg ^= (1u << n)'],
+        ['Any flag in mask set', 'if (reg & MASK)'],
+        ['All flags in mask set', 'if ((reg & MASK) == MASK)'],
+        ['Mask of width w at lo', '((1u << w) - 1) << lo'],
+        ['Extract field [hi:lo]', '(reg >> lo) & ((1u << (hi-lo+1)) - 1)'],
+        ['Insert field', 'reg = (reg & ~MASK) | ((v << lo) & MASK)'],
+        ['Lowest set bit', 'n & (-n)'],
+        ['Clear lowest set bit', 'n & (n - 1)'],
+        ['Index of lowest set bit', '__builtin_ctz(n)'],
+        ['Is power of two', 'n && !(n & (n - 1))'],
+        ['Align up to power of 2 a', '(x + a - 1) & ~(a - 1)'],
+        ['Is aligned to a', '(x & (a - 1)) == 0'],
+        ['Rotate left (32-bit)', '(v << r) | (v >> (32 - r))'],
+        ['Swap 16-bit bytes', '(v << 8) | (v >> 8)'],
+        ['Sign-extend n bits to 32', '(int32_t)(v << (32-n)) >> (32-n)'],
+        ['Even parity of a byte', 'x^=x>>4; x^=x>>2; x^=x>>1; x&1'],
+        ['Ring buffer advance', 'i = (i + 1) & (SIZE - 1)']
+      ])}
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom:10px">STM32 register patterns</h3>
+        ${refTable([
+        ['Enable a GPIO clock', 'RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN'],
+        ['Set pin mode (2 bits/pin)', 'MODER = (MODER & ~(3u<<2*p)) | (m<<2*p)'],
+        ['Alternate function (4 bits/pin)', 'AFR[p>>3] |= af << (4*(p&7))'],
+        ['Drive pin high, atomically', 'GPIOx->BSRR = (1u << p)'],
+        ['Drive pin low, atomically', 'GPIOx->BSRR = (1u << (p + 16))'],
+        ['Clear a W1C flag', 'EXTI->PR = (1u << p)   // never |='],
+        ['Wait for a status flag', 'while (!(USART->SR & USART_SR_TXE))'],
+        ['NVIC priority (4 bits used)', 'NVIC->IP[n] = prio << 4'],
+        ['Read-modify-write a field', 'reg = (reg & ~MASK) | VALUE']
+      ])}
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom:10px">Traps worth remembering</h3>
+        ${refTable([
+        ['|= on a write-1-to-clear register', 'clears every other pending flag too'],
+        ['Missing the clear in a RMW', 'old field ORs with new, giving a third mode'],
+        ['1 << 31 on a signed int', 'undefined; use 1u << 31'],
+        ['Shift count >= type width', 'undefined behaviour, not zero'],
+        ['~x compared to a narrow value', 'promotion makes the top 24 bits 1'],
+        ['>> on a signed negative value', 'rounds down, unlike / which rounds to zero'],
+        ['Unmasked value written to a field', 'spills into the neighbouring field'],
+        ['Peripheral register without volatile', 'the compiler caches or removes the access'],
+        ['uint8_t << 24', 'promotes to int; cast to uint32_t first'],
+        ['Reading a 32-bit reg as two 16-bit', 'hardware may latch; check the manual']
+      ])}
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom:10px">Widths and bases</h3>
+        ${refTable([
+        ['Nibble', '4 bits, one hex digit, 0x0-0xF'],
+        ['Byte / uint8_t', '8 bits, 0x00-0xFF, 0-255 or -128..127'],
+        ['Half-word / uint16_t', '16 bits, 0x0000-0xFFFF, 0-65535'],
+        ['Word / uint32_t', '32 bits, max 0xFFFFFFFF = 4294967295'],
+        ['Bit i weight', '2^i'],
+        ['n bits hold', '2^n distinct values'],
+        ['Cortex-M byte order', 'little-endian: LSB at the lowest address'],
+        ['Network byte order', 'big-endian: MSB first on the wire']
+      ])}
+      </div>`;
+    }
+
+    /* ============================================================
+       PART 10 — wiring
+       ============================================================ */
+    Object.assign(window, {
+      app, setTab, go, nav, tog, submit, regen, resetAll,
+      labBit, labOp, labWidth, labReg, labVal, labField
+    });
+
+    document.addEventListener('keydown', e => {
+      if (app.tab !== 'learn') return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      if (e.key === 'ArrowLeft') {nav(-1); e.preventDefault();}
+      if (e.key === 'ArrowRight') {nav(1); e.preventDefault();}
+    });
+
+    load();
+    view();
+  </script>
+</body>
+
+</html>
