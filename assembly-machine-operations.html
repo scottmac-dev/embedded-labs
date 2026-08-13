@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ASM Lab — assembly &amp; machine operations for embedded engineers</title>
+  <style>
+    :root {
+      --bg: #0a0f1a;
+      --bg-1: #111827;
+      --bg-2: #1a2434;
+      --bg-3: #232f42;
+
+      --tx-1: #f3f4f6;
+      --tx-2: #9ca3af;
+      --tx-3: #6b7280;
+
+      --bd-1: #2b3648;
+      --bd-2: #374151;
+
+      --accent: #60a5fa;
+      --accent-dim: rgba(96, 165, 250, 0.15);
+
+      --on: #4ade80;
+      --off: #f87171;
+      --hl: #fbbf24;
+      --fill: #38bdf8;
+      --unk: #c084fc;
+
+      --r-sm: 5px;
+      --r-md: 8px;
+      --r-lg: 14px;
+
+      --font-sans: Inter, system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--tx-1);
+      background: var(--bg);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 4rem;
+    }
+
+    /* ---------- header / tabs ---------- */
+    .masthead {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .masthead h1 {
+      font-size: 19px;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+    }
+
+    .masthead .sub {
+      font-size: 13px;
+      color: var(--tx-3);
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--bd-1);
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 8px 15px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--tx-2);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+      transition: color .15s, background .15s;
+    }
+
+    .tab.active {
+      color: var(--tx-1);
+      border-bottom-color: var(--accent);
+      font-weight: 550;
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--tx-1);
+      background: rgba(255, 255, 255, .03);
+    }
+
+    .card {
+      background: var(--bg-1);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-lg);
+      padding: 1.25rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 8px 24px rgba(0, 0, 0, .18);
+    }
+
+    .card+.card {
+      margin-top: 1rem;
+    }
+
+    h2 {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: .92em;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--tx-1);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--r-md);
+      white-space: nowrap;
+    }
+
+    .badge-easy {
+      background: rgba(34, 197, 94, .15);
+      color: #86efac;
+    }
+
+    .badge-medium {
+      background: rgba(245, 158, 11, .15);
+      color: #fcd34d;
+    }
+
+    .badge-hard {
+      background: rgba(239, 68, 68, .15);
+      color: #fca5a5;
+    }
+
+    .badge-expert {
+      background: rgba(139, 92, 246, .15);
+      color: #c4b5fd;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin: 16px 0 6px;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
+    }
+
+    /* ---------- module intro ---------- */
+    .modcard {
+      background: linear-gradient(180deg, rgba(96, 165, 250, .10), rgba(96, 165, 250, .02));
+      border: 1px solid rgba(96, 165, 250, .28);
+      border-radius: var(--r-lg);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .modcard .t {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--accent);
+      font-weight: 650;
+    }
+
+    .modcard h2 {
+      margin: 2px 0 5px;
+    }
+
+    .modcard p {
+      font-size: 13.5px;
+      color: var(--tx-2);
+      max-width: 68ch;
+    }
+
+    /* ---------- problem chrome ---------- */
+    .problem-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .crumb {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 600;
+    }
+
+    .ask {
+      color: var(--tx-1);
+      margin-bottom: 12px;
+      font-size: 14.5px;
+    }
+
+    .note {
+      font-size: 13px;
+      color: var(--tx-2);
+      margin: 8px 0 2px;
+      max-width: 78ch;
+    }
+
+    /* ---------- code block ---------- */
+    .asm {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 10px 0;
+      margin: 8px 0;
+      overflow-x: auto;
+    }
+
+    .asm .ln {
+      display: flex;
+      gap: 10px;
+      padding: 1px 12px;
+      white-space: pre;
+    }
+
+    .asm .ln.hl {
+      background: rgba(251, 191, 36, .10);
+      box-shadow: inset 2px 0 0 var(--hl);
+    }
+
+    .asm .n {
+      color: var(--tx-3);
+      min-width: 16px;
+      text-align: right;
+      user-select: none;
+    }
+
+    .asm .cm {
+      color: var(--tx-3);
+    }
+
+    .asm .lb {
+      color: var(--unk);
+    }
+
+    .asm .op {
+      color: var(--accent);
+    }
+
+    /* ---------- register / flag boards ---------- */
+    .board {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 10px 12px;
+      margin: 8px 0;
+      overflow-x: auto;
+    }
+
+    .board .blbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 650;
+      margin-bottom: 7px;
+    }
+
+    .rrow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .reg {
+      min-width: 128px;
+      background: var(--bg-3);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-sm);
+      padding: 5px 9px;
+    }
+
+    .reg .rn {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--tx-3);
+      letter-spacing: .03em;
+    }
+
+    .reg .rv {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--tx-1);
+      font-weight: 600;
+    }
+
+    .reg.hl {
+      border-color: var(--hl);
+      box-shadow: 0 0 0 1px rgba(251, 191, 36, .45);
+    }
+
+    .reg.new {
+      border-color: var(--on);
+      background: rgba(34, 197, 94, .14);
+    }
+
+    .reg.new .rv {
+      color: #bbf7d0;
+    }
+
+    .reg.q .rv {
+      color: var(--unk);
+    }
+
+    .reg.q {
+      border-style: dashed;
+      border-color: rgba(192, 132, 252, .55);
+    }
+
+    .flags {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .flag {
+      width: 62px;
+      text-align: center;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--bd-2);
+      background: var(--bg-3);
+      padding: 4px 0;
+    }
+
+    .flag .fn {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--tx-3);
+    }
+
+    .flag .fv {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--tx-3);
+    }
+
+    .flag.set {
+      border-color: rgba(34, 197, 94, .45);
+      background: rgba(34, 197, 94, .14);
+    }
+
+    .flag.set .fv {
+      color: var(--on);
+    }
+
+    .flag.q .fv {
+      color: var(--unk);
+    }
+
+    /* ---------- memory table ---------- */
+    .memt {
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin: 2px 0;
+    }
+
+    .memt th,
+    .memt td {
+      border: 1px solid var(--bd-1);
+      padding: 4px 9px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .memt th {
+      color: var(--tx-3);
+      font-weight: 500;
+      background: var(--bg-1);
+      font-size: 11px;
+    }
+
+    .memt td {
+      background: var(--bg-3);
+      color: var(--tx-1);
+      font-weight: 600;
+    }
+
+    .memt td.mk {
+      background: rgba(56, 189, 248, .18);
+      border-color: var(--fill);
+      color: #bae6fd;
+    }
+
+    .memt td.mk2 {
+      background: rgba(251, 191, 36, .16);
+      border-color: var(--hl);
+      color: #fde68a;
+    }
+
+    .memt tr.addr td {
+      background: var(--bg-1);
+      color: var(--tx-2);
+      font-weight: 500;
+      font-size: 11px;
+    }
+
+    /* ---------- chips ---------- */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .chip {
+      font-size: 11.5px;
+      color: var(--tx-2);
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: 20px;
+      padding: 3px 11px;
+      font-family: var(--font-mono);
+    }
+
+    .chip b {
+      color: var(--tx-1);
+    }
+
+    /* ---------- answers ---------- */
+    .answer-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    input[type=text] {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      padding: 8px 11px;
+      width: 260px;
+      outline: none;
+    }
+
+    input[type=text]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 13.5px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--bd-2);
+      background: var(--bg-2);
+      color: var(--tx-1);
+      padding: 8px 15px;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--accent);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0a0f1a;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.08);
+    }
+
+    .btn-sm {
+      padding: 5px 11px;
+      font-size: 12.5px;
+    }
+
+    .linkbtn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      padding: 4px 2px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .choice {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      text-align: left;
+      width: 100%;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: inherit;
+      font-size: 13.5px;
+      padding: 9px 12px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+
+    .choice:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--bg-3);
+    }
+
+    .choice .key {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--tx-3);
+      border: 1px solid var(--bd-2);
+      border-radius: 4px;
+      padding: 0 6px;
+      line-height: 19px;
+    }
+
+    .choice.picked {
+      border-color: var(--off);
+      background: rgba(248, 113, 113, .10);
+    }
+
+    .choice.right {
+      border-color: var(--on);
+      background: rgba(34, 197, 94, .12);
+    }
+
+    .choice.right .key,
+    .choice.picked .key {
+      color: var(--tx-1);
+    }
+
+    .choice:disabled {
+      cursor: default;
+      opacity: .85;
+    }
+
+    .feedback {
+      margin-top: 12px;
+      padding: 10px 13px;
+      border-radius: var(--r-md);
+      font-size: 13.5px;
+      border: 1px solid;
+    }
+
+    .feedback.correct {
+      background: rgba(34, 197, 94, .12);
+      border-color: rgba(34, 197, 94, .4);
+      color: #bbf7d0;
+    }
+
+    .feedback.wrong {
+      background: rgba(248, 113, 113, .10);
+      border-color: rgba(248, 113, 113, .4);
+      color: #fecaca;
+    }
+
+    .feedback.hint {
+      background: rgba(251, 191, 36, .09);
+      border-color: rgba(251, 191, 36, .33);
+      color: #fde68a;
+    }
+
+    .navrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--bd-1);
+      flex-wrap: wrap;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    /* ---------- problem list ---------- */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .stat {
+      background: var(--bg-1);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 11px 13px;
+    }
+
+    .stat-val {
+      font-size: 21px;
+      font-weight: 650;
+      font-family: var(--font-mono);
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .progress-bar {
+      height: 5px;
+      background: var(--bg-2);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width .25s;
+    }
+
+    .modhead {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 16px 0 6px;
+    }
+
+    .modhead:first-child {
+      margin-top: 0;
+    }
+
+    .modhead .t {
+      font-size: 11.5px;
+      font-weight: 650;
+      color: var(--tx-2);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .modhead .line {
+      flex: 1;
+      height: 1px;
+      background: var(--bd-1);
+    }
+
+    .modhead .c {
+      font-size: 11.5px;
+      color: var(--tx-3);
+      font-family: var(--font-mono);
+    }
+
+    .pitem {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 8px 10px;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .pitem:hover {
+      background: var(--bg-2);
+    }
+
+    .pitem.current {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .pi-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+      border: 1px solid var(--bd-2);
+      color: var(--tx-3);
+    }
+
+    .pi-icon.yes {
+      background: rgba(34, 197, 94, .18);
+      border-color: rgba(34, 197, 94, .5);
+      color: var(--on);
+    }
+
+    .pi-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .pi-title {
+      font-size: 13.5px;
+      font-weight: 550;
+    }
+
+    .pi-sub {
+      font-size: 12px;
+      color: var(--tx-3);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pitem.solved .pi-title {
+      color: var(--tx-2);
+    }
+
+    /* ---------- reference ---------- */
+    .reft {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 4px 0 6px;
+    }
+
+    .reft td {
+      border-bottom: 1px solid var(--bd-1);
+      padding: 6px 8px;
+      vertical-align: top;
+    }
+
+    .reft td:first-child {
+      font-family: var(--font-mono);
+      color: var(--tx-1);
+      white-space: nowrap;
+      width: 34%;
+    }
+
+    .reft td:last-child {
+      color: var(--tx-2);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" id="app"></div>
+  <script>
+    /* ============================================================
+       PART 1 — small numeric helpers
+       ============================================================ */
+    const U = v => v >>> 0;
+    const hx32 = v => '0x' + U(v).toString(16).toUpperCase().padStart(8, '0');
+    const hx8 = v => '0x' + (v & 0xFF).toString(16).toUpperCase().padStart(2, '0');
+    const hxn = (v, n) => '0x' + U(v).toString(16).toUpperCase().padStart(n, '0');
+    const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+    function shuffle(a) {const r = a.slice(); for (let i = r.length - 1; i > 0; i--) {const j = rnd(0, i);[r[i], r[j]] = [r[j], r[i]];} return r;}
+    function esc(s) {return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');}
+
+    /* multiple-choice helper: build {choices, ai, answer} from a correct
+       string plus distractors, shuffled so the right answer moves around. */
+    function mc(correct, wrong) {
+      const opts = shuffle([correct, ...wrong]);
+      return {choices: opts, ai: opts.indexOf(correct), answer: correct};
+    }
+
+    /* ============================================================
+       PART 2 — render helpers
+       ============================================================ */
+    function title(t) {return `<div class="section-title">${t}</div>`;}
+    function note(html) {return `<div class="note">${html}</div>`;}
+    function chips(list) {return `<div class="chips">${list.map(c => `<span class="chip">${c[0]} <b>${c[1]}</b></span>`).join('')}</div>`;}
+
+    /* assembly listing. `lines` is an array of strings; `hl` is an index
+       or array of indices to highlight. Numbers are 1-based in the gutter. */
+    function asm(lines, hl) {
+      const marks = hl === undefined ? [] : (Array.isArray(hl) ? hl : [hl]);
+      const body = lines.map((l, i) => {
+        let t = esc(l);
+        t = t.replace(/(;.*)$/, '<span class="cm">$1</span>');
+        t = t.replace(/^([A-Za-z_][\w]*:)/, '<span class="lb">$1</span>');
+        t = t.replace(/^(\s*)([A-Z][A-Z0-9]*(?:\.[WN])?)(\s)/, '$1<span class="op">$2</span>$3');
+        return `<div class="ln ${marks.includes(i) ? 'hl' : ''}"><span class="n">${i + 1}</span><span>${t}</span></div>`;
+      }).join('');
+      return `<div class="asm">${body}</div>`;
+    }
+
+    /* register file view. rows = [name, value-or-'?', cls] */
+    function regs(rows, label = 'registers') {
+      const body = rows.map(([n, v, cls]) =>
+        `<div class="reg ${cls || ''}"><div class="rn">${esc(n)}</div><div class="rv">${esc(v)}</div></div>`).join('');
+      return `<div class="board"><div class="blbl">${label}</div><div class="rrow">${body}</div></div>`;
+    }
+
+    /* NZCV view. Pass null for a flag to show it as unknown. */
+    function flagBoard(f, label = 'APSR flags') {
+      const meta = [['N', 'negative'], ['Z', 'zero'], ['C', 'carry'], ['V', 'overflow']];
+      const body = meta.map(([k]) => {
+        const v = f[k.toLowerCase()];
+        const cls = v === null || v === undefined ? 'q' : (v ? 'set' : '');
+        return `<div class="flag ${cls}"><div class="fn">${k}</div><div class="fv">${v === null || v === undefined ? '?' : v}</div></div>`;
+      }).join('');
+      return `<div class="board"><div class="blbl">${label}</div><div class="flags">${body}</div>
+        <div class="note" style="margin-top:7px">N negative &middot; Z zero &middot; C carry / no-borrow &middot; V signed overflow</div></div>`;
+    }
+
+    /* byte-addressed memory strip, low address on the left */
+    function memStrip(base, bytes, o = {}) {
+      const mark = o.mark || [];
+      const mark2 = o.mark2 || [];
+      const addrs = bytes.map((_, i) => `<td>${hx32(base + i)}</td>`);
+      const cells = bytes.map((b, i) =>
+        `<td class="${mark.includes(i) ? 'mk' : (mark2.includes(i) ? 'mk2' : '')}">${hx8(b).slice(2)}</td>`);
+      const short = bytes.map((_, i) => `<td>+${i}</td>`);
+      return `<div class="board"><div class="blbl">${o.label || 'memory'}</div>
+        <table class="memt">
+          <tr><th>offset</th>${short.join('')}</tr>
+          <tr class="addr"><th>address</th>${addrs.join('')}</tr>
+          <tr><th>byte</th>${cells.join('')}</tr>
+        </table>
+        <div class="note" style="margin-top:7px">${o.foot || 'little-endian: the lowest address holds the least-significant byte'}</div></div>`;
+    }
+
+    /* ============================================================
+       PART 3 — curriculum
+       Modules run in dependency order.
+       ============================================================ */
+    const MODULES = [
+      {id: 'core', name: 'Registers & instructions', blurb: 'What a CPU actually manipulates: sixteen registers, three special ones, and the handful of instruction shapes that everything else is built from. ARM Thumb (Cortex-M) throughout.'},
+      {id: 'mem', name: 'Memory & addressing', blurb: 'Load/store architecture. The CPU computes on registers only, so every value has to be fetched and written back — and how you name the address is half the instruction.'},
+      {id: 'flow', name: 'Flags & control flow', blurb: 'Comparisons leave four flag bits behind, and branches read them. Signed vs unsigned lives entirely in which branch you pick.'},
+      {id: 'stack', name: 'Stack & function calls', blurb: 'How a call frame is built and torn down, which registers a callee may clobber, and how the return address gets back into the PC.'},
+      {id: 'mach', name: 'Machine-level behaviour', blurb: 'The parts you meet when reading a disassembly of your own C: literal pools, shift-for-divide, exclusive access, and what the core does on an exception.'}
+    ];
+    const MOD_INDEX = Object.fromEntries(MODULES.map((m, i) => [m.id, i]));
+
+    const PROBLEMS = [
+      /* ---------- Module 1: registers & instructions ---------- */
+      {
+        id: 'c1', mod: 'core', diff: 'easy', fmt: 'mc', title: 'Where the return address goes',
+        ask: 'The CPU executes <code>BL delay</code>. Where does the address of the following instruction end up?',
+        hint: 'BL is "branch with link". The link part is the whole difference between BL and a plain B.',
+        concept: 'A plain <code>B</code> is a goto and never comes back. <code>BL</code> additionally copies the address of the next instruction into LR (R14), which is what makes <code>BX LR</code> a return. Nothing is written to memory — that is why a leaf function needs no stack frame at all.',
+        setup() {
+          return mc('In LR (R14), the link register',
+            ['In PC (R15), the program counter', 'Pushed onto the stack at [SP]', 'In R0, alongside the return value']);
+        },
+        render(s, shown) {
+          return asm(['        BL      delay', '        MOVS    r0, #1     ; <- execution resumes here on return', '', 'delay:  ...', '        BX      lr'], shown ? [0, 1] : 0)
+            + regs([['R13 (SP)', '0x2000FFF0'], ['R14 (LR)', shown ? 'addr of line 2' : '?', shown ? 'new' : 'q'], ['R15 (PC)', 'addr of delay', 'hl']]);
+        }
+      },
+      {
+        id: 'c2', mod: 'core', diff: 'easy', fmt: 'hex', title: 'Trace three instructions',
+        ask: 'Run this sequence by hand. What is in r0 at the end? Give a 32-bit hex value.',
+        hint: 'Each instruction reads the current r0 and writes a new one. There is no cleverness here — just do the arithmetic in order.',
+        concept: 'Almost all data-processing instructions are three-address: destination, then two sources. The destination may repeat as a source, which is how <code>x += y</code> compiles. The <code>S</code> suffix (MOVS/ADDS) additionally updates the flags — in 16-bit Thumb most instructions set flags whether you want it or not.',
+        setup() {
+          const a = rnd(0x10, 0x60), b = rnd(0x08, 0x30), c = rnd(1, 0x0F);
+          return {a, b, c, answer: hx32(a + b - c)};
+        },
+        render(s, shown) {
+          return asm([
+            `        MOVS    r0, #${hx8(s.a)}`,
+            `        ADDS    r0, r0, #${hx8(s.b)}`,
+            `        SUBS    r0, r0, #${hx8(s.c)}`
+          ])
+            + regs([['R0 after line 1', shown ? hx32(s.a) : '?', shown ? '' : 'q'],
+            ['R0 after line 2', shown ? hx32(s.a + s.b) : '?', shown ? '' : 'q'],
+            ['R0 after line 3', shown ? hx32(s.a + s.b - s.c) : '?', shown ? 'new' : 'q']])
+            + (shown ? note(`${s.a} + ${s.b} &minus; ${s.c} = ${s.a + s.b - s.c} = <b>${hx32(s.a + s.b - s.c)}</b>.`)
+              : note('Immediates in ARM assembly are written with <code>#</code>. These are hex.'));
+        }
+      },
+      {
+        id: 'c3', mod: 'core', diff: 'easy', fmt: 'mc', title: 'MOV versus LDR',
+        ask: 'r1 holds <code>0x20000100</code>, and the word stored at <code>0x20000100</code> is <code>0x000000AB</code>. What does <code>LDR r0, [r1]</code> put in r0?',
+        hint: 'The square brackets are the dereference. Without them you are moving the pointer itself.',
+        concept: 'This is the C distinction between <code>p</code> and <code>*p</code>, written in brackets. <code>MOV r0, r1</code> copies the address; <code>LDR r0, [r1]</code> goes out to the bus and fetches what lives there. Reading a peripheral register is always the second form.',
+        setup() {
+          return mc('0x000000AB — the value stored at that address',
+            ['0x20000100 — the address itself', '0x00000100 — the low half of the address', 'Nothing; LDR needs an offset']);
+        },
+        render(s, shown) {
+          return asm(['        LDR     r0, [r1]      ; r0 = *(uint32_t *)r1', '        MOV     r0, r1        ; r0 = r1  (address only)'], shown ? [0] : undefined)
+            + regs([['R1', '0x20000100', 'hl'], ['[0x20000100]', '0x000000AB', 'hl'], ['R0 after LDR', shown ? '0x000000AB' : '?', shown ? 'new' : 'q']]);
+        }
+      },
+      {
+        id: 'c4', mod: 'core', diff: 'medium', fmt: 'hex', title: 'Shift then combine',
+        ask: 'What value is in r0 after these three instructions? Answer in hex.',
+        hint: 'LSLS shifts left, filling with zeros at the bottom. ORRS then merges the second value into those freed bits.',
+        concept: 'Packing a small value into a wider word is shift-then-OR, and it is exactly what the compiler emits for <code>(a &lt;&lt; n) | b</code>. The shift must clear enough low bits for the OR to be non-destructive — if the fields overlapped, OR would silently merge them.',
+        setup() {
+          const v = rnd(0x11, 0x7F), n = rnd(4, 12), b = rnd(1, 0x0F);
+          return {v, n, b, answer: hx32((v << n) | b)};
+        },
+        render(s, shown) {
+          return asm([
+            `        MOVS    r0, #${hx8(s.v)}`,
+            `        LSLS    r0, r0, #${s.n}`,
+            `        ORRS    r0, r0, #${hx8(s.b)}`
+          ])
+            + regs([['after MOVS', hx32(s.v)],
+            ['after LSLS', shown ? hx32(s.v << s.n) : '?', shown ? '' : 'q'],
+            ['after ORRS', shown ? hx32((s.v << s.n) | s.b) : '?', shown ? 'new' : 'q']])
+            + (shown ? note(`Shifting left by ${s.n} multiplies by 2<sup>${s.n}</sup>; the bottom ${s.n} bits are now zero, so the OR just drops <code>${hx8(s.b)}</code> into them.`) : '');
+        }
+      },
+      {
+        id: 'c5', mod: 'core', diff: 'medium', fmt: 'mc', title: 'Who owns which register',
+        ask: 'Your hand-written assembly routine is called from C. Which registers may it modify freely, without saving them first?',
+        hint: 'The calling convention splits the register file into scratch registers and preserved ones.',
+        concept: 'AAPCS: r0-r3 carry the first four arguments and are caller-saved scratch, r12 is a scratch "intra-procedure" register, and r0 returns the result. r4-r11 are callee-saved — if you use them you must push them and restore them. Getting this wrong produces bugs that only appear when the optimiser happens to keep a variable in r5.',
+        setup() {
+          return mc('r0–r3 and r12 — they are caller-saved scratch',
+            ['r4–r11 — the caller does not care about those', 'All of r0–r12, the caller saves everything', 'None; the callee must preserve the whole register file']);
+        },
+        render(s, shown) {
+          return regs([['r0–r3', 'args / return'], ['r4–r11', 'callee-saved'], ['r12 (IP)', 'scratch'], ['r13 (SP)', 'stack pointer'], ['r14 (LR)', 'return addr'], ['r15 (PC)', 'program counter']], 'AAPCS register roles')
+            + (shown ? note('r0 also carries the return value out. A 64-bit result comes back in r0:r1.') : '');
+        }
+      },
+
+      /* ---------- Module 2: memory & addressing ---------- */
+      {
+        id: 'm1', mod: 'mem', diff: 'easy', fmt: 'hex', title: 'Effective address',
+        ask: 'Which address does this load read from? Answer in hex.',
+        hint: 'Base register plus the literal offset. The offset is in bytes, not words.',
+        concept: 'Base-plus-offset is how every peripheral register and every struct field is reached: the base register holds the block address, the constant offset names the field. <code>USART1->DR</code> is literally <code>LDR r1, [r0, #4]</code>.',
+        setup() {
+          const base = 0x40004400 + 0x400 * rnd(0, 3);
+          const off = 4 * rnd(1, 8);
+          return {base, off, answer: hx32(base + off)};
+        },
+        render(s, shown) {
+          return asm([`        LDR     r0, =${hx32(s.base)}   ; peripheral base`, `        LDR     r1, [r0, #${s.off}]`])
+            + regs([['R0 (base)', hx32(s.base)], ['offset', `#${s.off}`], ['address read', shown ? hx32(s.base + s.off) : '?', shown ? 'new' : 'q']])
+            + (shown ? note(`${hx32(s.base)} + ${s.off} = <b>${hx32(s.base + s.off)}</b>. The base register itself is not modified.`) : '');
+        }
+      },
+      {
+        id: 'm2', mod: 'mem', diff: 'easy', fmt: 'hex', title: 'Little-endian word load',
+        ask: 'r0 holds the address shown. What 32-bit value does <code>LDR r1, [r0]</code> load? Answer in hex.',
+        hint: 'The first byte in memory is the least-significant byte of the register value, so the register reads back-to-front from the strip.',
+        concept: 'ARM Cortex-M is little-endian: increasing addresses hold increasing significance. It only becomes visible when you alias memory with different types, or when you put bytes on a wire — network protocols are big-endian, which is why <code>REV</code> exists as an instruction.',
+        setup() {
+          const base = 0x20000000 + 4 * rnd(0, 6);
+          const b = [rnd(0, 255), rnd(0, 255), rnd(0, 255), rnd(0, 255), rnd(0, 255), rnd(0, 255), rnd(0, 255), rnd(0, 255)];
+          const w = U((b[3] << 24) | (b[2] << 16) | (b[1] << 8) | b[0]);
+          return {base, b, w, answer: hx32(w)};
+        },
+        render(s, shown) {
+          return asm([`        LDR     r0, =${hx32(s.base)}`, '        LDR     r1, [r0]'])
+            + memStrip(s.base, s.b, {mark: [0, 1, 2, 3], label: 'memory at r0'})
+            + (shown
+              ? note(`Bytes at +0..+3 are ${s.b.slice(0, 4).map(x => hx8(x).slice(2)).join(' ')}, so the register reads <b>${hx32(s.w)}</b> — the +3 byte lands in the top of r1.`)
+              : note('Highlighted bytes are the four the load touches.'));
+        }
+      },
+      {
+        id: 'm3', mod: 'mem', diff: 'medium', fmt: 'hex', title: 'Byte load, zero-extended',
+        ask: 'What is in r1 after the byte load below? Answer as a full 32-bit hex value.',
+        hint: 'LDRB reads exactly one byte and zeroes the upper 24 bits of the register.',
+        concept: 'Registers are always 32 bits, so a narrow load has to say what fills the top. <code>LDRB</code>/<code>LDRH</code> zero-extend — this is the correct load for a <code>uint8_t</code>. The neighbouring bytes in memory are untouched and never appear in the register.',
+        setup() {
+          const base = 0x20000000 + 4 * rnd(0, 6);
+          const b = Array.from({length: 8}, () => rnd(0x10, 0xFF));
+          const off = rnd(1, 6);
+          return {base, b, off, answer: hx32(b[off])};
+        },
+        render(s, shown) {
+          return asm([`        LDR     r0, =${hx32(s.base)}`, `        LDRB    r1, [r0, #${s.off}]`])
+            + memStrip(s.base, s.b, {mark: [s.off], label: 'memory at r0'})
+            + (shown
+              ? note(`One byte, <code>${hx8(s.b[s.off])}</code>, zero-extended to <b>${hx32(s.b[s.off])}</b>.`)
+              : note(`The load reads offset +${s.off} only.`));
+        }
+      },
+      {
+        id: 'm4', mod: 'mem', diff: 'medium', fmt: 'hex', title: 'Signed byte load',
+        ask: 'The same byte, loaded with <code>LDRSB</code> instead. What is in r1? Answer as a full 32-bit hex value.',
+        hint: 'LDRSB copies bit 7 of the byte into all 24 upper bits. If the byte is 0x80 or above, the top of the register fills with ones.',
+        concept: 'Sign extension is why <code>int8_t</code> and <code>uint8_t</code> compile to different load instructions. An accelerometer sample read with the wrong one turns &minus;1 into 255, and the bug only shows up on negative readings.',
+        setup() {
+          const base = 0x20000000 + 4 * rnd(0, 6);
+          const b = Array.from({length: 8}, () => rnd(0x10, 0x7F));
+          const off = rnd(1, 6);
+          b[off] = rnd(0x81, 0xFF);
+          return {base, b, off, answer: hx32(0xFFFFFF00 | b[off])};
+        },
+        render(s, shown) {
+          const v = s.b[s.off];
+          return asm([`        LDRSB   r1, [r0, #${s.off}]     ; r0 = ${hx32(s.base)}`])
+            + memStrip(s.base, s.b, {mark: [s.off], label: 'memory at r0'})
+            + chips([['byte', hx8(v)], ['bit 7', String(v >> 7)], ['as int8_t', String(v - 256)]])
+            + (shown
+              ? note(`Bit 7 is 1, so the top 24 bits fill with ones: <b>${hx32(0xFFFFFF00 | v)}</b>, which is ${v - 256} as a signed 32-bit value.`)
+              : note('Look at bit 7 of the highlighted byte before you answer.'));
+        }
+      },
+      {
+        id: 'm5', mod: 'mem', diff: 'hard', fmt: 'mc', title: 'Pre-index versus post-index',
+        ask: 'r0 holds <code>0x20000000</code>. After <code>LDR r1, [r0], #4</code> executes, what is in r0 and where did r1 come from?',
+        hint: 'The offset sits outside the brackets, so it is applied after the access, not before.',
+        concept: 'Three forms: <code>[r0, #4]</code> offsets without writeback; <code>[r0, #4]!</code> pre-indexes and writes back; <code>[r0], #4</code> loads from the base then advances it. The last is the walking-a-pointer form and compiles directly from <code>*p++</code>.',
+        setup() {
+          return mc('r1 came from 0x20000000, and r0 is now 0x20000004',
+            ['r1 came from 0x20000004, and r0 is now 0x20000004',
+              'r1 came from 0x20000004, and r0 is unchanged',
+              'r1 came from 0x20000000, and r0 is unchanged']);
+        },
+        render(s, shown) {
+          return asm([
+            '        LDR     r1, [r0, #4]      ; offset only, r0 unchanged',
+            '        LDR     r1, [r0, #4]!     ; pre-index: r0 += 4 first, then load',
+            '        LDR     r1, [r0], #4      ; post-index: load, then r0 += 4'
+          ], 2)
+            + regs([['R0 before', '0x20000000'], ['R1 loaded from', shown ? '0x20000000' : '?', shown ? 'new' : 'q'], ['R0 after', shown ? '0x20000004' : '?', shown ? 'new' : 'q']])
+            + (shown ? note('The bracket closes before the offset, so the address used is the old r0. Then the writeback happens.') : '');
+        }
+      },
+
+      /* ---------- Module 3: flags & control flow ---------- */
+      {
+        id: 'f1', mod: 'flow', diff: 'easy', fmt: 'mc', title: 'What CMP actually does',
+        ask: 'r0 and r1 both hold <code>0x00000042</code>. Which flag does <code>CMP r0, r1</code> set?',
+        hint: 'CMP is a subtraction whose result is thrown away — only the flags survive.',
+        concept: '<code>CMP a, b</code> computes <code>a &minus; b</code>, discards the difference, and keeps NZCV. Equal operands give zero, so Z is set. Every conditional branch afterwards is just reading those four bits — the comparison and the branch are two separate instructions.',
+        setup() {
+          return mc('Z, because the subtraction result is zero',
+            ['N, because nothing was negative', 'C, because there was no carry', 'V, because the values matched']);
+        },
+        render(s, shown) {
+          return asm(['        CMP     r0, r1        ; computes r0 - r1, keeps only the flags', '        BEQ     equal'])
+            + regs([['R0', '0x00000042'], ['R1', '0x00000042'], ['r0 - r1', '0x00000000', 'hl']])
+            + flagBoard(shown ? {n: 0, z: 1, c: 1, v: 0} : {n: null, z: null, c: null, v: null})
+            + (shown ? note('C is also 1 here — on ARM, C means "no borrow", and subtracting equal values does not borrow. But Z is the flag <code>BEQ</code> tests.') : '');
+        }
+      },
+      {
+        id: 'f2', mod: 'flow', diff: 'medium', fmt: 'mc', title: 'Flags after a subtraction',
+        ask: 'Which set of flags does this comparison leave behind?',
+        hint: 'Work out the difference as a signed 32-bit number. N is its top bit; C is set when no borrow was needed, i.e. when the unsigned first operand is >= the second.',
+        concept: 'ARM inverts the borrow: after a subtract, C = 1 means "no borrow", so C is really the unsigned >= result. That single convention is why <code>BHS</code> and <code>BCS</code> are the same instruction.',
+        setup() {
+          const a = rnd(0x10, 0x40), b = rnd(0x50, 0x90);
+          const d = a - b;
+          const f = {n: d < 0 ? 1 : 0, z: d === 0 ? 1 : 0, c: a >= b ? 1 : 0, v: 0};
+          const str = o => `N=${o.n} Z=${o.z} C=${o.c} V=${o.v}`;
+          const flip = k => {const o = Object.assign({}, f); o[k] ^= 1; return str(o);};
+          return Object.assign({a, b, f}, mc(str(f), [flip('c'), flip('n'), str({n: f.n, z: f.z, c: f.c ^ 1, v: 1})]));
+        },
+        render(s, shown) {
+          return asm([`        MOVS    r0, #${hx8(s.a)}`, `        MOVS    r1, #${hx8(s.b)}`, '        CMP     r0, r1'])
+            + regs([['R0', hx32(s.a)], ['R1', hx32(s.b)], ['r0 - r1', shown ? hx32(s.a - s.b) : '?', shown ? 'hl' : 'q']])
+            + flagBoard(shown ? s.f : {n: null, z: null, c: null, v: null})
+            + (shown
+              ? note(`${s.a} &minus; ${s.b} = ${s.a - s.b}, so the 32-bit result is <code>${hx32(s.a - s.b)}</code>: top bit set, so N=1. Z=0 (non-zero). C=0 because ${s.a} &lt; ${s.b} unsigned — a borrow was needed. V=0: no <em>signed</em> overflow, the true answer fits fine.`)
+              : '');
+        }
+      },
+      {
+        id: 'f3', mod: 'flow', diff: 'medium', fmt: 'mc', title: 'Signed or unsigned branch',
+        ask: 'r0 holds <code>0xFFFFFFFF</code> and r1 holds <code>0x00000001</code>. After <code>CMP r0, r1</code>, which branches are taken?',
+        hint: '0xFFFFFFFF is 4294967295 unsigned and &minus;1 signed. The two branch families read different flags.',
+        concept: 'The register does not know whether it holds a signed value — you declare that by choosing the branch. <code>BLT/BGT/BGE/BLE</code> read N and V; <code>BLO/BHI/BHS/BLS</code> read C and Z. Comparing an <code>int</code> with an <code>unsigned</code> in C picks the wrong family for you silently.',
+        setup() {
+          return mc('BLT is taken (−1 &lt; 1); BLO is not (0xFFFFFFFF &gt; 1 unsigned)',
+            ['Both BLT and BLO are taken', 'Neither is taken', 'BLO is taken; BLT is not']);
+        },
+        render(s, shown) {
+          return asm(['        CMP     r0, r1', '        BLT     signed_less      ; signed:   N != V', '        BLO     unsigned_less    ; unsigned: C == 0'], shown ? [1] : undefined)
+            + regs([['R0', '0xFFFFFFFF'], ['as int32_t', '-1'], ['as uint32_t', '4294967295'], ['R1', '0x00000001']])
+            + (shown ? note('Same bits, same comparison, opposite answers. This is the classic bug in a loop written with <code>int i</code> against a <code>size_t</code> limit.') : '');
+        }
+      },
+      {
+        id: 'f4', mod: 'flow', diff: 'medium', fmt: 'dec', title: 'Trace a loop',
+        ask: 'What decimal value is in r0 when the loop exits?',
+        hint: 'The loop adds r1 into r0 and then decrements r1, repeating while r1 is non-zero. That is a running sum.',
+        concept: 'A counted loop at machine level is body, decrement, conditional branch — the test lives at the bottom, so the body always runs once before any check. <code>SUBS</code> sets Z when r1 reaches zero, and <code>BNE</code> reads exactly that flag; no separate compare is needed.',
+        setup() {
+          const n = rnd(4, 9);
+          return {n, answer: String(n * (n + 1) / 2)};
+        },
+        render(s, shown) {
+          const rows = [];
+          for (let i = s.n, acc = 0; i >= 1; i--) {acc += i; rows.push([`iter ${s.n - i + 1}`, `r1=${i} r0=${acc}`]);}
+          return asm([
+            '        MOVS    r0, #0',
+            `        MOVS    r1, #${s.n}`,
+            'loop:   ADDS    r0, r0, r1',
+            '        SUBS    r1, r1, #1',
+            '        BNE     loop'
+          ], shown ? [2, 3, 4] : undefined)
+            + (shown
+              ? regs(rows.map(r => [r[0], r[1]]), 'trace')
+              + note(`Sum of 1..${s.n} = <b>${s.n * (s.n + 1) / 2}</b>. The branch stops when SUBS drives r1 to zero and sets Z.`)
+              : note('The last iteration adds 1, then SUBS makes r1 zero and BNE falls through.'));
+        }
+      },
+      {
+        id: 'f5', mod: 'flow', diff: 'hard', fmt: 'mc', title: 'Carry on a subtraction',
+        ask: 'After <code>CMP r0, r1</code> with r0 = <code>0x00000005</code> and r1 = <code>0x00000009</code>, what is the C flag and what does it mean?',
+        hint: 'On ARM, subtraction sets C to the complement of the borrow — the opposite of what most people expect coming from a paper subtraction.',
+        concept: 'C after a subtract is "no borrow occurred", i.e. unsigned first operand &ge; second. That is why the unsigned branches are literally aliases: <code>BHS == BCS</code> and <code>BLO == BCC</code>. It also matters for multi-word arithmetic, where <code>SBCS</code> feeds the carry from the low word into the high word.',
+        setup() {
+          return mc('C = 0 — a borrow was needed, so r0 is below r1 unsigned',
+            ['C = 1 — the subtraction carried out of the top bit',
+              'C = 0 — the result is negative, which always clears C',
+              'C = 1 — no overflow occurred']);
+        },
+        render(s, shown) {
+          return asm(['        CMP     r0, r1', '        BLO     lower        ; taken when C == 0'], shown ? 1 : undefined)
+            + regs([['R0', '0x00000005'], ['R1', '0x00000009'], ['r0 - r1', '0xFFFFFFFC', 'hl']])
+            + flagBoard(shown ? {n: 1, z: 0, c: 0, v: 0} : {n: 1, z: 0, c: null, v: 0})
+            + (shown ? note('5 &minus; 9 needs a borrow from beyond the top bit, so C is cleared and <code>BLO</code> is taken.') : '');
+        }
+      },
+
+      /* ---------- Module 4: stack & function calls ---------- */
+      {
+        id: 's1', mod: 'stack', diff: 'easy', fmt: 'dec', title: 'Cost of a push',
+        ask: 'How many bytes does this PUSH move the stack pointer by? Answer in decimal.',
+        hint: 'Every register in the list is one 32-bit word.',
+        concept: 'PUSH is a store-multiple with writeback on SP. The register list is stored in ascending register order at ascending addresses regardless of how you write it, and SP ends up pointing at the lowest word — the last one pushed.',
+        setup() {
+          const n = rnd(2, 5);
+          const list = ['r4', 'r5', 'r6', 'r7', 'r8'].slice(0, n);
+          return {list, n, answer: String(4 * (n + 1))};
+        },
+        render(s, shown) {
+          const items = s.list.concat(['lr']);
+          return asm([`        PUSH    {${s.list.join(', ')}, lr}`, '        ...', `        POP     {${s.list.join(', ')}, pc}`])
+            + chips(items.map(r => [r, '4 bytes']))
+            + (shown
+              ? note(`${items.length} registers &times; 4 bytes = <b>${4 * items.length}</b> bytes. SP decreases by that much, and the matching POP puts it back.`)
+              : note('Do not forget lr — it is in the list too.'));
+        }
+      },
+      {
+        id: 's2', mod: 'stack', diff: 'easy', fmt: 'mc', title: 'Which way the stack grows',
+        ask: 'On Cortex-M the stack is full-descending. What does that mean for SP?',
+        hint: 'Two independent choices: which direction pushes move SP, and whether SP points at the last item or the next free slot.',
+        concept: 'Full-descending: SP always points at the last item pushed, and pushes decrement it. So the stack grows downward toward your <code>.bss</code>, and an overflow silently corrupts globals rather than faulting — which is why an MPU guard region or a stack-painting check is worth having.',
+        setup() {
+          return mc('PUSH decrements SP first, and SP points at the last item pushed',
+            ['PUSH increments SP, and SP points at the next free slot',
+              'PUSH decrements SP, and SP points at the next free slot',
+              'PUSH increments SP, and SP points at the last item pushed']);
+        },
+        render(s, shown) {
+          return regs([['SP before', '0x20001000'], ['after PUSH {r4}', '0x20000FFC', shown ? 'new' : 'q'], ['[SP] holds', shown ? 'r4' : '?', shown ? 'new' : 'q']], 'full-descending')
+            + (shown ? note('Higher addresses are older frames. The initial SP comes from the first word of the vector table.') : '');
+        }
+      },
+      {
+        id: 's3', mod: 'stack', diff: 'medium', fmt: 'hex', title: 'SP through a frame',
+        ask: 'What is SP at the marked line? Answer in hex.',
+        hint: 'Add up the push, then the explicit subtraction for locals. Both move SP down.',
+        concept: 'A frame is usually one PUSH for the saved registers plus a <code>SUB sp, #n</code> for locals. Both must be undone exactly — this is why <code>ADD sp, #n</code> appears immediately before the POP in every epilogue.',
+        setup() {
+          const sp = 0x20001000 - 0x10 * rnd(0, 8);
+          const n = pick([1, 3]);   /* n + 1 words keeps SP 8-byte aligned */
+          const loc = 8 * rnd(1, 3);
+          return {sp, n, loc, answer: hx32(sp - 4 * (n + 1) - loc)};
+        },
+        render(s, shown) {
+          const list = ['r4', 'r5', 'r6', 'r7'].slice(0, s.n).join(', ');
+          const afterPush = s.sp - 4 * (s.n + 1);
+          return asm([
+            `        PUSH    {${list}, lr}`,
+            `        SUB     sp, sp, #${s.loc}      ; room for locals`,
+            '        BL      helper            ; <- SP here?'
+          ], 2)
+            + regs([['SP on entry', hx32(s.sp)],
+            ['after PUSH', shown ? hx32(afterPush) : '?', shown ? '' : 'q'],
+            ['after SUB', shown ? hx32(afterPush - s.loc) : '?', shown ? 'new' : 'q']])
+            + (shown
+              ? note(`${s.n + 1} registers = ${4 * (s.n + 1)} bytes, plus ${s.loc} bytes of locals: SP falls to <b>${hx32(afterPush - s.loc)}</b>. Still 8-byte aligned at the call, as AAPCS requires.`)
+              : note('AAPCS requires SP to be 8-byte aligned at every public call — a useful sanity check on your answer.'));
+        }
+      },
+      {
+        id: 's4', mod: 'stack', diff: 'medium', fmt: 'mc', title: 'Returning with BX LR',
+        ask: 'Why does bit 0 of the address in LR have to be 1 when a Cortex-M function returns with <code>BX lr</code>?',
+        hint: 'Instructions are at least 2-byte aligned, so bit 0 of an address is never needed to point at one.',
+        concept: 'Bit 0 of a branch target selects the instruction set: 1 means Thumb, 0 means ARM. Cortex-M only implements Thumb, so a target with bit 0 clear raises a UsageFault (INVSTATE). This is why function pointers in a Cortex-M vector table are odd numbers.',
+        setup() {
+          return mc('Bit 0 selects Thumb state; clearing it faults, since Cortex-M has no ARM state',
+            ['It marks the address as being in flash rather than RAM',
+              'It tells the core that LR holds a return address rather than a data pointer',
+              'It is an alignment tag; the core ignores it entirely']);
+        },
+        render(s, shown) {
+          return asm(['        BL      helper       ; LR = (addr of next insn) | 1', '        ...', 'helper: PUSH    {r4, lr}', '        POP     {r4, pc}     ; equivalent return: PC gets the odd address'], shown ? [0, 3] : undefined)
+            + regs([['LR after BL', '0x08000245', 'hl'], ['actual instruction at', '0x08000244'], ['bit 0', '1 = Thumb', shown ? 'new' : '']]);
+        }
+      },
+      {
+        id: 's5', mod: 'stack', diff: 'hard', fmt: 'mc', title: 'The fifth argument',
+        ask: 'A C function takes six <code>int</code> parameters. Under AAPCS, where does the caller put the fifth and sixth?',
+        hint: 'Only four registers are reserved for arguments.',
+        concept: 'Arguments five onward are pushed onto the stack, in order, immediately before the call — so the callee reads them at <code>[sp, #0]</code>, <code>[sp, #4]</code> and so on, after adjusting for anything it pushed itself. This is why very wide parameter lists cost real instructions, and why 64-bit arguments must start in an even register pair.',
+        setup() {
+          return mc('On the stack: arg 5 at [sp, #0] and arg 6 at [sp, #4] on entry',
+            ['In r4 and r5, which the callee must preserve anyway',
+              'In r12 and lr, the two remaining scratch registers',
+              'Packed into r0–r3 alongside the first four']);
+        },
+        render(s, shown) {
+          return asm([
+            '        MOVS    r0, #1        ; arg 1',
+            '        MOVS    r1, #2        ; arg 2',
+            '        MOVS    r2, #3        ; arg 3',
+            '        MOVS    r3, #4        ; arg 4',
+            '        PUSH    {r5, r6}      ; args 5 and 6',
+            '        BL      six_args'
+          ], shown ? [4] : undefined)
+            + (shown ? note('The caller also removes them again after the call — the callee never pops its arguments on ARM.') : '');
+        }
+      },
+
+      /* ---------- Module 5: machine-level behaviour ---------- */
+      {
+        id: 'x1', mod: 'mach', diff: 'medium', fmt: 'mc', title: 'Indexing an array',
+        ask: 'For <code>int arr[]</code> with the base in r1 and the index in r2, which instruction loads <code>arr[i]</code>?',
+        hint: 'An int is four bytes, so the index has to be scaled before it becomes a byte offset.',
+        concept: 'The register-shifted offset form <code>[rn, rm, LSL #k]</code> does the scale-and-add in the addressing unit for free — this is why pointer arithmetic on a 4-byte type costs nothing extra. C\'s "adding 1 to an int* advances 4 bytes" is this shift.',
+        setup() {
+          return mc('LDR r0, [r1, r2, LSL #2]',
+            ['LDR r0, [r1, r2]', 'LDR r0, [r1, r2, LSL #4]', 'LDR r0, [r1, #r2]']);
+        },
+        render(s, shown) {
+          return asm(['        ; int arr[8];  x = arr[i];   r1 = arr, r2 = i'])
+            + chips([['sizeof(int)', '4'], ['scale', '<< 2'], ['byte offset', '4 * i']])
+            + (shown ? note('A <code>short</code> array would use <code>LSL #1</code>, a <code>char</code> array no shift at all.') : '');
+        }
+      },
+      {
+        id: 'x2', mod: 'mach', diff: 'hard', fmt: 'mc', title: 'Dividing by four',
+        ask: 'The compiler turns <code>x / 4</code> into a shift. Why does it emit <code>ASRS</code> plus a correction when x is a signed <code>int</code>, but a bare <code>LSRS</code> when x is <code>unsigned</code>?',
+        hint: 'Think about what a plain arithmetic right shift does to −1, and what C says −1 / 4 must produce.',
+        concept: 'ASR alone rounds toward negative infinity (&minus;1 &gt;&gt; 2 = &minus;1), but C requires division to truncate toward zero (&minus;1 / 4 = 0). The compiler adds 3 to negative values first — usually as <code>ADD r0, r0, r0, LSR #30</code> — then shifts. The unsigned case needs no correction, which is one concrete reason unsigned arithmetic is cheaper on hot paths.',
+        setup() {
+          return mc('ASR rounds toward −∞, but C division must truncate toward zero, so negatives need a bias added first',
+            ['LSR does not exist for signed registers, so ASR is the only option',
+              'ASR is slower, and the correction compensates for the extra cycle',
+              'The correction sets the V flag, which signed division is required to update']);
+        },
+        render(s, shown) {
+          return asm([
+            '        ; unsigned x / 4',
+            '        LSRS    r0, r0, #2',
+            '',
+            '        ; signed x / 4',
+            '        ADD     r0, r0, r0, LSR #30   ; add 3 if negative',
+            '        ASRS    r0, r0, #2'
+          ], shown ? [4, 5] : undefined)
+            + chips([['-1 >> 2 (ASR)', '-1'], ['C: -1 / 4', '0'], ['-9 >> 2 (ASR)', '-3'], ['C: -9 / 4', '-2']])
+            + (shown ? note('The bias turns the round-down into a round-toward-zero for exactly the negative cases.') : '');
+        }
+      },
+      {
+        id: 'x3', mod: 'mach', diff: 'hard', fmt: 'hex', title: 'PC-relative literal load',
+        ask: 'What address does the literal load read from? Answer in hex.',
+        hint: 'In Thumb, PC reads as the current instruction address + 4. For a word-sized literal load that value is then rounded down to a 4-byte boundary before the offset is added.',
+        concept: 'A 32-bit constant will not fit in a 16-bit instruction, so the assembler parks it in a literal pool after the function and emits a PC-relative load. The +4 is the architectural pipeline offset, frozen into the definition of PC. Miscounting it is the classic error when hand-computing a disassembly.',
+        setup() {
+          const pc = 0x08000200 + 2 * rnd(0, 20);
+          const off = 4 * rnd(1, 12);
+          const base = (pc + 4) & ~3;
+          return {pc, off, base, answer: hx32(base + off)};
+        },
+        render(s, shown) {
+          return asm([`${hx32(s.pc).slice(2).toLowerCase()}:  LDR     r0, [pc, #${s.off}]`])
+            + regs([['instruction at', hx32(s.pc)],
+            ['PC reads as', shown ? hx32(s.pc + 4) : '?', shown ? '' : 'q'],
+            ['aligned down to 4', shown ? hx32(s.base) : '?', shown ? '' : 'q'],
+            ['+ offset', shown ? hx32(s.base + s.off) : '?', shown ? 'new' : 'q']])
+            + (shown
+              ? note(`${hx32(s.pc)} + 4 = ${hx32(s.pc + 4)}${(s.pc + 4) % 4 ? `, aligned down to ${hx32(s.base)}` : ' (already aligned)'}, plus ${s.off} = <b>${hx32(s.base + s.off)}</b>. That word is the constant being loaded.`)
+              : note('Careful with the alignment step — it only bites when the instruction sits at an address that is 2 mod 4.'));
+        }
+      },
+      {
+        id: 'x4', mod: 'mach', diff: 'hard', fmt: 'dec', title: 'Exclusive store result',
+        ask: 'A <code>STREX r2, r1, [r0]</code> succeeded — the store went through. What decimal value did it write into r2?',
+        hint: 'The status register uses the same convention as an error code, not as a boolean "did it work".',
+        concept: 'LDREX/STREX are the lock-free read-modify-write pair: <code>STREX</code> writes 0 on success and 1 if the exclusive monitor was cleared (by an interrupt, a context switch, or another master). The retry loop is <code>CMP r2, #0; BNE again</code>. Plain <code>LDR/STR</code> around a peripheral field is not atomic, which is how two ISRs racing on the same register lose a bit.',
+        setup() {return {answer: '0'};},
+        render(s, shown) {
+          return asm([
+            'again:  LDREX   r1, [r0]',
+            '        ORR     r1, r1, #1',
+            '        STREX   r2, r1, [r0]   ; r2 = 0 on success, 1 on failure',
+            '        CMP     r2, #0',
+            '        BNE     again'
+          ], shown ? [2, 3, 4] : undefined)
+            + regs([['R2 on success', shown ? '0' : '?', shown ? 'new' : 'q'], ['R2 on failure', shown ? '1' : '?', shown ? '' : 'q']])
+            + (shown ? note('So the loop branches back while r2 is non-zero. An interrupt between the LDREX and the STREX clears the monitor and forces one more pass.') : '');
+        }
+      },
+      {
+        id: 'x5', mod: 'mach', diff: 'expert', fmt: 'mc', title: 'Exception entry',
+        ask: 'An interrupt fires. Before the handler\'s first instruction runs, which registers has the Cortex-M core already stacked for you?',
+        hint: 'The core saves exactly the registers a C function is allowed to clobber, so the handler can be plain C with no assembly wrapper.',
+        concept: 'Hardware pushes r0-r3, r12, LR, PC (the return address) and xPSR — the caller-saved set. That is precisely why a Cortex-M ISR can be an ordinary C function: anything the compiler may destroy without asking is already safe. LR is then loaded with EXC_RETURN (0xFFFFFFF9 / 0xFFFFFFFD and friends), and branching to it triggers the unstack.',
+        setup() {
+          return mc('r0–r3, r12, LR, the return address, and xPSR',
+            ['The entire register file, r0–r15',
+              'r4–r11, since those are the callee-saved ones',
+              'Nothing — the handler must push everything itself']);
+        },
+        render(s, shown) {
+          const rows = [['[SP + 0x1C]', 'xPSR'], ['[SP + 0x18]', 'PC (return addr)'], ['[SP + 0x14]', 'LR'], ['[SP + 0x10]', 'r12'], ['[SP + 0x0C]', 'r3'], ['[SP + 0x08]', 'r2'], ['[SP + 0x04]', 'r1'], ['[SP + 0x00]', 'r0']];
+          return (shown ? regs(rows, 'stack frame built by hardware') : regs([['SP + 0x1C … SP + 0x00', '8 words', 'q']], 'stack frame built by hardware'))
+            + (shown ? note('LR is set to EXC_RETURN, e.g. <code>0xFFFFFFF9</code>. Branching to that value is what pops this frame — it is not a real address.') : note('Eight words go on the stack. Which eight?'));
+        }
+      }
+    ];
+
+    PROBLEMS.sort((a, b) => MOD_INDEX[a.mod] - MOD_INDEX[b.mod]);
+    const BY_ID = Object.fromEntries(PROBLEMS.map(p => [p.id, p]));
+    PROBLEMS.forEach(p => {p.s = p.setup();});
+
+    /* m3's prompt needs the generated offset, so patch it after setup */
+    function askOf(p) {
+      if (p.id === 'm3') return `What is in r1 after <code>LDRB r1, [r0, #${p.s.off}]</code>? Answer as a full 32-bit hex value.`;
+      return p.ask;
+    }
+
+    /* ============================================================
+       PART 4 — answer checking
+       ============================================================ */
+    function norm(v) {return String(v).trim().toLowerCase().replace(/[\s_,]/g, '');}
+
+    function numOf(s) {
+      if (/^-?0x[0-9a-f]+$/.test(s)) return parseInt(s.replace('0x', ''), 16) * (s[0] === '-' ? -1 : 1);
+      if (/^-?0b[01]+$/.test(s)) return parseInt(s.replace('0b', ''), 2) * (s[0] === '-' ? -1 : 1);
+      if (/^-?\d+$/.test(s)) return parseInt(s, 10);
+      return null;
+    }
+
+    function accepts(expected, given) {
+      const e = norm(expected), g = norm(given);
+      if (!g) return false;
+      if (e === g) return true;
+      if (/^0[xb]/.test(e) && e.slice(2).replace(/^0+/, '') === g.replace(/^0+/, '')) return true;
+      const en = numOf(e), gn = numOf(g);
+      return en !== null && gn !== null && en === gn;
+    }
+
+    const FMT_HELP = {
+      hex: 'answer in hex, e.g. 0x2000004C',
+      dec: 'answer in decimal',
+      bin: 'answer in binary, e.g. 0b10110011',
+      mc: 'pick one'
+    };
+
+    /* ============================================================
+       PART 5 — state
+       ============================================================ */
+    const STORE_KEY = 'asmlab.progress.v1';
+
+    const app = {
+      tab: 'learn', cur: 0,
+      solved: new Set(),
+      tried: {}, feedback: {}, inputs: {}, pick: {}, hint: {}, reveal: {}, why: {}
+    };
+
+    function save() {try {localStorage.setItem(STORE_KEY, JSON.stringify([...app.solved]));} catch (e) { }}
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) JSON.parse(raw).forEach(id => {if (BY_ID[id]) app.solved.add(id);});
+      } catch (e) { }
+    }
+
+    const isShown = p => app.feedback[p.id] === 'correct' || app.reveal[p.id];
+
+    /* ============================================================
+       PART 6 — views
+       ============================================================ */
+    function view() {
+      const solved = app.solved.size, total = PROBLEMS.length;
+      let h = `<div class="masthead">
+          <h1>ASM Lab</h1>
+          <span class="sub">assembly &amp; machine operations &mdash; ${total} problems across ${MODULES.length} modules &middot; ARM Thumb / Cortex-M</span>
+        </div>
+        <div class="tab-bar">
+          ${[['learn', 'Learn'], ['problems', `Problems (${solved}/${total})`], ['ref', 'Reference']]
+          .map(([k, t]) => `<button class="tab ${app.tab === k ? 'active' : ''}" onclick="setTab('${k}')">${t}</button>`).join('')}
+        </div>`;
+
+      if (app.tab === 'learn') h += viewLearn();
+      else if (app.tab === 'problems') h += viewList();
+      else h += viewRef();
+
+      document.getElementById('app').innerHTML = h;
+      if (app.tab === 'learn') {
+        const el = document.getElementById('ans');
+        if (el) el.focus();
+      }
+    }
+
+    function viewLearn() {
+      const p = PROBLEMS[app.cur], s = p.s, shown = isShown(p);
+      const mod = MODULES[MOD_INDEX[p.mod]];
+      const firstOfMod = PROBLEMS.findIndex(x => x.mod === p.mod) === app.cur;
+      const inMod = PROBLEMS.filter(x => x.mod === p.mod);
+
+      let h = '';
+      if (firstOfMod) {
+        h += `<div class="modcard">
+            <div class="t">Module ${MOD_INDEX[p.mod] + 1} of ${MODULES.length}</div>
+            <h2>${mod.name}</h2>
+            <p>${mod.blurb}</p>
+          </div>`;
+      }
+
+      h += `<div class="card">
+          <div class="problem-header">
+            <div>
+              <div class="crumb">${mod.name} &middot; ${inMod.indexOf(p) + 1} of ${inMod.length}</div>
+              <h3>${p.title}</h3>
+            </div>
+            <span class="badge badge-${p.diff}">${p.diff}</span>
+          </div>
+          <p class="ask">${askOf(p)}</p>
+          ${p.render(s, shown)}`;
+
+      if (p.fmt === 'mc') {
+        const picked = app.pick[p.id];
+        h += `<div class="choices">` + s.choices.map((c, i) => {
+          let cls = '';
+          if (shown && i === s.ai) cls = 'right';
+          else if (picked === i && app.feedback[p.id] === 'wrong') cls = 'picked';
+          return `<button class="choice ${cls}" ${shown ? 'disabled' : ''} onclick="chooseMC(${i})">
+              <span class="key">${'ABCD'[i]}</span><span>${c}</span></button>`;
+        }).join('') + `</div>`;
+      }
+
+      if (!shown) {
+        h += `<div class="answer-row">`;
+        if (p.fmt !== 'mc') {
+          h += `<input type="text" id="ans" placeholder="${FMT_HELP[p.fmt]}" value="${esc(app.inputs[p.id] || '')}"
+                   oninput="app.inputs['${p.id}']=this.value"
+                   onkeydown="if(event.key==='Enter')submit()">
+            <button class="btn btn-primary" onclick="submit()">Check</button>`;
+        }
+        h += `<button class="linkbtn" onclick="tog('hint','${p.id}')">${app.hint[p.id] ? 'hide hint' : 'hint'}</button>
+            <button class="linkbtn" onclick="tog('reveal','${p.id}')">show me</button>
+          </div>`;
+        if (app.hint[p.id]) h += `<div class="feedback hint">${p.hint}</div>`;
+        if (app.feedback[p.id] === 'wrong') {
+          const n = app.tried[p.id] || 0;
+          h += `<div class="feedback wrong">Not quite &mdash; ${n >= 3 ? 'try the hint, or use <b>show me</b> to walk through it.' : 'have another go.'}</div>`;
+        }
+      } else {
+        const correct = app.feedback[p.id] === 'correct';
+        h += `<div class="feedback ${correct ? 'correct' : 'hint'}">
+            ${correct ? '&#10003; Correct' : 'Answer'}: <span class="mono"><b>${esc(s.answer)}</b></span>
+            &nbsp;<button class="linkbtn" style="color:inherit" onclick="tog('why','${p.id}')">${app.why[p.id] ? 'hide' : 'why this matters'}</button>
+            ${app.why[p.id] ? `<div style="margin-top:8px;color:var(--tx-2)">${p.concept}</div>` : ''}
+          </div>`;
+      }
+
+      h += `<div class="navrow">
+          <button class="btn btn-sm" onclick="nav(-1)" ${app.cur === 0 ? 'disabled style="opacity:.4"' : ''}>&larr; Prev</button>
+          <button class="btn btn-sm" onclick="nav(1)" ${app.cur === PROBLEMS.length - 1 ? 'disabled style="opacity:.4"' : ''}>Next &rarr;</button>
+          <button class="btn btn-sm" onclick="regen()">${p.fmt === 'mc' ? 'Reshuffle' : 'New numbers'}</button>
+          <span class="spacer"></span>
+          <span style="font-size:12px;color:var(--tx-3)">${app.cur + 1} / ${PROBLEMS.length}</span>
+        </div></div>`;
+      return h;
+    }
+
+    function viewList() {
+      const solved = app.solved.size, total = PROBLEMS.length;
+      const byDiff = d => PROBLEMS.filter(p => p.diff === d && app.solved.has(p.id)).length;
+      let h = `<div class="stat-grid">
+          <div class="stat"><div class="stat-val">${solved}</div><div class="stat-lbl">solved</div></div>
+          <div class="stat"><div class="stat-val">${total - solved}</div><div class="stat-lbl">remaining</div></div>
+          <div class="stat"><div class="stat-val">${Math.round(solved / total * 100)}%</div><div class="stat-lbl">complete</div></div>
+          <div class="stat"><div class="stat-val">${byDiff('hard') + byDiff('expert')}</div><div class="stat-lbl">hard+ solved</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${solved / total * 100}%"></div></div>
+        <div class="card">`;
+
+      MODULES.forEach((m, mi) => {
+        const list = PROBLEMS.filter(p => p.mod === m.id);
+        const done = list.filter(p => app.solved.has(p.id)).length;
+        h += `<div class="modhead"><span class="t">${mi + 1}. ${m.name}</span><span class="line"></span><span class="c">${done}/${list.length}</span></div>`;
+        list.forEach(p => {
+          const i = PROBLEMS.indexOf(p), ok = app.solved.has(p.id);
+          h += `<div class="pitem ${ok ? 'solved' : ''} ${i === app.cur ? 'current' : ''}" onclick="go(${i})">
+              <div class="pi-icon ${ok ? 'yes' : 'no'}">${ok ? '&#10003;' : i + 1}</div>
+              <div class="pi-info"><div class="pi-title">${p.title}</div><div class="pi-sub">${askOf(p).replace(/<[^>]+>/g, '')}</div></div>
+              <span class="badge badge-${p.diff}">${p.diff}</span>
+            </div>`;
+        });
+      });
+
+      h += `<div class="navrow"><button class="btn btn-sm" onclick="resetAll()">Reset progress</button></div></div>`;
+      return h;
+    }
+
+    function refTable(rows) {
+      return `<table class="reft">${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`;
+    }
+
+    function viewRef() {
+      return `<div class="card">
+        <h2>Instruction shapes</h2>
+        ${refTable([
+        ['MOVS rd, #imm', 'load a small constant; LDR rd, =const for a big one (literal pool)'],
+        ['ADDS/SUBS rd, rn, op2', 'three-address arithmetic; the S suffix updates NZCV'],
+        ['ANDS / ORRS / EORS / BICS', 'bitwise and, or, xor, and-not (clear bits)'],
+        ['LSLS / LSRS / ASRS rd, rn, #n', 'shift left, logical right (zero-fill), arithmetic right (sign-fill)'],
+        ['CMP rn, op2', 'subtract and discard the result, keeping only the flags'],
+        ['TST rn, op2', 'AND and discard — tests whether any masked bit is set']
+      ])}
+        <h2 style="margin-top:18px">Load / store</h2>
+        ${refTable([
+        ['LDR / STR rt, [rn]', 'whole 32-bit word at the address in rn'],
+        ['LDR rt, [rn, #off]', 'base plus constant offset — struct fields, peripheral registers'],
+        ['LDR rt, [rn, rm, LSL #2]', 'base plus scaled index — arr[i] for a 4-byte element type'],
+        ['LDR rt, [rn, #off]!', 'pre-index: rn += off first, then access, and rn keeps the new value'],
+        ['LDR rt, [rn], #off', 'post-index: access at rn, then rn += off  (*p++)'],
+        ['LDRB / LDRH', 'byte / halfword load, zero-extended into the register'],
+        ['LDRSB / LDRSH', 'byte / halfword load, sign-extended (int8_t, int16_t)'],
+        ['LDREX / STREX', 'exclusive pair for atomic read-modify-write; STREX writes 0 on success'],
+        ['PUSH / POP {list}', 'store/load multiple with SP writeback; full-descending stack']
+      ])}
+        <h2 style="margin-top:18px">Flags and branches</h2>
+        ${refTable([
+        ['N', 'bit 31 of the result — negative when interpreted as signed'],
+        ['Z', 'result was exactly zero'],
+        ['C', 'carry out of an add; on a subtract, 1 means <em>no borrow</em> (unsigned &ge;)'],
+        ['V', 'signed overflow — the true result did not fit in 32 bits'],
+        ['BEQ / BNE', 'Z == 1 / Z == 0'],
+        ['BLT / BGE / BGT / BLE', 'signed comparisons — read N and V'],
+        ['BLO / BHS / BHI / BLS', 'unsigned comparisons — read C and Z (BLO == BCC, BHS == BCS)'],
+        ['B / BL / BX rm', 'branch / branch-and-link (sets LR) / branch to a register, bit 0 selects Thumb']
+      ])}
+        <h2 style="margin-top:18px">Calling convention (AAPCS)</h2>
+        ${refTable([
+        ['r0–r3', 'first four arguments, caller-saved scratch; r0 also returns the result'],
+        ['r4–r11', 'callee-saved — push them if you use them'],
+        ['r12 (IP)', 'scratch, may be destroyed by veneers'],
+        ['r13 (SP)', 'stack pointer; 8-byte aligned at every public call'],
+        ['r14 (LR)', 'return address, with bit 0 set for Thumb'],
+        ['r15 (PC)', 'reads as the current instruction address + 4 in Thumb'],
+        ['args 5+', 'pushed on the stack by the caller, in order'],
+        ['exception entry', 'hardware stacks r0–r3, r12, LR, PC, xPSR — so ISRs can be plain C']
+      ])}
+      </div>`;
+    }
+
+    /* ---------- actions ---------- */
+    function setTab(t) {app.tab = t; view();}
+    function go(i) {app.cur = i; app.tab = 'learn'; view();}
+    function nav(d) {app.cur = Math.max(0, Math.min(PROBLEMS.length - 1, app.cur + d)); view();}
+    function tog(k, id) {app[k][id] = !app[k][id]; view();}
+
+    function mark(p, ok) {
+      app.tried[p.id] = (app.tried[p.id] || 0) + 1;
+      if (ok) {app.feedback[p.id] = 'correct'; app.solved.add(p.id); save();}
+      else app.feedback[p.id] = 'wrong';
+      view();
+    }
+
+    function submit() {
+      const p = PROBLEMS[app.cur];
+      const given = app.inputs[p.id] || '';
+      if (!given.trim()) return;
+      mark(p, [p.s.answer, ...(p.s.alts || [])].some(c => accepts(c, given)));
+    }
+
+    function chooseMC(i) {
+      const p = PROBLEMS[app.cur];
+      if (isShown(p)) return;
+      app.pick[p.id] = i;
+      mark(p, i === p.s.ai);
+    }
+
+    function regen() {
+      const p = PROBLEMS[app.cur];
+      p.s = p.setup();
+      app.feedback[p.id] = null;
+      app.reveal[p.id] = false;
+      app.inputs[p.id] = '';
+      app.pick[p.id] = null;
+      view();
+    }
+
+    function resetAll() {
+      if (!confirm('Clear all solved problems?')) return;
+      app.solved.clear();
+      app.feedback = {}; app.inputs = {}; app.pick = {}; app.reveal = {}; app.hint = {}; app.tried = {};
+      save();
+      view();
+    }
+
+    load();
+    view();
+  </script>
+</body>
+
+</html>
