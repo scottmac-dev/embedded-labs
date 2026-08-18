@@ -1,0 +1,2259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calc Lab — calculus for software and embedded engineers</title>
+  <style>
+    :root {
+      --bg: #0a0f1a;
+      --bg-1: #111827;
+      --bg-2: #1a2434;
+      --bg-3: #232f42;
+
+      --tx-1: #f3f4f6;
+      --tx-2: #9ca3af;
+      --tx-3: #6b7280;
+
+      --bd-1: #2b3648;
+      --bd-2: #374151;
+
+      --accent: #60a5fa;
+      --accent-dim: rgba(96, 165, 250, 0.15);
+
+      --on: #4ade80;
+      --off: #f87171;
+      --hl: #fbbf24;
+      --fill: #38bdf8;
+      --unk: #c084fc;
+
+      --r-sm: 5px;
+      --r-md: 8px;
+      --r-lg: 14px;
+
+      --font-sans: Inter, system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--tx-1);
+      background: var(--bg);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 4rem;
+    }
+
+    /* ---------- header / tabs ---------- */
+    .masthead {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .masthead h1 {
+      font-size: 19px;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+    }
+
+    .masthead .sub {
+      font-size: 13px;
+      color: var(--tx-3);
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--bd-1);
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 8px 15px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--tx-2);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+      transition: color .15s, background .15s;
+    }
+
+    .tab.active {
+      color: var(--tx-1);
+      border-bottom-color: var(--accent);
+      font-weight: 550;
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--tx-1);
+      background: rgba(255, 255, 255, .03);
+    }
+
+    .card {
+      background: var(--bg-1);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-lg);
+      padding: 1.25rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 8px 24px rgba(0, 0, 0, .18);
+    }
+
+    .card+.card {
+      margin-top: 1rem;
+    }
+
+    h2 {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: .92em;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--tx-1);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--r-md);
+      white-space: nowrap;
+    }
+
+    .badge-easy {
+      background: rgba(34, 197, 94, .15);
+      color: #86efac;
+    }
+
+    .badge-medium {
+      background: rgba(245, 158, 11, .15);
+      color: #fcd34d;
+    }
+
+    .badge-hard {
+      background: rgba(239, 68, 68, .15);
+      color: #fca5a5;
+    }
+
+    .badge-expert {
+      background: rgba(139, 92, 246, .15);
+      color: #c4b5fd;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin: 16px 0 6px;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
+    }
+
+    /* ---------- module intro ---------- */
+    .modcard {
+      background: linear-gradient(180deg, rgba(96, 165, 250, .10), rgba(96, 165, 250, .02));
+      border: 1px solid rgba(96, 165, 250, .28);
+      border-radius: var(--r-lg);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .modcard .t {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--accent);
+      font-weight: 650;
+    }
+
+    .modcard h2 {
+      margin: 2px 0 5px;
+    }
+
+    .modcard p {
+      font-size: 13.5px;
+      color: var(--tx-2);
+      max-width: 68ch;
+    }
+
+    /* ---------- problem chrome ---------- */
+    .problem-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .crumb {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 600;
+    }
+
+    .ask {
+      color: var(--tx-1);
+      margin-bottom: 12px;
+      font-size: 14.5px;
+    }
+
+    .note {
+      font-size: 13px;
+      color: var(--tx-2);
+      margin: 8px 0 2px;
+      max-width: 78ch;
+    }
+
+    /* ---------- equations ---------- */
+    .eqblk {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--r-md);
+      padding: 9px 13px;
+      margin: 8px 0;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      line-height: 1.7;
+    }
+
+    .eqblk .el {
+      display: block;
+    }
+
+    .eqblk .ec {
+      color: var(--tx-3);
+    }
+
+    .eqblk b {
+      color: var(--hl);
+      font-weight: 600;
+    }
+
+    .eqblk .q {
+      color: var(--unk);
+      font-weight: 700;
+    }
+
+    /* ---------- code block ---------- */
+    .code {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 10px 13px;
+      margin: 8px 0;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.6;
+    }
+
+    .code .k {
+      color: var(--accent);
+    }
+
+    .code .c {
+      color: var(--tx-3);
+    }
+
+    .code .h {
+      color: var(--hl);
+    }
+
+    /* ---------- plots ---------- */
+    .plot {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 9px 11px 6px;
+      margin: 8px 0;
+      overflow-x: auto;
+    }
+
+    .plot .plbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 650;
+      margin-bottom: 4px;
+    }
+
+    .plot svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-width: 320px;
+    }
+
+    .plotgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 10px;
+      margin: 8px 0;
+    }
+
+    .plotgrid .plot {
+      margin: 0;
+    }
+
+    .lgd {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 11.5px;
+      color: var(--tx-2);
+      margin-top: 4px;
+    }
+
+    .lgd i {
+      display: inline-block;
+      width: 14px;
+      height: 3px;
+      border-radius: 2px;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+
+    /* ---------- tables ---------- */
+    .board {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 10px 12px;
+      margin: 8px 0;
+      overflow-x: auto;
+    }
+
+    .board .blbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 650;
+      margin-bottom: 7px;
+    }
+
+    .memt {
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin: 2px 0;
+    }
+
+    .memt th,
+    .memt td {
+      border: 1px solid var(--bd-1);
+      padding: 4px 9px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .memt th {
+      color: var(--tx-3);
+      font-weight: 500;
+      background: var(--bg-1);
+      font-size: 11px;
+    }
+
+    .memt td {
+      background: var(--bg-3);
+      color: var(--tx-1);
+      font-weight: 600;
+    }
+
+    .memt td.lb {
+      background: var(--bg-1);
+      color: var(--tx-2);
+      font-weight: 500;
+      text-align: right;
+      font-size: 11px;
+    }
+
+    .memt td.mk {
+      background: rgba(56, 189, 248, .18);
+      border-color: var(--fill);
+      color: #bae6fd;
+    }
+
+    .memt td.mk2 {
+      background: rgba(251, 191, 36, .16);
+      border-color: var(--hl);
+      color: #fde68a;
+    }
+
+    .memt td.dim {
+      background: var(--bg-1);
+      color: var(--tx-3);
+      font-weight: 400;
+    }
+
+    .memt td.q {
+      color: var(--unk);
+      border-style: dashed;
+      border-color: rgba(192, 132, 252, .55);
+    }
+
+    /* ---------- value cells ---------- */
+    .rrow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .reg {
+      min-width: 118px;
+      background: var(--bg-3);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-sm);
+      padding: 5px 9px;
+    }
+
+    .reg .rn {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--tx-3);
+      letter-spacing: .03em;
+    }
+
+    .reg .rv {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--tx-1);
+      font-weight: 600;
+    }
+
+    .reg.hl {
+      border-color: var(--hl);
+      box-shadow: 0 0 0 1px rgba(251, 191, 36, .45);
+    }
+
+    .reg.new {
+      border-color: var(--on);
+      background: rgba(34, 197, 94, .14);
+    }
+
+    .reg.new .rv {
+      color: #bbf7d0;
+    }
+
+    .reg.q .rv {
+      color: var(--unk);
+    }
+
+    .reg.q {
+      border-style: dashed;
+      border-color: rgba(192, 132, 252, .55);
+    }
+
+    /* ---------- chips ---------- */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .chip {
+      font-size: 11.5px;
+      color: var(--tx-2);
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: 20px;
+      padding: 3px 11px;
+      font-family: var(--font-mono);
+    }
+
+    .chip b {
+      color: var(--tx-1);
+    }
+
+    .chip.hot {
+      border-color: rgba(251, 191, 36, .45);
+      color: #fde68a;
+    }
+
+    .chip.cool {
+      border-color: rgba(56, 189, 248, .45);
+      color: #bae6fd;
+    }
+
+    .chip.good {
+      border-color: rgba(34, 197, 94, .45);
+      color: #bbf7d0;
+    }
+
+    .chip.bad {
+      border-color: rgba(248, 113, 113, .45);
+      color: #fecaca;
+    }
+
+    /* ---------- answers ---------- */
+    .answer-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    input[type=text] {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      padding: 8px 11px;
+      width: 280px;
+      outline: none;
+    }
+
+    input[type=text]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    select {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 6px 9px;
+      outline: none;
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 13.5px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--bd-2);
+      background: var(--bg-2);
+      color: var(--tx-1);
+      padding: 8px 15px;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--accent);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0a0f1a;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.08);
+    }
+
+    .btn-sm {
+      padding: 5px 11px;
+      font-size: 12.5px;
+    }
+
+    .btn.on {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .linkbtn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      padding: 4px 2px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .choice {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      text-align: left;
+      width: 100%;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: inherit;
+      font-size: 13.5px;
+      padding: 9px 12px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+
+    .choice:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--bg-3);
+    }
+
+    .choice .key {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--tx-3);
+      border: 1px solid var(--bd-2);
+      border-radius: 4px;
+      padding: 0 6px;
+      line-height: 19px;
+      flex-shrink: 0;
+    }
+
+    .choice.picked {
+      border-color: var(--off);
+      background: rgba(248, 113, 113, .10);
+    }
+
+    .choice.right {
+      border-color: var(--on);
+      background: rgba(34, 197, 94, .12);
+    }
+
+    .choice.right .key,
+    .choice.picked .key {
+      color: var(--tx-1);
+    }
+
+    .choice:disabled {
+      cursor: default;
+      opacity: .85;
+    }
+
+    .feedback {
+      margin-top: 12px;
+      padding: 10px 13px;
+      border-radius: var(--r-md);
+      font-size: 13.5px;
+      border: 1px solid;
+    }
+
+    .feedback.correct {
+      background: rgba(34, 197, 94, .12);
+      border-color: rgba(34, 197, 94, .4);
+      color: #bbf7d0;
+    }
+
+    .feedback.wrong {
+      background: rgba(248, 113, 113, .10);
+      border-color: rgba(248, 113, 113, .4);
+      color: #fecaca;
+    }
+
+    .feedback.hint {
+      background: rgba(251, 191, 36, .09);
+      border-color: rgba(251, 191, 36, .33);
+      color: #fde68a;
+    }
+
+    .navrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--bd-1);
+      flex-wrap: wrap;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    /* ---------- problem list ---------- */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .stat {
+      background: var(--bg-1);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 11px 13px;
+    }
+
+    .stat-val {
+      font-size: 21px;
+      font-weight: 650;
+      font-family: var(--font-mono);
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .progress-bar {
+      height: 5px;
+      background: var(--bg-2);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width .25s;
+    }
+
+    .modhead {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 16px 0 6px;
+    }
+
+    .modhead:first-child {
+      margin-top: 0;
+    }
+
+    .modhead .t {
+      font-size: 11.5px;
+      font-weight: 650;
+      color: var(--tx-2);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .modhead .line {
+      flex: 1;
+      height: 1px;
+      background: var(--bd-1);
+    }
+
+    .modhead .c {
+      font-size: 11.5px;
+      color: var(--tx-3);
+      font-family: var(--font-mono);
+    }
+
+    .pitem {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 8px 10px;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .pitem:hover {
+      background: var(--bg-2);
+    }
+
+    .pitem.current {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .pi-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+      border: 1px solid var(--bd-2);
+      color: var(--tx-3);
+    }
+
+    .pi-icon.yes {
+      background: rgba(34, 197, 94, .18);
+      border-color: rgba(34, 197, 94, .5);
+      color: var(--on);
+    }
+
+    .pi-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .pi-title {
+      font-size: 13.5px;
+      font-weight: 550;
+    }
+
+    .pi-sub {
+      font-size: 12px;
+      color: var(--tx-3);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pitem.solved .pi-title {
+      color: var(--tx-2);
+    }
+
+    /* ---------- reference ---------- */
+    .reft {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 4px 0 6px;
+    }
+
+    .reft td {
+      border-bottom: 1px solid var(--bd-1);
+      padding: 6px 8px;
+      vertical-align: top;
+    }
+
+    .reft td:first-child {
+      font-family: var(--font-mono);
+      color: var(--tx-1);
+      white-space: nowrap;
+      width: 38%;
+    }
+
+    .reft td:last-child {
+      color: var(--tx-2);
+    }
+
+
+    /* ---------- inline maths ---------- */
+    .fr {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      margin: 0 3px;
+      line-height: 1.15;
+      font-size: .92em;
+    }
+
+    .fr .fn {
+      border-bottom: 1px solid currentColor;
+      padding: 0 3px;
+    }
+
+    .fr .fd {
+      padding: 0 3px;
+    }
+
+    .mtx {
+      display: inline-grid;
+      gap: 2px 12px;
+      padding: 4px 9px;
+      margin: 0 4px;
+      vertical-align: middle;
+      border-left: 2px solid var(--tx-3);
+      border-right: 2px solid var(--tx-3);
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: .92em;
+    }
+
+    .mtx .mc {
+      text-align: right;
+    }
+
+    .mtl {
+      color: var(--tx-3);
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" id="app"></div>
+
+  <script>
+    /* ============================================================
+       PART 1 — numeric helpers
+       ============================================================ */
+    const PI = Math.PI, TAU = 2 * Math.PI;
+    const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+    function shuffle(a) {const r = a.slice(); for (let i = r.length - 1; i > 0; i--) {const j = rnd(0, i);[r[i], r[j]] = [r[j], r[i]];} return r;}
+    function esc(s) {return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');}
+    const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+    /* round to n decimals and drop trailing zeros: 3.10 -> "3.1", 4.00 -> "4" */
+    function fmtN(v, d = 3) {
+      if (!isFinite(v)) return v > 0 ? '∞' : '-∞';
+      if (Math.abs(v) < 5e-11) v = 0;
+      let s = v.toFixed(d);
+      if (s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, '');
+      return s === '-0' ? '0' : s;
+    }
+    const f2 = v => fmtN(v, 2);
+    const f3 = v => fmtN(v, 3);
+    const gcd = (a, b) => b ? gcd(b, a % b) : Math.abs(a);
+    const lg2 = v => Math.log(v) / Math.LN2;
+
+    /* signed term for building expressions: sgn(-3, 'x') -> " - 3x" */
+    function sgn(c, sym = '') {
+      if (c === 0) return '';
+      const a = Math.abs(c);
+      const mag = (a === 1 && sym) ? '' : fmtN(a, 4);
+      return (c < 0 ? ' &minus; ' : ' + ') + mag + sym;
+    }
+    /* leading term of a polynomial — no " + " in front */
+    function lead(c, sym = '') {
+      const a = Math.abs(c), mag = (a === 1 && sym) ? '' : fmtN(a, 4);
+      return (c < 0 ? '&minus;' : '') + mag + sym;
+    }
+    /* x, x², x³ … as HTML */
+    const pw = (sym, n) => n === 0 ? '' : n === 1 ? sym : `${sym}<sup>${n}</sup>`;
+
+    /* build a polynomial string from coefficients, highest power first:
+       poly([2,0,-3,1]) -> "2x³ &minus; 3x + 1" */
+    function poly(co, sym = 'x') {
+      const n = co.length - 1;
+      let out = '', first = true;
+      co.forEach((c, i) => {
+        if (c === 0) return;
+        const p = n - i, t = pw(sym, p);
+        out += first ? lead(c, t) : sgn(c, t);
+        first = false;
+      });
+      return out || '0';
+    }
+
+    /* multiple-choice helper: shuffled {choices, ai, answer}.
+       `extra` carries any generated state the ask/render need. */
+    function mc(correct, wrong, extra) {
+      const opts = shuffle([correct, ...wrong]);
+      /* extra goes on first so it can never clobber the answer keys */
+      return Object.assign({}, extra || {}, {choices: opts, ai: opts.indexOf(correct), answer: correct});
+    }
+
+    /* numeric answer with a tolerance band. The printed answer keeps enough
+       decimals that it is itself comfortably inside the band. */
+    function num(v, tol, extra) {
+      const d = clamp(Math.ceil(-Math.log10(tol || 1e-3)) + 1, 2, 8);
+      return Object.assign({}, extra || {}, {answer: fmtN(v, d), val: v, tol});
+    }
+    /* yes / no answer */
+    function yn(v, extra) {return Object.assign({}, extra || {}, {answer: v ? 'yes' : 'no'});}
+
+    /* ============================================================
+       PART 2 — render helpers
+       Everything returns an HTML string, so it drops straight into
+       a problem's render(s, shown).
+       ============================================================ */
+    function title(t) {return `<div class="section-title">${t}</div>`;}
+    function note(html) {return `<div class="note">${html}</div>`;}
+    function chips(list) {return `<div class="chips">${list.map(c => `<span class="chip ${c[2] || ''}">${c[0]} <b>${c[1]}</b></span>`).join('')}</div>`;}
+
+    /* boxed formula. Lines starting with "#" are dimmed commentary. */
+    function eq(...lines) {
+      const body = lines.filter(l => l !== null && l !== undefined && l !== '').map(l => {
+        if (l.startsWith('#')) return `<span class="el ec">${l.slice(1).trim()}</span>`;
+        return `<span class="el">${l}</span>`;
+      }).join('');
+      return `<div class="eqblk">${body}</div>`;
+    }
+
+    /* inline fraction */
+    function frac(n, d) {return `<span class="fr"><span class="fn">${n}</span><span class="fd">${d}</span></span>`;}
+
+    /* C / pseudo-code block */
+    function code(src) {
+      const s = esc(src)
+        .replace(/(\b\d+\.\d+\b|\b0x[0-9A-Fa-f]+\b)/g, '<span class="h">$1</span>')
+        .replace(/\/\/[^\n]*/g, '<span class="c">$&</span>')
+        .replace(/\b(float|double|int|long|unsigned|uint8_t|uint16_t|uint32_t|int8_t|int16_t|int32_t|bool|size_t|void|static|const|for|if|else|while|do|return|struct|typedef|break|continue)\b/g, '<span class="k">$1</span>');
+      return `<div class="code">${s}</div>`;
+    }
+
+    /* labelled value cells. rows = [name, value, cls] */
+    function cells(rows, label) {
+      const body = rows.map(([n, v, cls]) =>
+        `<div class="reg ${cls || ''}"><div class="rn">${n}</div><div class="rv">${v}</div></div>`).join('');
+      return `<div class="board">${label ? `<div class="blbl">${label}</div>` : ''}<div class="rrow">${body}</div></div>`;
+    }
+
+    /* generic table: head = [..], rows = [[cell | [cell, cls], ...], ..] */
+    function tbl(head, rows, label) {
+      const th = head.map(h => `<th>${h}</th>`).join('');
+      const tr = rows.map(rw => '<tr>' + rw.map(c => {
+        const [v, cls] = Array.isArray(c) ? c : [c, ''];
+        return `<td class="${cls || ''}">${v}</td>`;
+      }).join('') + '</tr>').join('');
+      return `<div class="board">${label ? `<div class="blbl">${label}</div>` : ''}
+        <table class="memt"><tr>${th}</tr>${tr}</table></div>`;
+    }
+
+    /* a column vector / matrix, as a bracketed grid. rows = [[a,b],[c,d]] */
+    function mtx(rows, label) {
+      const cols = rows[0].length;
+      const body = rows.map(r => r.map(v => `<span class="mc">${v}</span>`).join('')).join('');
+      return `<span class="mtx" style="grid-template-columns:repeat(${cols}, auto)">${body}</span>` +
+        (label ? `<span class="mtl">${label}</span>` : '');
+    }
+
+    /* ---------- plot primitives ---------- */
+    const PAL = ['var(--accent)', 'var(--on)', 'var(--hl)', 'var(--unk)', 'var(--off)'];
+
+    function scales(o) {
+      const W = o.W || 640, H = o.H || 170, L = o.L === undefined ? 44 : o.L,
+        R = o.R === undefined ? 14 : o.R, T = o.T === undefined ? 12 : o.T, B = o.B === undefined ? 26 : o.B;
+      const [x0, x1] = o.x, [y0, y1] = o.y;
+      return {
+        W, H, L, R, T, B, x0, x1, y0, y1,
+        X: v => L + (clamp(v, x0, x1) - x0) / (x1 - x0) * (W - L - R),
+        Y: v => T + (y1 - clamp(v, y0, y1)) / (y1 - y0) * (H - T - B),
+        Xr: v => L + (v - x0) / (x1 - x0) * (W - L - R),
+        Yr: v => T + (y1 - v) / (y1 - y0) * (H - T - B)
+      };
+    }
+
+    function ticks(a, b, n) {
+      const raw = (b - a) / n;
+      const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+      const step = [1, 2, 2.5, 5, 10].find(m => m * mag >= raw * 0.999) * mag;
+      const out = [];
+      for (let v = Math.ceil(a / step) * step; v <= b + step * 1e-6; v += step) out.push(Math.abs(v) < step / 1e6 ? 0 : v);
+      return out;
+    }
+
+    function txt(x, y, s, o = {}) {
+      return `<text x="${f2(x)}" y="${f2(y)}" text-anchor="${o.anchor || 'middle'}" font-size="${o.size || 10}"
+        fill="${o.fill || 'var(--tx-3)'}" font-family="var(--font-mono)" ${o.weight ? `font-weight="${o.weight}"` : ''}
+        ${o.rotate ? `transform="rotate(${o.rotate} ${f2(x)} ${f2(y)})"` : ''}>${s}</text>`;
+    }
+
+    function axesSVG(sc, o) {
+      let g = '';
+      const xt = o.xticks || ticks(sc.x0, sc.x1, o.nxt || 6);
+      const yt = o.yticks || ticks(sc.y0, sc.y1, o.nyt || 4);
+      const xf = o.xfmt || (v => fmtN(v, 2)), yf = o.yfmt || (v => fmtN(v, 2));
+      xt.forEach(v => {
+        const X = sc.Xr(v);
+        if (X < sc.L - .5 || X > sc.W - sc.R + .5) return;
+        g += `<line x1="${f2(X)}" y1="${sc.T}" x2="${f2(X)}" y2="${sc.H - sc.B}" stroke="var(--bd-1)" stroke-width="1"/>`;
+        if (o.noxlab) return;
+        g += txt(X, sc.H - sc.B + 13, esc(xf(v)));
+      });
+      yt.forEach(v => {
+        const Y = sc.Yr(v);
+        if (Y < sc.T - .5 || Y > sc.H - sc.B + .5) return;
+        g += `<line x1="${sc.L}" y1="${f2(Y)}" x2="${sc.W - sc.R}" y2="${f2(Y)}" stroke="var(--bd-1)" stroke-width="1"/>`;
+        g += txt(sc.L - 6, Y + 3.5, esc(yf(v)), {anchor: 'end'});
+      });
+      /* the axes themselves, drawn brighter */
+      if (sc.y0 <= 0 && sc.y1 >= 0) g += `<line x1="${sc.L}" y1="${f2(sc.Yr(0))}" x2="${sc.W - sc.R}" y2="${f2(sc.Yr(0))}" stroke="var(--bd-2)" stroke-width="1.5"/>`;
+      if (sc.x0 <= 0 && sc.x1 >= 0) g += `<line x1="${f2(sc.Xr(0))}" y1="${sc.T}" x2="${f2(sc.Xr(0))}" y2="${sc.H - sc.B}" stroke="var(--bd-2)" stroke-width="1.5"/>`;
+      g += `<rect x="${sc.L}" y="${sc.T}" width="${sc.W - sc.L - sc.R}" height="${sc.H - sc.T - sc.B}" fill="none" stroke="var(--bd-1)"/>`;
+      if (o.xlabel) g += txt(sc.W - sc.R, sc.H - 3, esc(o.xlabel), {anchor: 'end', fill: 'var(--tx-2)', size: 10.5});
+      if (o.ylabel) g += txt(11, sc.T + (sc.H - sc.T - sc.B) / 2, esc(o.ylabel), {rotate: -90, fill: 'var(--tx-2)', size: 10.5});
+      return g;
+    }
+
+    function legend(items) {
+      if (!items || !items.length) return '';
+      return `<div class="lgd">${items.map(([c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join('')}</div>`;
+    }
+
+    function plotBox(label, sc, body, lgd) {
+      return `<div class="plot" style="max-width:${sc.W + 26}px">${label ? `<div class="plbl">${label}</div>` : ''}
+        <svg viewBox="0 0 ${sc.W} ${sc.H}" preserveAspectRatio="xMidYMid meet" role="img">${body}</svg>
+        ${legend(lgd)}</div>`;
+    }
+
+    /* annotations shared by every plot type */
+    function annotate(sc, o) {
+      let g = '';
+      (o.vlines || []).forEach(v => {
+        const X = sc.Xr(v.x);
+        g += `<line x1="${f2(X)}" y1="${sc.T}" x2="${f2(X)}" y2="${sc.H - sc.B}" stroke="${v.color || 'var(--hl)'}"
+          stroke-width="1.4" stroke-dasharray="${v.dash || '4 3'}"/>`;
+        if (v.label) g += txt(X, sc.T + 11, esc(v.label), {fill: v.color || 'var(--hl)', size: 10.5});
+      });
+      (o.hlines || []).forEach(v => {
+        const Y = sc.Yr(v.y);
+        g += `<line x1="${sc.L}" y1="${f2(Y)}" x2="${sc.W - sc.R}" y2="${f2(Y)}" stroke="${v.color || 'var(--hl)'}"
+          stroke-width="1.4" stroke-dasharray="${v.dash || '4 3'}"/>`;
+        if (v.label) g += txt(sc.W - sc.R - 4, Y - 4, esc(v.label), {anchor: 'end', fill: v.color || 'var(--hl)', size: 10.5});
+      });
+      (o.marks || []).forEach(m => {
+        const X = sc.Xr(m.x), Y = sc.Yr(m.y);
+        g += `<circle cx="${f2(X)}" cy="${f2(Y)}" r="4" fill="${m.color || 'var(--hl)'}" stroke="var(--bg-2)" stroke-width="1.5"/>`;
+        if (m.label) g += txt(X, Y - 9, esc(m.label), {fill: m.color || 'var(--hl)', size: 10.5, weight: 600});
+      });
+      (o.texts || []).forEach(t => {
+        g += txt(sc.Xr(t.x), sc.Yr(t.y), esc(t.s), {fill: t.color || 'var(--tx-2)', size: t.size || 10.5, anchor: t.anchor});
+      });
+      return g;
+    }
+
+    function pathOf(pts, sc) {
+      let d = '', pen = false;
+      pts.forEach(([x, y]) => {
+        if (!isFinite(y)) {pen = false; return;}
+        const cy = clamp(y, sc.y0, sc.y1);
+        d += (pen ? 'L' : 'M') + f2(sc.Xr(x)) + ' ' + f2(sc.Yr(cy)) + ' ';
+        pen = true;
+      });
+      return d.trim();
+    }
+
+    /* ---------- continuous-time waveform ---------- */
+    /* series: [{f: t=>y | pts:[[t,y]], color, dash, width, fill, label}] */
+    function plotCT(series, o = {}) {
+      o = Object.assign({x: [-1, 5], y: [-1.4, 1.4], W: 640, H: 170, xlabel: 't', N: 500}, o);
+      const sc = scales(o);
+      let g = axesSVG(sc, o);
+      series.forEach((s, i) => {
+        const col = s.color || PAL[i % PAL.length];
+        let pts = s.pts;
+        if (!pts) {
+          pts = [];
+          for (let k = 0; k <= o.N; k++) {const t = sc.x0 + (sc.x1 - sc.x0) * k / o.N; pts.push([t, s.f(t)]);}
+        }
+        const d = pathOf(pts, sc);
+        if (s.fill) {
+          const base = sc.Yr(clamp(0, sc.y0, sc.y1));
+          g += `<path d="${d} L ${f2(sc.Xr(pts[pts.length - 1][0]))} ${f2(base)} L ${f2(sc.Xr(pts[0][0]))} ${f2(base)} Z"
+            fill="${col}" opacity=".16" stroke="none"/>`;
+        }
+        g += `<path d="${d}" fill="none" stroke="${col}" stroke-width="${s.width || 2}"
+          ${s.dash ? `stroke-dasharray="${s.dash}"` : ''} stroke-linejoin="round" stroke-linecap="round" opacity="${s.op || 1}"/>`;
+      });
+      g += annotate(sc, o);
+      const lgd = series.filter(s => s.label).map((s, i) => [s.color || PAL[series.indexOf(s) % PAL.length], s.label]);
+      return plotBox(o.label, sc, g, o.legend === false ? null : lgd);
+    }
+
+    /* ---------- discrete-time stem plot ---------- */
+    /* seq: array of numbers; o.n0 = index of seq[0] */
+    function plotDT(seq, o = {}) {
+      const n0 = o.n0 === undefined ? 0 : o.n0;
+      const vals = seq.filter(v => isFinite(v));
+      const top = o.ymax !== undefined ? o.ymax : Math.max(1, ...vals.map(Math.abs)) * 1.25;
+      const bot = o.ymin !== undefined ? o.ymin : (Math.min(0, ...vals) < 0 ? -top : -top * 0.25);
+      o = Object.assign({
+        x: [n0 - 1, n0 + seq.length], y: [bot, top], W: 640, H: 170, xlabel: 'n',
+        xticks: seq.map((_, i) => n0 + i).filter((v, i) => seq.length <= 22 || i % 2 === 0)
+      }, o);
+      const sc = scales(o);
+      let g = axesSVG(sc, o);
+      const zero = sc.Yr(clamp(0, sc.y0, sc.y1));
+      const hi = o.hi || [], unknown = o.unknown || [];
+      seq.forEach((v, i) => {
+        const n = n0 + i, X = sc.Xr(n);
+        if (X < sc.L || X > sc.W - sc.R) return;
+        const isQ = unknown.includes(n);
+        const col = isQ ? 'var(--unk)' : (hi.includes(n) ? 'var(--hl)' : (o.color || 'var(--accent)'));
+        if (isQ) {
+          g += `<line x1="${f2(X)}" y1="${f2(zero)}" x2="${f2(X)}" y2="${f2(zero - 26)}" stroke="var(--unk)" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+          g += txt(X, zero - 31, '?', {fill: 'var(--unk)', size: 13, weight: 700});
+          return;
+        }
+        const Y = sc.Yr(v);
+        g += `<line x1="${f2(X)}" y1="${f2(zero)}" x2="${f2(X)}" y2="${f2(Y)}" stroke="${col}" stroke-width="${hi.includes(n) ? 2.4 : 1.8}"/>`;
+        g += `<circle cx="${f2(X)}" cy="${f2(Y)}" r="${hi.includes(n) ? 4.2 : 3.4}" fill="${col}"/>`;
+        if (o.values && v !== 0) g += txt(X, Y + (v >= 0 ? -8 : 13), esc(fmtN(v, 2)), {fill: col, size: 10});
+      });
+      g += annotate(sc, o);
+      return plotBox(o.label, sc, g, o.legend || null);
+    }
+
+    /* ============================================================
+       PART 3 — curriculum
+       Modules run in dependency order: nothing here needs an idea
+       that a later module introduces.
+       ============================================================ */
+    const MODULES = [
+      {id: 'limits', name: 'Limits & continuity', blurb: 'A limit asks what a value approaches, not what it equals. That distinction is the whole foundation of calculus — and it is also the reason numerical differentiation on a real machine has a floor it cannot go below.'},
+      {id: 'deriv', name: 'Derivatives', blurb: 'A derivative is a rate of change: how fast the output moves when you nudge the input. Sensor slopes, PID D-terms, algorithm growth rates and loss gradients are all the same object.'},
+      {id: 'partial', name: 'Partial derivatives & gradients', blurb: 'Most real functions have more than one input. A partial derivative holds every input but one still; stack them and you get the gradient — the vector every optimiser in machine learning walks along.'},
+      {id: 'optim', name: 'Optimisation with derivatives', blurb: 'Where the derivative is zero, the function has stopped changing — a peak, a trough or a saddle. This is how you find a best setting analytically, and how Newton and gradient descent find it numerically.'},
+      {id: 'integral', name: 'Integrals', blurb: 'An integral accumulates. Area under a curve, charge into a capacitor, total energy, distance from velocity, the I term of a PID loop — all the same sum taken to the limit.'},
+      {id: 'applied', name: 'Calculus on a machine', blurb: 'A processor cannot take a limit. It samples. Everything in this module is the finite, discrete, error-carrying version of the exact maths above — which is what you actually ship.'}
+    ];
+    const MOD_INDEX = Object.fromEntries(MODULES.map((m, i) => [m.id, i]));
+
+    /* ---------- limits & continuity ---------- */
+    const P_A = [
+      {
+        id: 'l1', mod: 'limits', diff: 'easy', fmt: 'num', title: 'A hole that is not a gap',
+        ask: s => `Evaluate <code>lim<sub>x&rarr;${s.a}</sub> (x&sup2; &minus; ${s.a * s.a}) / (x &minus; ${s.a})</code>.`,
+        hint: 'Substituting x directly gives 0/0, which tells you nothing. Factor the numerator first — the awkward factor cancels.',
+        concept: 'A limit describes what a function <em>approaches</em>, which need not be what it evaluates to. Here the function is genuinely undefined at the point, yet the limit exists and is perfectly finite. That gap between "undefined" and "no limit" is exactly what lets you differentiate: every derivative is a 0/0 limit that cancels.',
+        setup() {
+          const a = rnd(2, 7);
+          return num(2 * a, 0.01, {a});
+        },
+        render(s, shown) {
+          const f = x => (x * x - s.a * s.a) / (x - s.a);
+          return eq(`f(x) = (x&sup2; &minus; ${s.a * s.a}) / (x &minus; ${s.a}) = (x + ${s.a})(x &minus; ${s.a}) / (x &minus; ${s.a})`,
+            '# the (x − a) factor cancels everywhere except at x = a itself, where it is 0/0')
+            + plotCT([{f, label: 'f(x)'}], {
+              x: [s.a - 3, s.a + 3], y: [2 * s.a - 3.5, 2 * s.a + 3.5], xlabel: 'x',
+              label: 'the curve is a straight line with one point punched out',
+              marks: shown ? [{x: s.a, y: 2 * s.a, label: fmtN(2 * s.a, 0), color: 'var(--on)'}]
+                : [{x: s.a, y: 2 * s.a, label: '?', color: 'var(--unk)'}]
+            })
+            + (shown ? note(`Cancelling leaves <b>x + ${s.a}</b>, and as x &rarr; ${s.a} that approaches <b>${2 * s.a}</b>. The original f(${s.a}) is still undefined — the limit does not care.`) : '');
+        }
+      },
+      {
+        id: 'l2', mod: 'limits', diff: 'easy', fmt: 'mc', title: 'What continuity actually requires',
+        ask: 'A function f is continuous at x = c. Which statement is the full condition?',
+        hint: 'Three separate things must all hold, and two of them can hold while the third fails.',
+        concept: 'Continuity is "no surprises": a small change in input produces a small change in output. Code that interpolates, integrates or differentiates a signal quietly assumes it. A lookup table whose segments do not meet at their boundaries is a discontinuous function, and it will produce an audible click, a control-loop kick, or a visible seam.',
+        setup() {
+          return mc('f(c) is defined, the limit as x&rarr;c exists, and the two are equal',
+            ['f(c) is defined and finite', 'the limit as x&rarr;c exists', 'f is defined on both sides of c']);
+        },
+        render(s, shown) {
+          return eq('lim<sub>x→c</sub> f(x) = f(c)',
+            '# all three conditions compressed into one line — the equation cannot even be written unless both sides exist')
+            + (shown ? note('A removable hole fails the first condition. A jump fails the second. A curve with a single relocated point satisfies both yet fails the third — so all three are needed.') : '');
+        }
+      },
+      {
+        id: 'l3', mod: 'limits', diff: 'medium', fmt: 'num', title: 'The small-angle limit',
+        ask: s => `Evaluate <code>lim<sub>x&rarr;0</sub> sin(${s.k}x) / x</code>.`,
+        hint: 'You know sin(u)/u → 1. Force the denominator to match the argument of the sine, and account for what you multiplied by.',
+        concept: 'This limit is why sin&thinsp;&theta; &asymp; &theta; for small &theta;, and that approximation is everywhere in embedded work: linearising a pendulum or an inverted-balance controller, converting a small tilt to an offset, cheap sine near zero without a table. The limit is the statement that the error of that swap vanishes faster than the angle does.',
+        setup() {
+          const k = pick([2, 3, 4, 5, 6, 7]);
+          return num(k, 0.01, {k});
+        },
+        render(s, shown) {
+          const f = x => Math.abs(x) < 1e-9 ? s.k : Math.sin(s.k * x) / x;
+          return eq(`sin(${s.k}x) / x = ${s.k} &middot; sin(${s.k}x) / (${s.k}x)`,
+            '# the bracketed part is sin(u)/u with u = ' + s.k + 'x, which tends to 1')
+            + plotCT([{f, label: `sin(${s.k}x)/x`}], {
+              x: [-2, 2], y: [-s.k * 0.5, s.k * 1.2], xlabel: 'x',
+              marks: [{x: 0, y: s.k, label: shown ? fmtN(s.k, 0) : '?', color: shown ? 'var(--on)' : 'var(--unk)'}]
+            })
+            + (shown ? note(`The limit is <b>${s.k}</b>. Equivalently, sin(${s.k}x) &asymp; ${s.k}x near zero — the curve leaves the origin with slope ${s.k}.`) : '');
+        }
+      },
+      {
+        id: 'l4', mod: 'limits', diff: 'medium', fmt: 'yesno', title: 'A limit a float cannot take',
+        ask: 'The derivative is defined as h → 0. In <code>float</code> arithmetic, does shrinking h without bound keep improving the estimate?',
+        hint: 'Two errors move in opposite directions as h shrinks. Think about subtracting two nearly identical floats.',
+        concept: 'Truncation error falls like h; rounding error from the subtraction of two nearly equal numbers grows like &epsilon;/h. Their sum is minimised near h &asymp; &radic;&epsilon; &middot; |x| — about 1e-4 for single precision, 1e-8 for double. Below that the estimate gets <em>worse</em>. This is the single most common bug in hand-rolled numerical differentiation, and it is why a D-term on a noisy, finely-sampled signal is usually filtered.',
+        setup() {return yn(false);},
+        render(s, shown) {
+          return code(`// forward difference — h cannot go to zero on real hardware\nfloat deriv(float x, float h) {\n  return (f(x + h) - f(x)) / h;   // f(x+h) and f(x) agree to ~7 digits\n}`)
+            + eq('total error ≈ (M·h)/2  +  2ε/h',
+              '# left term: truncation, shrinks with h.  right term: rounding, grows as h shrinks')
+            + (shown ? note('<b>No.</b> The error curve is a U. For <code>float</code> (&epsilon; &asymp; 1.2e&minus;7) the sweet spot is around h &asymp; 3e&minus;4; go smaller and catastrophic cancellation dominates. A central difference (f(x+h) &minus; f(x&minus;h)) / 2h pushes the optimum to h &asymp; &epsilon;<sup>1/3</sup> and is worth the extra evaluation.') : '');
+        }
+      },
+      {
+        id: 'l5', mod: 'limits', diff: 'medium', fmt: 'num', title: 'Behaviour at infinity is Big-O',
+        ask: s => `Evaluate <code>lim<sub>n&rarr;&infin;</sub> (${s.a}n&sup2; + ${s.b}n + ${s.c}) / (${s.d}n&sup2; + ${s.e})</code>.`,
+        hint: 'Divide every term, top and bottom, by the highest power of n present. Everything with an n in the denominator then dies.',
+        concept: 'This is Big-O made precise. Two algorithms that are both O(n&sup2;) have a finite, non-zero ratio at infinity — the constant factor. If the ratio went to 0 or &infin; the growth classes would differ. When you profile and see one implementation stay a steady 3&times; slower over every input size, you have measured exactly this limit.',
+        setup() {
+          const a = rnd(2, 9), d = rnd(2, 9);
+          return num(a / d, Math.max(0.005, a / d * 0.01), {a, d, b: rnd(1, 40), c: rnd(1, 90), e: rnd(1, 60)});
+        },
+        render(s, shown) {
+          return eq(`(${s.a}n² + ${s.b}n + ${s.c}) / (${s.d}n² + ${s.e})  =  (${s.a} + ${s.b}/n + ${s.c}/n²) / (${s.d} + ${s.e}/n²)`,
+            '# divide through by n² — every 1/n term vanishes as n grows')
+            + tbl(['n', '10', '100', '1000', '∞'],
+              [['ratio', ...[10, 100, 1000].map(n => fmtN((s.a * n * n + s.b * n + s.c) / (s.d * n * n + s.e), 4)),
+                [shown ? `<b>${fmtN(s.a / s.d, 4)}</b>` : '?', shown ? 'mk' : 'q']]], 'the ratio settles')
+            + (shown ? note(`Only the leading coefficients survive: <b>${s.a}/${s.d} = ${fmtN(s.a / s.d, 4)}</b>. Both are &Theta;(n&sup2;); this number is the constant factor between them.`) : '');
+        }
+      },
+      {
+        id: 'l6', mod: 'limits', diff: 'hard', fmt: 'num', title: 'Make a lookup table continuous',
+        ask: s => `A two-segment calibration curve is <code>f(x) = ${s.m1}x</code> for x &le; ${s.j}, and <code>f(x) = ${s.m2}x + k</code> for x &gt; ${s.j}. What must k be for f to be continuous?`,
+        hint: 'Continuity at the join means both formulae must produce the same value at x = ' + '' + 'the breakpoint. Set them equal there and solve for k.',
+        concept: 'Piecewise calibration curves are the standard way to linearise a non-linear sensor cheaply. If the segments do not agree at their breakpoints the output jumps as the input crosses one — a step in a thermometer reading, a discontinuity a PID D-term differentiates into a spike. Matching the value at every join is the minimum; matching the slope too (C&sup1;) is what stops the loop from feeling the seam at all.',
+        setup() {
+          const j = rnd(2, 9), m1 = rnd(2, 6), m2 = rnd(2, 6) + 0.5;
+          const k = m1 * j - m2 * j;
+          return num(k, 0.02, {j, m1, m2});
+        },
+        render(s, shown) {
+          const k = s.m1 * s.j - s.m2 * s.j;
+          const f = x => x <= s.j ? s.m1 * x : s.m2 * x + (shown ? k : 0);
+          return eq(`${s.m1} × ${s.j}  =  ${s.m2} × ${s.j} + k`,
+            '# left limit at the join must equal the right limit')
+            + plotCT([{f, label: shown ? 'continuous' : 'as written (k = 0)'}], {
+              x: [0, s.j * 2], y: [0, s.m1 * s.j * 2.2], xlabel: 'x', ylabel: 'f(x)',
+              vlines: [{x: s.j, label: 'join'}]
+            })
+            + (shown ? note(`k = ${s.m1}&middot;${s.j} &minus; ${s.m2}&middot;${s.j} = <b>${fmtN(k, 3)}</b>. With k = 0 the output jumps by that amount the instant x crosses ${s.j}.`) : '');
+        }
+      },
+
+      /* ---------- derivatives ---------- */
+      {
+        id: 'd1', mod: 'deriv', diff: 'easy', fmt: 'num', title: 'The power rule',
+        ask: s => `For <code>f(x) = ${poly(s.co)}</code>, what is f&prime;(${s.at})?`,
+        hint: 'Bring each exponent down as a multiplier and reduce the exponent by one. A constant term differentiates to zero.',
+        concept: 'The power rule is the workhorse. It is also the rule behind polynomial approximations of expensive functions: once you can differentiate a polynomial you can build a Taylor series, and a short Taylor polynomial is how a microcontroller without an FPU evaluates sin, exp or a square root in a handful of multiply-accumulates.',
+        setup() {
+          const co = [rnd(1, 4), rnd(-5, 5), rnd(-6, 6), rnd(-9, 9)];
+          const at = rnd(-3, 3);
+          const d = 3 * co[0] * at * at + 2 * co[1] * at + co[2];
+          return num(d, 0.01, {co, at});
+        },
+        render(s, shown) {
+          const dco = [3 * s.co[0], 2 * s.co[1], s.co[2]];
+          return eq(`f(x) = ${poly(s.co)}`,
+            shown ? `f′(x) = ${poly(dco)}` : 'f′(x) = ?',
+            '# d/dx of xⁿ is n·xⁿ⁻¹;  the constant term contributes nothing')
+            + (shown ? note(`At x = ${s.at}: ${poly(dco)} = <b>${fmtN(3 * s.co[0] * s.at * s.at + 2 * s.co[1] * s.at + s.co[2], 3)}</b>.`) : '');
+        }
+      },
+      {
+        id: 'd2', mod: 'deriv', diff: 'easy', fmt: 'mc', title: 'What the number means',
+        ask: s => `A temperature sensor reading T(t) has T&prime;(${s.t}) = ${s.v} &deg;C/s. What does that tell you?`,
+        hint: 'A derivative is a rate, evaluated at one instant. It says nothing about the value itself.',
+        concept: 'A derivative is a slope, an instantaneous rate, and the tangent line all at once. In a control loop the D-term is exactly this number: it does not care how hot the plant is, only how fast it is heading somewhere. That is what lets it brake before the error arrives.',
+        setup() {
+          const t = rnd(2, 9), v = pick([1.5, 2, 2.5, 3, -1.5, -2]);
+          return mc(`at t = ${t}&thinsp;s the temperature is changing at ${v} &deg;C per second`,
+            [`at t = ${t}&thinsp;s the temperature is ${v} &deg;C`,
+              `the temperature changed by ${v} &deg;C over the whole run`,
+             `the temperature will be ${v} &deg;C at t = ${t + 1}&thinsp;s`], {t, v});
+        },
+        render(s, shown) {
+          return eq('f′(a) = lim<sub>h→0</sub> [ f(a+h) − f(a) ] / h',
+            '# a rise-over-run slope, in the limit as the run shrinks to nothing')
+            + (shown ? note(`The derivative is a <em>rate</em> at an instant. It carries units of output-per-input — here &deg;C per second — and tells you nothing at all about the current temperature.`) : '');
+        }
+      },
+      {
+        id: 'd3', mod: 'deriv', diff: 'medium', fmt: 'num', title: 'Product rule',
+        ask: s => `With <code>f(x) = (${s.a}x${sgn(s.b)})(x&sup2; + ${s.c})</code>, find f&prime;(${s.at}).`,
+        hint: '(uv)&prime; = u&prime;v + uv&prime;. Differentiate one factor at a time and leave the other alone.',
+        concept: 'Power &times; time, current &times; voltage, rate &times; count — engineering quantities are usually products of two things that both vary. The product rule says the total rate of change is each factor changing while the other is held still, added together. It is also the reason a sudden change in either factor shows up immediately in the product.',
+        setup() {
+          const a = rnd(2, 6), b = rnd(-5, 5) || 3, c = rnd(1, 9), at = rnd(-3, 3);
+          const d = a * (at * at + c) + (a * at + b) * 2 * at;
+          return num(d, 0.01, {a, b, c, at});
+        },
+        render(s, shown) {
+          return eq(`u = ${s.a}x ${sgn(s.b)}         u′ = ${s.a}`,
+            `v = x² + ${s.c}          v′ = 2x`,
+            shown ? `f′(x) = ${s.a}(x² + ${s.c}) + (${s.a}x${sgn(s.b)})(2x)` : 'f′(x) = u′v + uv′ = ?')
+            + (shown ? note(`At x = ${s.at}: ${s.a}&middot;${s.at * s.at + s.c} + ${fmtN(s.a * s.at + s.b, 2)}&middot;${2 * s.at} = <b>${fmtN(s.a * (s.at * s.at + s.c) + (s.a * s.at + s.b) * 2 * s.at, 3)}</b>. Expanding first and using the power rule gives the same number — the product rule just saves the expansion.`) : '');
+        }
+      },
+      {
+        id: 'd4', mod: 'deriv', diff: 'medium', fmt: 'num', title: 'Quotient rule',
+        ask: s => `A divider gives <code>f(x) = ${s.a}x / (x + ${s.b})</code>. Find f&prime;(${s.at}).`,
+        hint: '(u/v)&prime; = (u&prime;v &minus; uv&prime;) / v&sup2;. The order in the numerator matters — it is not symmetric.',
+        concept: 'This shape is a saturating response: a sensor that flattens out, a gain that rolls off, a cache hit-rate that approaches 1. The derivative tells you how much sensitivity you have left. Where f&prime; has gone small the signal has stopped carrying useful information about x, which is exactly where a control loop loses authority.',
+        setup() {
+          const a = rnd(2, 8), b = rnd(2, 8), at = rnd(1, 6);
+          const d = a * b / Math.pow(at + b, 2);
+          return num(d, Math.max(0.002, d * 0.02), {a, b, at});
+        },
+        render(s, shown) {
+          const f = x => s.a * x / (x + s.b);
+          const d = s.a * s.b / Math.pow(s.at + s.b, 2);
+          return eq(`f′(x) = [ ${s.a}(x + ${s.b}) − ${s.a}x(1) ] / (x + ${s.b})²  =  ${s.a * s.b} / (x + ${s.b})²`,
+            '# the x terms in the numerator cancel — always simplify before substituting')
+            + plotCT([{f, label: 'f(x)'}], {
+              x: [0, s.b * 4], y: [0, s.a * 1.15], xlabel: 'x',
+              marks: [{x: s.at, y: f(s.at), label: shown ? `slope ${fmtN(d, 3)}` : 'slope ?', color: shown ? 'var(--on)' : 'var(--unk)'}]
+            })
+            + (shown ? note(`f&prime;(${s.at}) = ${s.a * s.b} / ${Math.pow(s.at + s.b, 2)} = <b>${fmtN(d, 4)}</b>. Note the slope is always positive but shrinks like 1/x&sup2; — the curve saturates towards ${s.a}.`) : '');
+        }
+      },
+      {
+        id: 'd5', mod: 'deriv', diff: 'medium', fmt: 'num', title: 'Chain rule',
+        ask: s => `A signal is <code>v(t) = ${s.A}&thinsp;sin(${s.w}t)</code>. What is v&prime;(t) at t = 0?`,
+        hint: 'Differentiate the outer function, keep the inside untouched, then multiply by the derivative of the inside.',
+        concept: 'The chain rule is why differentiating a sinusoid multiplies its amplitude by &omega;: fast signals have violently large slopes. That single factor is the whole reason a D-term amplifies high-frequency noise, why slew-rate limits bite at high frequency, and why differentiators always need a low-pass alongside them.',
+        setup() {
+          const A = rnd(1, 5), w = pick([2, 4, 5, 8, 10, 20]);
+          return num(A * w, Math.max(0.01, A * w * 0.005), {A, w});
+        },
+        render(s, shown) {
+          return eq(`v(t) = ${s.A} sin(${s.w}t)`,
+            shown ? `v′(t) = ${s.A} · cos(${s.w}t) · ${s.w} = ${s.A * s.w} cos(${s.w}t)` : "v′(t) = ?",
+            '# outer derivative (cos) × inner derivative (' + s.w + ')')
+            + plotCT([
+              {f: t => s.A * Math.sin(s.w * t), label: 'v(t)'},
+              ...(shown ? [{f: t => s.A * s.w * Math.cos(s.w * t), label: "v′(t)", dash: '5 3'}] : [])
+            ], {x: [0, 4 * PI / s.w], y: [-s.A * s.w * 1.15, s.A * s.w * 1.15], xlabel: 't (s)'})
+            + (shown ? note(`At t = 0, cos(0) = 1, so v&prime;(0) = <b>${s.A * s.w}</b>. The derivative is ${s.w}&times; taller than the signal — that gain is proportional to frequency.`) : '');
+        }
+      },
+      {
+        id: 'd6', mod: 'deriv', diff: 'hard', fmt: 'num', title: 'Slope of an RC decay',
+        ask: s => `A capacitor discharges as <code>v(t) = ${s.V}&thinsp;e<sup>&minus;t/&tau;</sup></code> with &tau; = ${s.tau}&thinsp;ms. What is the slope, in V/ms, at t = ${s.at}&thinsp;ms?`,
+        hint: 'd/dt of e^(kt) is k·e^(kt). Here k = &minus;1/&tau;. Work in milliseconds throughout so the units come out right.',
+        concept: 'The derivative of an exponential is proportional to itself — that is the defining property, and it is why RC and RL circuits, thermal masses, and exponential moving averages all share one shape. The initial slope &minus;V/&tau; extended as a straight line hits zero at exactly one time constant, which is the standard way to read &tau; off a scope trace.',
+        setup() {
+          const V = pick([3.3, 5, 12, 1.8]), tau = pick([1, 2, 5, 10]), at = pick([0, tau, 2 * tau]);
+          return num(-V / tau * Math.exp(-at / tau), Math.max(0.002, Math.abs(V / tau * Math.exp(-at / tau)) * 0.02), {V, tau, at});
+        },
+        render(s, shown) {
+          const d = -s.V / s.tau * Math.exp(-s.at / s.tau);
+          return eq(`v(t) = ${s.V} e^(−t/${s.tau})`,
+            shown ? `v′(t) = −(${s.V}/${s.tau}) e^(−t/${s.tau})` : "v′(t) = ?",
+            '# the exponential differentiates to itself, times the inner slope −1/τ')
+            + plotCT([{f: t => s.V * Math.exp(-t / s.tau), label: 'v(t)', fill: true}], {
+              x: [0, s.tau * 5], y: [0, s.V * 1.1], xlabel: 't (ms)', ylabel: 'V',
+              marks: [{x: s.at, y: s.V * Math.exp(-s.at / s.tau), label: shown ? `${fmtN(d, 3)} V/ms` : '?', color: shown ? 'var(--on)' : 'var(--unk)'}]
+            })
+            + (shown ? note(`v&prime;(${s.at}) = &minus;(${s.V}/${s.tau})&thinsp;e<sup>&minus;${s.at}/${s.tau}</sup> = <b>${fmtN(d, 4)} V/ms</b>. Negative, because it is discharging; and it shrinks at exactly the same rate the voltage does.`) : '');
+        }
+      },
+      {
+        id: 'd7', mod: 'deriv', diff: 'hard', fmt: 'mc', title: 'Peel the composition',
+        ask: s => `What is the derivative of <code>f(x) = ln(${s.a}x&sup2; + ${s.b})</code>?`,
+        hint: 'Outer function is ln(u), whose derivative is 1/u. Then multiply by u&prime;.',
+        concept: 'Deep compositions are the norm once you leave textbook functions — a loss of a sigmoid of a weighted sum is three layers, and backpropagation is nothing more than the chain rule applied layer by layer, cached so each factor is computed once. Getting comfortable peeling one layer at a time is the transferable skill.',
+        setup() {
+          const a = rnd(2, 7), b = rnd(1, 9);
+          return mc(`${2 * a}x / (${a}x&sup2; + ${b})`,
+            [`1 / (${a}x&sup2; + ${b})`, `${2 * a}x`, `${2 * a}x &middot; ln(${a}x&sup2; + ${b})`], {a, b});
+        },
+        render(s, shown) {
+          return eq(`u = ${s.a}x² + ${s.b}          u′ = ${2 * s.a}x`,
+            'd/dx ln(u) = u′ / u',
+            '# 1/u from the logarithm, times the inner derivative')
+            + (shown ? note(`So f&prime;(x) = <b>${2 * s.a}x / (${s.a}x&sup2; + ${s.b})</b>. Forgetting the u&prime; factor is the single most common chain-rule slip; the answer <code>1/(${s.a}x&sup2;+${s.b})</code> is exactly that mistake.`) : '');
+        }
+      }
+    ];
+
+    /* ---------- partial derivatives, gradients, optimisation ---------- */
+    const P_B = [
+      {
+        id: 'p1', mod: 'partial', diff: 'easy', fmt: 'num', title: 'Hold everything else still',
+        ask: s => `For <code>f(x, y) = ${s.a}x&sup2;y + ${s.b}y&sup3;</code>, what is &part;f/&part;x at (${s.px}, ${s.py})?`,
+        hint: 'Treat y as a constant — an ordinary number that happens to be spelled with a letter. Any term with no x in it differentiates to zero.',
+        concept: 'A partial derivative answers "if I nudge this one knob and touch nothing else, how much does the output move?" That is exactly the question you ask when tuning one gain in a multi-parameter system, or when a profiler tells you which of five subsystems dominates latency. The other variables are not gone — they are frozen, and they still scale your answer.',
+        setup() {
+          const a = rnd(2, 6), b = rnd(1, 5), px = rnd(-3, 3), py = rnd(1, 4);
+          return num(2 * a * px * py, 0.01, {a, b, px, py});
+        },
+        render(s, shown) {
+          return eq(`f(x, y) = ${s.a}x²y + ${s.b}y³`,
+            shown ? `∂f/∂x = ${2 * s.a}xy` : '∂f/∂x = ?',
+            `# the ${s.b}y³ term has no x in it, so it is a constant here and vanishes`)
+            + cells([['x', s.px], ['y', s.py], ['∂f/∂x', shown ? fmtN(2 * s.a * s.px * s.py, 3) : '?', shown ? 'new' : 'q']], 'evaluate at the point')
+            + (shown ? note(`${2 * s.a}&middot;${s.px}&middot;${s.py} = <b>${fmtN(2 * s.a * s.px * s.py, 3)}</b>. Note it still depends on y — freezing a variable does not remove its influence on the sensitivity.`) : '');
+        }
+      },
+      {
+        id: 'p2', mod: 'partial', diff: 'medium', fmt: 'num', title: 'Magnitude of a gradient',
+        ask: s => `For <code>f(x, y) = ${lead(s.a, 'x&sup2;')}${sgn(s.b, 'y&sup2;')}</code>, what is |&nabla;f| at (${s.px}, ${s.py})?`,
+        hint: 'Compute both partials, stack them into a vector, then take its length with Pythagoras.',
+        concept: 'The gradient is the vector of all partials. Its direction is the steepest uphill; its magnitude is how steep. Gradient descent takes a step of size &eta;|&nabla;f| against that direction, so the magnitude sets the step length — which is why training slows to a crawl near a flat minimum and why an exploding gradient blows the weights apart.',
+        setup() {
+          const a = rnd(1, 5), b = rnd(1, 5), px = rnd(-4, 4) || 2, py = rnd(-4, 4) || 3;
+          const gx = 2 * a * px, gy = 2 * b * py;
+          const m = Math.hypot(gx, gy);
+          return num(m, Math.max(0.01, m * 0.01), {a, b, px, py, gx, gy});
+        },
+        render(s, shown) {
+          return eq(`∂f/∂x = ${lead(2 * s.a, 'x')}          ∂f/∂y = ${lead(2 * s.b, 'y')}`,
+            shown ? `∇f(${s.px}, ${s.py}) = ( ${s.gx}, ${s.gy} )` : `∇f(${s.px}, ${s.py}) = ( ?, ? )`,
+            '# |∇f| = √( (∂f/∂x)² + (∂f/∂y)² )')
+            + mtx([[shown ? s.gx : '?'], [shown ? s.gy : '?']], '&nbsp;the gradient vector')
+            + (shown ? note(`|&nabla;f| = &radic;(${s.gx * s.gx} + ${s.gy * s.gy}) = <b>${fmtN(Math.hypot(s.gx, s.gy), 4)}</b>. Downhill is the direction (${-s.gx}, ${-s.gy}) — descent always walks against the gradient.`) : '');
+        }
+      },
+      {
+        id: 'p3', mod: 'partial', diff: 'medium', fmt: 'mc', title: 'Which way does the gradient point?',
+        ask: 'At a point on a surface, the gradient vector &nabla;f points in which direction?',
+        hint: 'Descent algorithms subtract it. That sign is the clue.',
+        concept: 'The gradient is uphill, always, and it is perpendicular to the contour line through the point — moving along a contour changes nothing, so the fastest change must be at right angles to it. Every optimiser you will use is built on those two facts: step against &nabla;f to minimise, and know that &nabla;f = 0 means the local terrain is flat.',
+        setup() {
+          return mc('the direction of steepest increase, perpendicular to the contour through that point',
+            ['the direction of steepest decrease', 'along the contour line through that point', 'towards the nearest minimum of f']);
+        },
+        render(s, shown) {
+          return eq('∇f = ( ∂f/∂x , ∂f/∂y )',
+            'step:  x ← x − η ∇f     (to minimise)',
+            '# the minus sign in gradient descent exists precisely because ∇f points uphill')
+            + (shown ? note('It is steepest <em>ascent</em>, and only locally — it points at the nearest hill, not the global one. It also says nothing about how far away the optimum is, which is why the step size &eta; is a separate, hand-tuned thing.') : '');
+        }
+      },
+      {
+        id: 'p4', mod: 'partial', diff: 'hard', fmt: 'num', title: 'Gradient of a squared error',
+        ask: s => `A model predicts <code>ŷ = w·${s.x}</code> and the loss is <code>L = (ŷ &minus; ${s.y})&sup2;</code>. With w = ${s.w}, what is dL/dw?`,
+        hint: 'Chain rule: dL/dw = (dL/dŷ)(dŷ/dw). The first factor is 2(ŷ − y), the second is just x.',
+        concept: 'This is one training step of linear regression, and the same three lines scale to a whole network. The gradient is proportional to both the error and the input: a large input amplifies the update, which is exactly why unnormalised features destabilise training and why fixed-point implementations must watch the scale of x before the multiply overflows.',
+        setup() {
+          const x = rnd(2, 6), y = rnd(4, 20), w = rnd(1, 5);
+          const g = 2 * (w * x - y) * x;
+          return num(g, Math.max(0.01, Math.abs(g) * 0.01), {x, y, w});
+        },
+        render(s, shown) {
+          const yh = s.w * s.x, g = 2 * (yh - s.y) * s.x;
+          return eq(`ŷ = w·x = ${s.w}·${s.x} = ${yh}`,
+            `dL/dw = 2(ŷ − y)·x`,
+            '# outer: derivative of the square.  inner: dŷ/dw = x')
+            + cells([['x', s.x], ['y', s.y], ['w', s.w], ['ŷ', yh], ['error', yh - s.y], ['dL/dw', shown ? fmtN(g, 3) : '?', shown ? 'new' : 'q']])
+            + (shown ? note(`2&thinsp;&times;&thinsp;(${yh} &minus; ${s.y})&thinsp;&times;&thinsp;${s.x} = <b>${fmtN(g, 3)}</b>. ${g > 0 ? 'Positive, so descent decreases w' : 'Negative, so descent increases w'} — the update w &larr; w &minus; &eta;&thinsp;dL/dw moves the prediction towards y.`) : '');
+        }
+      },
+      {
+        id: 'p5', mod: 'partial', diff: 'expert', fmt: 'num', title: 'Error propagation through a formula',
+        ask: s => `Power dissipated is <code>P = I&sup2;R</code>. If I is measured to &plusmn;${s.eI}% and R is known to &plusmn;${s.eR}%, what is the worst-case error in P, in percent?`,
+        hint: 'Take partials and turn them into relative sensitivities: dP/P = 2·(dI/I) + 1·(dR/R). The exponent becomes the multiplier.',
+        concept: 'The relative error of a product of powers is the sum of the relative errors weighted by their exponents — a direct consequence of differentiating a logarithm. This is how you build a measurement budget: it tells you immediately that halving the current-sense error buys twice as much as halving the resistor tolerance, so that is where the money goes.',
+        setup() {
+          const eI = pick([0.5, 1, 2, 3]), eR = pick([1, 2, 5]);
+          return num(2 * eI + eR, 0.02, {eI, eR});
+        },
+        render(s, shown) {
+          return eq('P = I²R      ⇒      ln P = 2 ln I + ln R',
+            'dP/P = 2 (dI/I) + (dR/R)',
+            '# differentiating the log turns products into sums and exponents into multipliers')
+            + chips([['current', `±${s.eI}%`], ['resistance', `±${s.eR}%`], ['power', shown ? `±${fmtN(2 * s.eI + s.eR, 2)}%` : '±?', shown ? 'bad' : '']])
+            + (shown ? note(`2&times;${s.eI}% + ${s.eR}% = <b>${fmtN(2 * s.eI + s.eR, 2)}%</b>. The current term counts double because of the square — a 1% current error costs the same as a 2% resistor.`) : '');
+        }
+      },
+
+      {
+        id: 'o1', mod: 'optim', diff: 'easy', fmt: 'num', title: 'Where the slope is zero',
+        ask: s => `A cost is <code>C(x) = ${lead(s.a, 'x&sup2;')}${sgn(-s.b, 'x')} + ${s.c}</code>. At what x is C smallest?`,
+        hint: 'Differentiate, set the result to zero, and solve. For a quadratic that is a single linear equation.',
+        concept: 'Setting the derivative to zero is the analytic route to an optimum, and for quadratics it is exact and instant — no iteration needed. This is the closed form behind least squares, behind the optimal filter coefficient, behind the minimum-energy operating point. When a problem is quadratic, never iterate on it.',
+        setup() {
+          const a = rnd(1, 5), b = rnd(2, 20) * 2, c = rnd(0, 30);
+          return num(b / (2 * a), Math.max(0.01, b / (2 * a) * 0.01), {a, b, c});
+        },
+        render(s, shown) {
+          const xs = s.b / (2 * s.a);
+          const f = x => s.a * x * x - s.b * x + s.c;
+          return eq(`C′(x) = ${lead(2 * s.a, 'x')} − ${s.b}`,
+            shown ? `${2 * s.a}x − ${s.b} = 0  ⇒  x = ${fmtN(xs, 4)}` : `${2 * s.a}x − ${s.b} = 0  ⇒  x = ?`)
+            + plotCT([{f, label: 'C(x)'}], {
+              x: [xs - 2 * Math.max(1, xs), xs + 2 * Math.max(1, xs)],
+              y: [f(xs) - Math.abs(f(xs)) * 0.3 - 5, f(xs) + s.a * Math.pow(2 * Math.max(1, xs), 2) * 1.1], xlabel: 'x', ylabel: 'C',
+              marks: [{x: xs, y: f(xs), label: shown ? fmtN(xs, 3) : '?', color: shown ? 'var(--on)' : 'var(--unk)'}]
+            })
+            + (shown ? note(`x = ${s.b}/${2 * s.a} = <b>${fmtN(xs, 4)}</b>. Since the x&sup2; coefficient is positive the parabola opens upwards, so this stationary point is a minimum.`) : '');
+        }
+      },
+      {
+        id: 'o2', mod: 'optim', diff: 'medium', fmt: 'mc', title: 'Minimum, maximum or saddle',
+        ask: s => `At a point where f&prime;(c) = 0 you compute f&Prime;(c) = ${s.v}. What is it?`,
+        hint: 'The second derivative measures curvature: which way the curve bends away from its tangent.',
+        concept: 'The first derivative finds candidates; the second sorts them. Curvature also drives step sizing — Newton\'s method divides by f&Prime;, and a nearly-flat second derivative means a very long step and a numerically fragile one. When f&Prime;(c) = 0 as well, the test is inconclusive and you must look further out.',
+        setup() {
+          const v = pick([-6, -3, -1, 1, 4, 8, 0]);
+          const ans = v > 0 ? 'a local minimum — the curve is concave up'
+            : v < 0 ? 'a local maximum — the curve is concave down'
+              : 'inconclusive — the test fails and you must inspect further';
+          return mc(ans, ['a local minimum — the curve is concave up',
+            'a local maximum — the curve is concave down',
+            'inconclusive — the test fails and you must inspect further',
+            'a saddle point in one dimension'].filter(o => o !== ans).slice(0, 3), {v});
+        },
+        render(s, shown) {
+          return eq("f″(c) " + (s.v > 0 ? '&gt; 0  ⇒  minimum' : s.v < 0 ? '&lt; 0  ⇒  maximum' : '= 0  ⇒  no verdict'),
+            '# f″ &gt; 0 curves upward like a bowl;  f″ &lt; 0 curves downward like a dome')
+            + (shown ? note(s.v === 0
+              ? 'With f&Prime;(c) = 0 the point could be a minimum (x&#8308;), a maximum (&minus;x&#8308;) or an inflection (x&sup3;). The test is silent.'
+              : `f&Prime;(c) = ${s.v} is ${s.v > 0 ? 'positive, so the curve is a bowl here — a local minimum' : 'negative, so the curve is a dome here — a local maximum'}.`) : '');
+        }
+      },
+      {
+        id: 'o3', mod: 'optim', diff: 'hard', fmt: 'num', title: 'Optimal buffer size',
+        ask: s => `Per-transfer cost is <code>T(n) = ${s.a}/n + ${s.b}n</code> &micro;s per byte: a fixed ${s.a}&thinsp;&micro;s overhead spread over n bytes, plus ${s.b}&thinsp;&micro;s of per-byte handling. Which n minimises T?`,
+        hint: 'Write the first term as a·n⁻¹ so the power rule applies, then set T&prime;(n) = 0.',
+        concept: 'This trade-off shape — a fixed cost amortised against a growing per-unit cost — is everywhere: DMA burst length, packet MTU, batch size, cache line width. The optimum sits at &radic;(a/b), which means it moves only with the square root of either cost. That is why the sweet spot is broad and a rough guess usually lands close.',
+        setup() {
+          const a = pick([200, 400, 800, 1000, 1600]), b = pick([0.1, 0.2, 0.4, 0.5]);
+          const n = Math.sqrt(a / b);
+          return num(n, Math.max(0.5, n * 0.02), {a, b});
+        },
+        render(s, shown) {
+          const n = Math.sqrt(s.a / s.b);
+          const f = x => s.a / x + s.b * x;
+          return eq(`T(n) = ${s.a}n⁻¹ + ${s.b}n`,
+            `T′(n) = −${s.a}n⁻² + ${s.b} = 0`,
+            shown ? `n² = ${s.a}/${s.b}  ⇒  n = ${fmtN(n, 3)}` : 'n = ?')
+            + plotCT([{f, label: 'T(n) µs/byte'}], {
+              x: [Math.max(1, n * 0.1), n * 3], y: [0, f(n) * 3], xlabel: 'n (bytes)',
+              marks: [{x: n, y: f(n), label: shown ? fmtN(n, 0) : '?', color: shown ? 'var(--on)' : 'var(--unk)'}]
+            })
+            + (shown ? note(`n = &radic;(${s.a}/${s.b}) = <b>${fmtN(n, 3)}</b> bytes, costing ${fmtN(f(n), 3)}&thinsp;&micro;s each. At the optimum the two terms are equal — the overhead exactly balances the handling, which is the general signature of this trade-off.`) : '');
+        }
+      },
+      {
+        id: 'o4', mod: 'optim', diff: 'hard', fmt: 'num', title: "One step of Newton's method",
+        ask: s => `Newton's method finds roots by <code>x&#8321; = x&#8320; &minus; f(x&#8320;)/f&prime;(x&#8320;)</code>. For <code>f(x) = x&sup2; &minus; ${s.n}</code> starting at x&#8320; = ${s.x0}, what is x&#8321;?`,
+        hint: "f′(x) = 2x. Substitute and evaluate — one step only, no iterating.",
+        concept: "Newton's method is a derivative used as a local linear model: follow the tangent to where it crosses zero and start again. For f(x) = x&sup2; &minus; n it collapses to x &larr; (x + n/x)/2, the classic square-root iteration that doubles its correct digits each pass. Applied to f&prime; instead of f, the same step finds optima — that is Newton optimisation, and the price is needing the second derivative.",
+        setup() {
+          const n = pick([2, 3, 5, 7, 10, 17, 26]), x0 = rnd(1, Math.max(2, Math.round(Math.sqrt(n)) + 2));
+          const x1 = x0 - (x0 * x0 - n) / (2 * x0);
+          return num(x1, Math.max(0.005, Math.abs(x1) * 0.005), {n, x0});
+        },
+        render(s, shown) {
+          const x1 = s.x0 - (s.x0 * s.x0 - s.n) / (2 * s.x0);
+          return eq(`f(x) = x² − ${s.n}          f′(x) = 2x`,
+            `x₁ = ${s.x0} − (${s.x0}² − ${s.n}) / (2·${s.x0})`,
+            '# equivalently  x₁ = (x₀ + n/x₀)/2 — the average of a guess and its complement')
+            + tbl(['step', 'x'], [['x₀', fmtN(s.x0, 6)], ['x₁', shown ? [`<b>${fmtN(x1, 6)}</b>`, 'mk'] : ['?', 'q']],
+              ['√' + s.n, shown ? fmtN(Math.sqrt(s.n), 6) : '—']], 'converging on the root')
+            + (shown ? note(`x&#8321; = <b>${fmtN(x1, 6)}</b>, against a true &radic;${s.n} = ${fmtN(Math.sqrt(s.n), 6)}. One more step would give roughly twice as many correct digits — quadratic convergence, once you are close enough.`) : '');
+        }
+      },
+      {
+        id: 'o5', mod: 'optim', diff: 'expert', fmt: 'num', title: 'A gradient descent step',
+        ask: s => `Minimising <code>f(x) = ${lead(s.a, 'x&sup2;')}</code> by gradient descent with learning rate &eta; = ${s.eta}, starting at x&#8320; = ${s.x0}. What is x&#8321;?`,
+        hint: 'f&prime;(x) = 2ax. The update is x&#8321; = x&#8320; &minus; &eta;&thinsp;f&prime;(x&#8320;).',
+        concept: 'For this quadratic the update is x &larr; (1 &minus; 2a&eta;)x, so the whole behaviour hangs on one number. If |1 &minus; 2a&eta;| &lt; 1 it converges; at &eta; = 1/(2a) it lands exactly on the minimum in one step; beyond &eta; = 1/a it diverges. Every learning-rate schedule and every "loss went to NaN" story is this inequality being respected or broken.',
+        setup() {
+          const a = pick([1, 2, 4, 5]), eta = pick([0.05, 0.1, 0.2, 0.3]), x0 = rnd(2, 10);
+          return num(x0 - eta * 2 * a * x0, Math.max(0.005, Math.abs(x0 * (1 - 2 * a * eta)) * 0.01), {a, eta, x0});
+        },
+        render(s, shown) {
+          const r = 1 - 2 * s.a * s.eta, x1 = s.x0 * r;
+          return eq(`f′(x) = ${lead(2 * s.a, 'x')}`,
+            `x₁ = ${s.x0} − ${s.eta}·(${2 * s.a}·${s.x0})  =  (1 − ${2 * s.a * s.eta})·${s.x0}`,
+            `# contraction factor 1 − 2aη = ${fmtN(r, 4)}`)
+            + chips([['η', s.eta], ['factor', fmtN(r, 4)], ['x₁', shown ? fmtN(x1, 4) : '?'],
+              ['verdict', Math.abs(r) < 1 ? 'converging' : 'diverging', Math.abs(r) < 1 ? 'good' : 'bad']])
+            + (shown ? note(`x&#8321; = <b>${fmtN(x1, 5)}</b>. The factor is ${fmtN(r, 4)}; ${Math.abs(r) < 1 ? `each step shrinks x by that ratio, so it converges — geometrically, not in one hop` : 'its magnitude is at least 1, so the iterate never settles'}. &eta; = ${fmtN(1 / (2 * s.a), 4)} would hit the minimum exactly in a single step.`) : '');
+        }
+      }
+    ];
+
+    /* ---------- integrals and numerical calculus ---------- */
+    const P_C = [
+      {
+        id: 'i1', mod: 'integral', diff: 'easy', fmt: 'num', title: 'Area under a ramp',
+        ask: s => `Evaluate <code>&int;<sub>0</sub><sup>${s.b}</sup> ${s.a}x&thinsp;dx</code>.`,
+        hint: 'The antiderivative of ax is ax²/2. Evaluate at the top limit and subtract the value at the bottom.',
+        concept: 'An integral accumulates: it is the running total of the integrand multiplied by an infinitesimal slice of the input. Under a straight ramp the accumulated area is a triangle, which you could get from geometry — and confirming that the calculus agrees with the triangle is the sanity check worth keeping for every integral you meet.',
+        setup() {
+          const a = rnd(2, 8), b = rnd(2, 9);
+          return num(a * b * b / 2, 0.01, {a, b});
+        },
+        render(s, shown) {
+          return eq(`∫ ${s.a}x dx = ${s.a}x²/2 + C`,
+            shown ? `[${s.a}x²/2]₀^${s.b} = ${s.a}·${s.b}²/2 − 0 = ${fmtN(s.a * s.b * s.b / 2, 3)}` : `[${s.a}x²/2]₀^${s.b} = ?`)
+            + plotCT([{f: x => s.a * x, label: `${s.a}x`, fill: true}], {
+              x: [0, s.b * 1.3], y: [0, s.a * s.b * 1.25], xlabel: 'x',
+              vlines: [{x: s.b, label: `x = ${s.b}`}]
+            })
+            + (shown ? note(`<b>${fmtN(s.a * s.b * s.b / 2, 3)}</b>. Check it geometrically: a triangle of base ${s.b} and height ${s.a * s.b} has area &frac12;&middot;${s.b}&middot;${s.a * s.b} — the same number.`) : '');
+        }
+      },
+      {
+        id: 'i2', mod: 'integral', diff: 'easy', fmt: 'mc', title: 'The fundamental theorem',
+        ask: 'What does the fundamental theorem of calculus actually say?',
+        hint: 'It links two operations that look completely unrelated: accumulating and rate-of-change.',
+        concept: 'Differentiation and integration undo each other. That is what makes definite integrals computable at all: instead of summing infinitely many slices you find any antiderivative and subtract two of its values. The same statement in discrete form is that a running sum and a first difference are inverses — which is why a cumulative-sum array answers range-sum queries in O(1).',
+        setup() {
+          return mc('differentiation and integration are inverse operations, so &int;<sub>a</sub><sup>b</sup> f = F(b) &minus; F(a) for any antiderivative F',
+            ['every continuous function has a finite integral over any interval',
+              'the area under a curve equals the limit of a sum of rectangles',
+              'a definite integral is always positive when f is positive']);
+        },
+        render(s, shown) {
+          return eq('d/dx [ ∫ₐˣ f(t) dt ]  =  f(x)',
+            '∫ₐᵇ f(x) dx  =  F(b) − F(a)',
+            '# top line: accumulate then differentiate gets you back.  bottom: how you actually compute')
+            + (shown ? note('The third option is true but is the <em>definition</em> of the integral (a Riemann sum), not the theorem. The theorem is the shortcut that makes the definition unnecessary in practice.') : '');
+        }
+      },
+      {
+        id: 'i3', mod: 'integral', diff: 'medium', fmt: 'num', title: 'A definite polynomial integral',
+        ask: s => `Evaluate <code>&int;<sub>${s.lo}</sub><sup>${s.hi}</sup> (${poly(s.co)})&thinsp;dx</code>.`,
+        hint: 'Integrate term by term: xⁿ becomes xⁿ⁺¹/(n+1). Then evaluate top minus bottom.',
+        concept: 'Polynomial integration is the engine under numerical quadrature: the trapezoid rule fits a degree-1 polynomial to each slice and integrates it exactly, Simpson fits degree 2. Knowing the exact answer for polynomials is how you test a quadrature routine — feed it a cubic and any error it reports is a bug, not truncation.',
+        setup() {
+          const co = [rnd(1, 4), rnd(-4, 4), rnd(-6, 6)];
+          const lo = rnd(0, 2), hi = lo + rnd(2, 4);
+          const F = x => co[0] * x * x * x / 3 + co[1] * x * x / 2 + co[2] * x;
+          const v = F(hi) - F(lo);
+          return num(v, Math.max(0.02, Math.abs(v) * 0.005), {co, lo, hi});
+        },
+        render(s, shown) {
+          const F = x => s.co[0] * x * x * x / 3 + s.co[1] * x * x / 2 + s.co[2] * x;
+          const v = F(s.hi) - F(s.lo);
+          return eq(`F(x) = ${fmtN(s.co[0], 3)}x³/3 ${sgn(s.co[1] / 2, 'x²')} ${sgn(s.co[2], 'x')}`,
+            shown ? `F(${s.hi}) − F(${s.lo}) = ${fmtN(F(s.hi), 4)} − ${fmtN(F(s.lo), 4)}` : `F(${s.hi}) − F(${s.lo}) = ?`)
+            + plotCT([{f: x => s.co[0] * x * x + s.co[1] * x + s.co[2], label: 'f(x)', fill: true}], {
+              x: [s.lo - 0.5, s.hi + 0.5], xlabel: 'x',
+              y: [Math.min(0, s.co[2] - 2), Math.max(2, s.co[0] * s.hi * s.hi + s.co[1] * s.hi + s.co[2]) * 1.2],
+              vlines: [{x: s.lo, label: 'a'}, {x: s.hi, label: 'b'}]
+            })
+            + (shown ? note(`<b>${fmtN(v, 4)}</b>. The constant of integration cancels in the subtraction, which is why definite integrals never need one.`) : '');
+        }
+      },
+      {
+        id: 'i4', mod: 'integral', diff: 'medium', fmt: 'num', title: 'Velocity integrates to distance',
+        ask: s => `A motor accelerates from rest at ${s.acc}&thinsp;m/s&sup2; for ${s.T}&thinsp;s. How far has it travelled?`,
+        hint: 'Velocity is v(t) = at. Distance is the integral of velocity over the interval.',
+        concept: 'Position, velocity and acceleration form an integration chain, and an inertial measurement unit walks it in software: integrate accelerometer output once for speed, twice for position. Each integration also accumulates the sensor bias, turning a constant offset into a linearly then quadratically growing error — which is precisely why dead reckoning drifts and needs an absolute fix to correct it.',
+        setup() {
+          const acc = pick([0.5, 1, 1.5, 2, 3]), T = rnd(2, 10);
+          return num(0.5 * acc * T * T, Math.max(0.02, 0.5 * acc * T * T * 0.01), {acc, T});
+        },
+        render(s, shown) {
+          const d = 0.5 * s.acc * s.T * s.T;
+          return eq(`v(t) = ${s.acc}t`,
+            `s = ∫₀^${s.T} ${s.acc}t dt = ${s.acc}t²/2 |₀^${s.T}`,
+            shown ? `s = ${s.acc}·${s.T}²/2 = ${fmtN(d, 3)} m` : 's = ?')
+            + plotCT([{f: t => s.acc * t, label: 'v(t) m/s', fill: true}], {
+              x: [0, s.T], y: [0, s.acc * s.T * 1.15], xlabel: 't (s)'
+            })
+            + (shown ? note(`<b>${fmtN(d, 3)} m</b> — the familiar &frac12;at&sup2;, which is nothing more than the area of the velocity triangle.`) : '');
+        }
+      },
+      {
+        id: 'i5', mod: 'integral', diff: 'medium', fmt: 'num', title: 'Total charge in a decay',
+        ask: s => `A current decays as <code>i(t) = ${s.I}&thinsp;e<sup>&minus;t/${s.tau}</sup></code> mA with t in ms. What total charge, in &micro;C, flows from t = 0 to infinity?`,
+        hint: '∫₀^∞ e^(−t/τ) dt = τ. Watch the units: mA × ms = µC.',
+        concept: 'An infinite integral of a decaying exponential is finite and equals I&middot;&tau; — the whole tail is worth exactly one time constant at the initial rate. That is the standard trick for sizing a decoupling capacitor or a battery budget for a bursty radio: replace the awkward decay with a rectangle of the same area.',
+        setup() {
+          const I = pick([2, 5, 10, 20, 50]), tau = pick([1, 2, 5, 10]);
+          return num(I * tau, Math.max(0.05, I * tau * 0.01), {I, tau});
+        },
+        render(s, shown) {
+          return eq(`Q = ∫₀^∞ ${s.I} e^(−t/${s.tau}) dt  =  ${s.I} · ${s.tau} · [ −e^(−t/${s.tau}) ]₀^∞`,
+            '# e^(−∞) = 0 and e^0 = 1, so the bracket evaluates to 1')
+            + plotCT([{f: t => s.I * Math.exp(-t / s.tau), label: 'i(t) mA', fill: true}], {
+              x: [0, s.tau * 6], y: [0, s.I * 1.15], xlabel: 't (ms)',
+              hlines: shown ? [{y: s.I, label: 'a rectangle I×τ has the same area'}] : []
+            })
+            + (shown ? note(`Q = ${s.I} &times; ${s.tau} = <b>${fmtN(s.I * s.tau, 3)} &micro;C</b>. Useful rule: the area under any exponential decay equals its starting value times its time constant.`) : '');
+        }
+      },
+      {
+        id: 'i6', mod: 'integral', diff: 'hard', fmt: 'num', title: 'Mean square of a sinusoid',
+        ask: s => `Over one full period, what is the average value of <code>${s.A}&thinsp;sin&sup2;(&omega;t)</code>?`,
+        hint: 'Use sin²u = (1 − cos 2u)/2. The cosine integrates to zero over a whole number of periods, leaving only the constant half.',
+        concept: 'This integral is the origin of the &radic;2 in RMS and of the &frac12; in average power: a sinusoid of amplitude A delivers A&sup2;/2 of mean square, so its RMS value is A/&radic;2. Every mains rating, every ADC full-scale calculation for an AC signal, and Parseval\'s theorem in DSP all rest on this one average.',
+        setup() {
+          const A = pick([1, 2, 4, 5, 10]);
+          return num(A / 2, Math.max(0.005, A / 2 * 0.01), {A});
+        },
+        render(s, shown) {
+          return eq(`sin²(ωt) = ½ − ½cos(2ωt)`,
+            '# over a whole period the cosine contributes exactly zero area',
+            shown ? `mean = ${s.A} · ½ = ${fmtN(s.A / 2, 3)}` : 'mean = ?')
+            + plotCT([
+              {f: t => s.A * Math.pow(Math.sin(t), 2), label: `${s.A}sin²(ωt)`, fill: true},
+              ...(shown ? [{f: () => s.A / 2, label: 'mean', dash: '5 3', color: 'var(--hl)'}] : [])
+            ], {x: [0, 2 * PI], y: [0, s.A * 1.2], xlabel: 'ωt (rad)'})
+            + (shown ? note(`Mean = <b>${fmtN(s.A / 2, 3)}</b>, exactly half the peak. If ${s.A} were an amplitude squared, the RMS would be its square root — amplitude/&radic;2.`) : '');
+        }
+      },
+      {
+        id: 'i7', mod: 'integral', diff: 'hard', fmt: 'num', title: 'A double integral over a rectangle',
+        ask: s => `Evaluate <code>&int;<sub>0</sub><sup>${s.X}</sup> &int;<sub>0</sub><sup>${s.Y}</sup> ${s.k}xy&thinsp;dy&thinsp;dx</code>.`,
+        hint: 'Do the inner integral first, treating x as a constant. Then integrate the result over x.',
+        concept: 'A double integral accumulates over a two-dimensional region — total power over an image sensor, total mass over an area, a joint probability over a rectangle. When the integrand separates into f(x)g(y) and the region is a rectangle, the whole thing factors into two independent one-dimensional integrals, which is why separable filters are so much cheaper than general 2-D convolution.',
+        setup() {
+          const k = rnd(1, 6), X = rnd(1, 4), Y = rnd(1, 4);
+          return num(k * X * X * Y * Y / 4, 0.02, {k, X, Y});
+        },
+        render(s, shown) {
+          const v = s.k * s.X * s.X * s.Y * s.Y / 4;
+          return eq(`inner:  ∫₀^${s.Y} ${s.k}xy dy = ${s.k}x · ${s.Y}²/2`,
+            shown ? `outer:  ∫₀^${s.X} ${fmtN(s.k * s.Y * s.Y / 2, 4)}x dx = ${fmtN(v, 4)}` : 'outer:  ?',
+            `# it separates:  (∫₀^${s.X} x dx)(∫₀^${s.Y} y dy) × ${s.k}`)
+            + (shown ? note(`<b>${fmtN(v, 4)}</b>, equal to ${s.k} &times; (${s.X}&sup2;/2) &times; (${s.Y}&sup2;/2). Because the integrand and the region both separate, the order of integration makes no difference.`) : '');
+        }
+      },
+
+      /* ---------- calculus on a machine ---------- */
+      {
+        id: 'a1', mod: 'applied', diff: 'easy', fmt: 'num', title: 'Trapezoid rule',
+        ask: s => `An ADC samples every ${s.h}&thinsp;s giving <code>${s.y.join(', ')}</code>. Estimate the area under the curve using the trapezoid rule.`,
+        hint: 'Area ≈ h × (half the first sample + all the middle ones + half the last).',
+        concept: 'The trapezoid rule is the integral you can actually run on a microcontroller: connect the samples with straight lines and add the trapezoids. It is the I term of a well-written PID controller, it is how you total energy from power samples, and it is exact for any straight-line signal. Its error goes like h&sup2;, so halving the sample interval cuts the error fourfold.',
+        setup() {
+          const h = pick([0.5, 1, 2]);
+          const y = Array.from({length: 5}, () => rnd(1, 20));
+          const v = h * (y[0] / 2 + y[1] + y[2] + y[3] + y[4] / 2);
+          return num(v, Math.max(0.02, v * 0.005), {h, y});
+        },
+        render(s, shown) {
+          const v = s.h * (s.y[0] / 2 + s.y[1] + s.y[2] + s.y[3] + s.y[4] / 2);
+          return eq(`∫ ≈ h · ( y₀/2 + y₁ + y₂ + y₃ + y₄/2 )`,
+            shown ? `= ${s.h} · ( ${fmtN(s.y[0] / 2, 2)} + ${s.y[1]} + ${s.y[2]} + ${s.y[3]} + ${fmtN(s.y[4] / 2, 2)} ) = ${fmtN(v, 4)}` : '= ?')
+            + plotDT(s.y, {n0: 0, xlabel: 'sample', values: true, label: 'the samples you have'})
+            + (shown ? note(`<b>${fmtN(v, 4)}</b>. The end samples count half because each sits on the edge of only one trapezoid — forgetting that is the classic off-by-a-half in accumulator code.`) : '');
+        }
+      },
+      {
+        id: 'a2', mod: 'applied', diff: 'medium', fmt: 'num', title: "Simpson beats trapezoid",
+        ask: s => `Using Simpson's rule with h = ${s.h} and the three samples <code>${s.y.join(', ')}</code>, estimate the integral.`,
+        hint: 'Simpson: (h/3)(y₀ + 4y₁ + y₂). The middle sample carries four times the weight.',
+        concept: "Simpson's rule fits a parabola through three points instead of a line through two, and the extra degree buys an error of h&#8308; instead of h&sup2;. For the same accuracy that can mean an order of magnitude fewer samples — a real saving when each one costs an ADC conversion and a wake-up. The catch is that it needs an even number of intervals and assumes the signal is smooth between them.",
+        setup() {
+          const h = pick([0.5, 1, 2]);
+          const y = [rnd(1, 15), rnd(1, 15), rnd(1, 15)];
+          const v = h / 3 * (y[0] + 4 * y[1] + y[2]);
+          return num(v, Math.max(0.02, v * 0.005), {h, y});
+        },
+        render(s, shown) {
+          const v = s.h / 3 * (s.y[0] + 4 * s.y[1] + s.y[2]);
+          return eq(`∫ ≈ (h/3)(y₀ + 4y₁ + y₂)`,
+            shown ? `= (${s.h}/3)(${s.y[0]} + ${4 * s.y[1]} + ${s.y[2]}) = ${fmtN(v, 4)}` : '= ?',
+            '# weights 1, 4, 1 — they sum to 6, and h/3 × 6 = 2h, the width covered')
+            + tbl(['sample', 'y₀', 'y₁', 'y₂'], [['value', s.y[0], [s.y[1], 'mk'], s.y[2]], ['weight', '1', ['4', 'mk'], '1']], 'Simpson weights')
+            + (shown ? note(`<b>${fmtN(v, 4)}</b>. Check the weights always sum to 6 before dividing by 3 — that is the quickest way to catch a mis-typed quadrature rule.`) : '');
+        }
+      },
+      {
+        id: 'a3', mod: 'applied', diff: 'medium', fmt: 'num', title: 'The I term of a PID loop',
+        ask: s => `A loop runs every ${s.dt}&thinsp;ms and accumulates <code>I += Ki * error * dt</code> with Ki = ${s.ki}. Errors of <code>${s.e.join(', ')}</code> arrive on four consecutive ticks. What is I afterwards, starting from 0?`,
+        hint: 'This is rectangular integration. Convert dt to seconds first, then add up Ki·e·dt for each tick.',
+        concept: 'The integral term is a running sum of error &times; time, and it is what removes steady-state offset: as long as any error persists, I keeps growing until the output is enough to cancel it. It is also where integral windup lives — if the actuator saturates, I keeps accumulating with no effect and then vastly overshoots on the way back, which is why real controllers clamp it.',
+        setup() {
+          const dt = pick([1, 2, 5, 10]), ki = pick([0.1, 0.2, 0.5, 1]);
+          const e = Array.from({length: 4}, () => rnd(-5, 10));
+          const v = ki * (dt / 1000) * e.reduce((a, b) => a + b, 0);
+          return num(v, Math.max(0.0005, Math.abs(v) * 0.01), {dt, ki, e});
+        },
+        render(s, shown) {
+          const dts = s.dt / 1000, sum = s.e.reduce((a, b) => a + b, 0);
+          return code(`// fixed-rate integrator, dt = ${s.dt} ms = ${dts} s\nfor (int k = 0; k < 4; k++) {\n  I += ${s.ki}f * error[k] * ${dts}f;\n}`)
+            + tbl(['tick', '0', '1', '2', '3', 'Σe'],
+              [['error', ...s.e, [`${sum}`, 'mk']],
+              ['I after', ...s.e.map((_, i) => shown ? fmtN(s.ki * dts * s.e.slice(0, i + 1).reduce((a, b) => a + b, 0), 5) : '?'), shown ? [`<b>${fmtN(s.ki * dts * sum, 5)}</b>`, 'mk'] : ['?', 'q']]])
+            + (shown ? note(`I = ${s.ki} &times; ${dts} &times; ${sum} = <b>${fmtN(s.ki * dts * sum, 5)}</b>. Because dt is constant it factors out — which is exactly why fixed-rate loops fold dt into Ki and skip the multiply entirely.`) : '');
+        }
+      },
+      {
+        id: 'a4', mod: 'applied', diff: 'medium', fmt: 'num', title: 'Time to reach a threshold',
+        ask: s => `An RC network charges as <code>v(t) = ${s.V}(1 &minus; e<sup>&minus;t/&tau;</sup>)</code> with &tau; = ${s.tau}&thinsp;&micro;s. How long, in &micro;s, until it reaches ${s.pct}% of ${s.V}&thinsp;V?`,
+        hint: 'Set the expression equal to the fraction, rearrange to isolate the exponential, then take a natural log.',
+        concept: 'Rearranging a decay for time is the everyday inverse of an exponential, and the answer t = &minus;&tau;&thinsp;ln(1 &minus; f) is worth internalising: 63% at one &tau;, 95% at three, 99.3% at five. It sets how long you must wait after enabling a rail before sampling, how long a sensor needs to settle, and how far apart two edges must be for a debounce filter to see them as separate.',
+        setup() {
+          const V = pick([3.3, 5, 1.8]), tau = pick([10, 22, 47, 100]), pct = pick([50, 63, 90, 95, 99]);
+          const t = -tau * Math.log(1 - pct / 100);
+          return num(t, Math.max(0.05, t * 0.01), {V, tau, pct});
+        },
+        render(s, shown) {
+          const f = s.pct / 100, t = -s.tau * Math.log(1 - f);
+          return eq(`${f} = 1 − e^(−t/${s.tau})      ⇒      e^(−t/${s.tau}) = ${fmtN(1 - f, 4)}`,
+            shown ? `t = −${s.tau} · ln(${fmtN(1 - f, 4)}) = ${fmtN(t, 4)} µs` : 't = ?')
+            + plotCT([{f: x => s.V * (1 - Math.exp(-x / s.tau)), label: 'v(t)'}], {
+              x: [0, s.tau * 5], y: [0, s.V * 1.15], xlabel: 't (µs)', ylabel: 'V',
+              hlines: [{y: s.V * f, label: `${s.pct}%`}],
+              marks: [{x: t, y: s.V * f, label: shown ? `${fmtN(t, 2)} µs` : '?', color: shown ? 'var(--on)' : 'var(--unk)'}]
+            })
+            + (shown ? note(`t = <b>${fmtN(t, 4)} &micro;s</b>, or ${fmtN(t / s.tau, 3)} time constants. Note the answer scales with &tau; alone — the supply voltage cancels out entirely.`) : '');
+        }
+      },
+      {
+        id: 'a5', mod: 'applied', diff: 'hard', fmt: 'num', title: 'Central difference on real samples',
+        ask: s => `Samples arrive every ${s.h}&thinsp;ms: <code>${s.y.join(', ')}</code>. Estimate the derivative at the middle sample, in units per ms, using a central difference.`,
+        hint: '(y[k+1] − y[k−1]) / (2h) — the sample at k itself is not used at all.',
+        concept: 'The central difference cancels the first-order error term of the naive forward difference, giving h&sup2; accuracy for the same one subtraction. It costs one sample of latency, since it needs the future sample, which is why a real-time D-term usually uses the backward difference instead and accepts the extra error. Either way, subtracting two nearly equal noisy samples amplifies noise by 1/h — filter first.',
+        setup() {
+          const h = pick([1, 2, 5]);
+          const y = Array.from({length: 5}, (_, i) => rnd(10, 60) + i * rnd(2, 12));
+          const d = (y[3] - y[1]) / (2 * h);
+          return num(d, Math.max(0.005, Math.abs(d) * 0.01), {h, y});
+        },
+        render(s, shown) {
+          const d = (s.y[3] - s.y[1]) / (2 * s.h);
+          return eq(`f′(t₂) ≈ ( y₃ − y₁ ) / (2h)`,
+            shown ? `= (${s.y[3]} − ${s.y[1]}) / (2 × ${s.h}) = ${fmtN(d, 4)} per ms` : '= ?')
+            + plotDT(s.y, {n0: 0, xlabel: 'sample k', values: true, hi: [1, 3], label: 'only the two shaded samples are used'})
+            + (shown ? note(`<b>${fmtN(d, 4)}</b> units/ms. A forward difference from y&#8322; to y&#8323; would give ${fmtN((s.y[3] - s.y[2]) / s.h, 4)} — a different number, and a worse estimate of the slope <em>at</em> sample 2.`) : '');
+        }
+      },
+      {
+        id: 'a6', mod: 'applied', diff: 'expert', fmt: 'num', title: 'Best step size for a float derivative',
+        ask: 'For a forward difference in IEEE single precision (&epsilon; &asymp; 1.19e&minus;7), roughly what h minimises the total error near x = 1? Give the exponent n in h &asymp; 10<sup>n</sup>.',
+        hint: 'The total error is about h/2 + 2ε/h. Minimise it: differentiate with respect to h, set to zero, and you get h ≈ 2√ε.',
+        concept: 'This is the calculus of the numerical method itself — using a derivative to tune a derivative. The result h &asymp; &radic;&epsilon; costs you half your significant digits: a single-precision forward difference cannot do better than about 3 or 4 correct digits, no matter how the code is written. If you need more, you change method (central difference, complex-step, or automatic differentiation), not the step size.',
+        setup() {
+          return num(-4, 0.6, {alts: ['-4', '−4']});
+        },
+        render(s, shown) {
+          const eps = 1.19e-7;
+          const rows = [-8, -6, -4, -2].map(n => {
+            const h = Math.pow(10, n);
+            return [`10^${n}`, fmtN(h / 2, 9), fmtN(2 * eps / h, 9), fmtN(h / 2 + 2 * eps / h, 9)];
+          });
+          return eq('E(h) ≈ h/2 + 2ε/h',
+            "E′(h) = 1/2 − 2ε/h² = 0   ⇒   h = 2√ε ≈ 7e−4",
+            '# truncation grows with h, rounding grows as h shrinks — the sum has a minimum')
+            + tbl(['h', 'truncation', 'rounding', 'total'], rows, 'the error is a U-shaped curve')
+            + (shown ? note(`h &asymp; 2&radic;&epsilon; &asymp; 7&times;10<sup>&minus;4</sup>, so <b>n &asymp; &minus;4</b> (anything from &minus;4 to &minus;3 is the flat bottom of the U). Going to h = 10<sup>&minus;8</sup> makes the estimate <em>worse</em> by four orders of magnitude — the classic trap.`) : '');
+        }
+      }
+    ];
+
+    const PROBLEMS = [...P_A, ...P_B, ...P_C].sort((a, b) => MOD_INDEX[a.mod] - MOD_INDEX[b.mod]);
+    const BY_ID = Object.fromEntries(PROBLEMS.map(p => [p.id, p]));
+    PROBLEMS.forEach(p => {p.s = p.setup();});
+
+    /* ============================================================
+       PART 4 — answer checking
+       Accept any reasonable spelling of the same value.
+       ============================================================ */
+    function norm(v) {return String(v).trim().toLowerCase().replace(/[\s_,]/g, '').replace(/[−–—]/g, '-');}
+
+    function boolOf(s) {
+      if (['yes', 'y', 'true', 't'].includes(s)) return true;
+      if (['no', 'n', 'false', 'f'].includes(s)) return false;
+      return null;
+    }
+
+    function numOf(s) {
+      if (/^-?\d*\.?\d+(e[-+]?\d+)?$/.test(s)) return parseFloat(s);
+      if (/^-?\d*\.?\d+\/-?\d*\.?\d+$/.test(s)) {const [a, b] = s.split('/').map(Number); return a / b;}
+      if (/^-?0x[0-9a-f]+$/.test(s)) return parseInt(s.replace('-0x', '0x'), 16) * (s[0] === '-' ? -1 : 1);
+      if (/^-?0b[01]+$/.test(s)) return parseInt(s.replace('-0b', '0b').slice(2), 2) * (s[0] === '-' ? -1 : 1);
+      return null;
+    }
+
+    function accepts(expected, given) {
+      const e = norm(expected), g = norm(given);
+      if (!g) return false;
+      if (e === g) return true;
+      const eb = boolOf(e);
+      if (eb !== null) return boolOf(g) === eb;
+      const en = numOf(e), gn = numOf(g);
+      return en !== null && gn !== null && Math.abs(en - gn) < 1e-9;
+    }
+
+    /* numeric problems carry s.val and s.tol */
+    function checkAnswer(p, given) {
+      const s = p.s;
+      if (s.tol !== undefined && s.val !== undefined) {
+        const g = numOf(norm(given));
+        if (g !== null && Math.abs(g - s.val) <= s.tol) return true;
+        return (s.alts || []).some(c => accepts(c, given));
+      }
+      return [s.answer, ...(s.alts || [])].some(c => accepts(c, given));
+    }
+
+    const FMT_HELP = {
+      num: 'a number — a couple of decimals is plenty',
+      dec: 'a whole number',
+      hex: 'answer in hex, e.g. 0x2A',
+      bin: 'answer in binary, e.g. 0b1011',
+      yesno: 'yes or no',
+      expr: 'an expression, e.g. 3x^2 - 2x',
+      mc: 'pick one'
+    };
+
+    /* ============================================================
+       PART 5 — application state
+       ============================================================ */
+    const STORE_KEY = 'calclab.progress.v1';
+
+    const app = {
+      tab: 'learn', cur: 0,
+      solved: new Set(),
+      tried: {}, feedback: {}, inputs: {}, pick: {}, hint: {}, reveal: {}, why: {}
+    };
+
+    function save() {try {localStorage.setItem(STORE_KEY, JSON.stringify([...app.solved]));} catch (e) { }}
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) JSON.parse(raw).forEach(id => {if (BY_ID[id]) app.solved.add(id);});
+      } catch (e) { }
+    }
+
+    const isShown = p => app.feedback[p.id] === 'correct' || app.reveal[p.id];
+    const askOf = p => typeof p.ask === 'function' ? p.ask(p.s) : p.ask;
+
+    /* ============================================================
+       PART 6 — views
+       ============================================================ */
+    function view() {
+      const solved = app.solved.size, total = PROBLEMS.length;
+      let h = `<div class="masthead">
+          <h1>Calc Lab</h1>
+          <span class="sub">differential &amp; integral calculus &mdash; ${total} problems across ${MODULES.length} modules</span>
+        </div>
+        <div class="tab-bar">
+          ${[['learn', 'Learn'], ['problems', `Problems (${solved}/${total})`], ['ref', 'Reference']]
+          .map(([k, t]) => `<button class="tab ${app.tab === k ? 'active' : ''}" onclick="setTab('${k}')">${t}</button>`).join('')}
+        </div>`;
+
+      if (app.tab === 'learn') h += viewLearn();
+      else if (app.tab === 'problems') h += viewList();
+      else h += viewRef();
+
+      document.getElementById('app').innerHTML = h;
+      if (app.tab === 'learn') {
+        const el = document.getElementById('ans');
+        if (el) el.focus();
+      }
+    }
+
+    function viewLearn() {
+      const p = PROBLEMS[app.cur], s = p.s, shown = isShown(p);
+      const mod = MODULES[MOD_INDEX[p.mod]];
+      const firstOfMod = PROBLEMS.findIndex(x => x.mod === p.mod) === app.cur;
+      const inMod = PROBLEMS.filter(x => x.mod === p.mod);
+
+      let h = '';
+      if (firstOfMod) {
+        h += `<div class="modcard">
+            <div class="t">Module ${MOD_INDEX[p.mod] + 1} of ${MODULES.length}</div>
+            <h2>${mod.name}</h2>
+            <p>${mod.blurb}</p>
+          </div>`;
+      }
+
+      h += `<div class="card">
+          <div class="problem-header">
+            <div>
+              <div class="crumb">${mod.name} &middot; ${inMod.indexOf(p) + 1} of ${inMod.length}</div>
+              <h3>${p.title}</h3>
+            </div>
+            <span class="badge badge-${p.diff}">${p.diff}</span>
+          </div>
+          <p class="ask">${askOf(p)}</p>
+          ${p.render(s, shown)}`;
+
+      if (p.fmt === 'mc') {
+        const picked = app.pick[p.id];
+        h += `<div class="choices">` + s.choices.map((c, i) => {
+          let cls = '';
+          if (shown && i === s.ai) cls = 'right';
+          else if (picked === i && app.feedback[p.id] === 'wrong') cls = 'picked';
+          return `<button class="choice ${cls}" ${shown ? 'disabled' : ''} onclick="chooseMC(${i})">
+              <span class="key">${'ABCD'[i]}</span><span>${c}</span></button>`;
+        }).join('') + `</div>`;
+      }
+
+      if (!shown) {
+        h += `<div class="answer-row">`;
+        if (p.fmt !== 'mc') {
+          h += `<input type="text" id="ans" placeholder="${FMT_HELP[p.fmt]}" value="${esc(app.inputs[p.id] || '')}"
+                   oninput="app.inputs['${p.id}']=this.value"
+                   onkeydown="if(event.key==='Enter')submit()">
+            <button class="btn btn-primary" onclick="submit()">Check</button>`;
+        }
+        h += `<button class="linkbtn" onclick="tog('hint','${p.id}')">${app.hint[p.id] ? 'hide hint' : 'hint'}</button>
+            <button class="linkbtn" onclick="tog('reveal','${p.id}')">show me</button>
+          </div>`;
+        if (app.hint[p.id]) h += `<div class="feedback hint">${p.hint}</div>`;
+        if (app.feedback[p.id] === 'wrong') {
+          const n = app.tried[p.id] || 0;
+          h += `<div class="feedback wrong">Not quite &mdash; ${n >= 3 ? 'try the hint, or use <b>show me</b> to walk through it.' : 'have another go.'}</div>`;
+        }
+      } else {
+        const correct = app.feedback[p.id] === 'correct';
+        h += `<div class="feedback ${correct ? 'correct' : 'hint'}">
+            ${correct ? '&#10003; Correct' : 'Answer'}: <span class="mono"><b>${esc(s.answer)}</b></span>
+            &nbsp;<button class="linkbtn" style="color:inherit" onclick="tog('why','${p.id}')">${app.why[p.id] ? 'hide' : 'why this matters'}</button>
+            ${app.why[p.id] ? `<div style="margin-top:8px;color:var(--tx-2)">${p.concept}</div>` : ''}
+          </div>`;
+      }
+
+      h += `<div class="navrow">
+          <button class="btn btn-sm" onclick="nav(-1)" ${app.cur === 0 ? 'disabled style="opacity:.4"' : ''}>&larr; Prev</button>
+          <button class="btn btn-sm" onclick="nav(1)" ${app.cur === PROBLEMS.length - 1 ? 'disabled style="opacity:.4"' : ''}>Next &rarr;</button>
+          <button class="btn btn-sm" onclick="regen()">${p.fmt === 'mc' ? 'Reshuffle' : 'New numbers'}</button>
+          <span class="spacer"></span>
+          <span style="font-size:12px;color:var(--tx-3)">${app.cur + 1} / ${PROBLEMS.length}</span>
+        </div></div>`;
+      return h;
+    }
+
+    function viewList() {
+      const solved = app.solved.size, total = PROBLEMS.length;
+      const byDiff = d => PROBLEMS.filter(p => p.diff === d && app.solved.has(p.id)).length;
+      let h = `<div class="stat-grid">
+          <div class="stat"><div class="stat-val">${solved}</div><div class="stat-lbl">solved</div></div>
+          <div class="stat"><div class="stat-val">${total - solved}</div><div class="stat-lbl">remaining</div></div>
+          <div class="stat"><div class="stat-val">${Math.round(solved / total * 100)}%</div><div class="stat-lbl">complete</div></div>
+          <div class="stat"><div class="stat-val">${byDiff('hard') + byDiff('expert')}</div><div class="stat-lbl">hard+ solved</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${solved / total * 100}%"></div></div>
+        <div class="card">`;
+
+      MODULES.forEach((m, mi) => {
+        const list = PROBLEMS.filter(p => p.mod === m.id);
+        const done = list.filter(p => app.solved.has(p.id)).length;
+        h += `<div class="modhead"><span class="t">${mi + 1}. ${m.name}</span><span class="line"></span><span class="c">${done}/${list.length}</span></div>`;
+        list.forEach(p => {
+          const i = PROBLEMS.indexOf(p), ok = app.solved.has(p.id);
+          h += `<div class="pitem ${ok ? 'solved' : ''} ${i === app.cur ? 'current' : ''}" onclick="go(${i})">
+              <div class="pi-icon ${ok ? 'yes' : 'no'}">${ok ? '&#10003;' : i + 1}</div>
+              <div class="pi-info"><div class="pi-title">${p.title}</div><div class="pi-sub">${askOf(p).replace(/<[^>]+>/g, '')}</div></div>
+              <span class="badge badge-${p.diff}">${p.diff}</span>
+            </div>`;
+        });
+      });
+
+      h += `<div class="navrow"><button class="btn btn-sm" onclick="resetAll()">Reset progress</button></div></div>`;
+      return h;
+    }
+
+
+    function viewRef() {
+      return `<div class="card">
+        <h2>Derivatives worth knowing cold</h2>
+        ${refTable([
+        ['d/dx xⁿ', 'n·xⁿ⁻¹ — the power rule; a constant gives 0'],
+        ['d/dx eᵏˣ', 'k·eᵏˣ — proportional to itself, which is why RC, RL and thermal systems share a shape'],
+        ['d/dx ln x', '1/x — steep near zero, almost flat for large x'],
+        ['d/dx sin(ωt)', 'ω·cos(ωt) — the ω is why differentiators amplify high frequencies'],
+        ['d/dx cos(ωt)', '−ω·sin(ωt)'],
+        ['(uv)′', 'u′v + uv′ — the product rule'],
+        ['(u/v)′', '(u′v − uv′)/v² — order matters in the numerator'],
+        ['f(g(x))′', 'f′(g(x))·g′(x) — the chain rule; backpropagation is this, cached'],
+        ['∂f/∂x', 'differentiate in x, freeze every other variable'],
+        ['∇f', '(∂f/∂x, ∂f/∂y, …) — points uphill, perpendicular to the contour']
+      ])}
+        <h2 style="margin-top:18px">Integrals worth knowing cold</h2>
+        ${refTable([
+        ['∫ xⁿ dx', 'xⁿ⁺¹/(n+1) + C, for n ≠ −1'],
+        ['∫ x⁻¹ dx', 'ln|x| + C — the one exception to the power rule'],
+        ['∫ eᵏˣ dx', 'eᵏˣ/k + C'],
+        ['∫₀^∞ e^(−t/τ) dt', 'τ — the whole tail is worth one time constant at the initial rate'],
+        ['∫ sin(ωt) dt', '−cos(ωt)/ω + C'],
+        ['mean of sin² over a period', '½ — the origin of RMS = amplitude/√2'],
+        ['∫ₐᵇ f dx', 'F(b) − F(a) for any antiderivative F — the fundamental theorem'],
+        ['double integral, rectangle', 'if f(x,y) = g(x)h(y) it factors into two 1-D integrals']
+      ])}
+        <h2 style="margin-top:18px">Numerical recipes</h2>
+        ${refTable([
+        ['forward difference', '(f(x+h) − f(x))/h — error O(h), one extra evaluation'],
+        ['central difference', '(f(x+h) − f(x−h))/2h — error O(h²), costs one sample of latency'],
+        ['best h, forward', '≈ 2√ε — about 7e−4 in float, 3e−8 in double. Smaller is worse'],
+        ['trapezoid rule', 'h(y₀/2 + y₁ + … + yₙ/2) — error O(h²), exact for straight lines'],
+        ["Simpson's rule", '(h/3)(y₀ + 4y₁ + 2y₂ + 4y₃ + … + yₙ) — error O(h⁴), needs an even count'],
+        ["Newton's method", 'x ← x − f(x)/f′(x) — doubles correct digits per step near the root'],
+        ['gradient descent', 'x ← x − η∇f — converges for a quadratic when |1 − 2aη| < 1'],
+        ['forward Euler', 'y ← y + h·f(t, y) — the integral a control loop actually computes']
+      ])}
+        <h2 style="margin-top:18px">Reading the result</h2>
+        ${refTable([
+        ['f′ > 0', 'increasing;  f′ < 0 decreasing;  f′ = 0 stationary'],
+        ['f″ > 0', 'concave up — a stationary point here is a minimum'],
+        ['f″ < 0', 'concave down — a stationary point here is a maximum'],
+        ['f″ = 0', 'test inconclusive; could be a minimum, maximum or inflection'],
+        ['relative error of a product', 'add the relative errors, weighted by each exponent'],
+        ['limit at infinity of a ratio', 'ratio of leading coefficients — the constant factor behind Big-O'],
+        ['continuity at a join', 'both pieces must agree in value; matching slope too gives a smooth C¹ join']
+      ])}
+      </div>`;
+    }
+
+    function refTable(rows) {
+      return `<table class="reft">${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`;
+    }
+
+    /* ---------- actions ---------- */
+    function setTab(t) {app.tab = t; view();}
+    function go(i) {app.cur = i; app.tab = 'learn'; view();}
+    function nav(d) {app.cur = Math.max(0, Math.min(PROBLEMS.length - 1, app.cur + d)); view();}
+    function tog(k, id) {app[k][id] = !app[k][id]; view();}
+
+    function mark(p, ok) {
+      app.tried[p.id] = (app.tried[p.id] || 0) + 1;
+      if (ok) {app.feedback[p.id] = 'correct'; app.solved.add(p.id); save();}
+      else app.feedback[p.id] = 'wrong';
+      view();
+    }
+
+    function submit() {
+      const p = PROBLEMS[app.cur];
+      const given = app.inputs[p.id] || '';
+      if (!given.trim()) return;
+      mark(p, checkAnswer(p, given));
+    }
+
+    function chooseMC(i) {
+      const p = PROBLEMS[app.cur];
+      if (isShown(p)) return;
+      app.pick[p.id] = i;
+      mark(p, i === p.s.ai);
+    }
+
+    function regen() {
+      const p = PROBLEMS[app.cur];
+      p.s = p.setup();
+      app.feedback[p.id] = null;
+      app.reveal[p.id] = false;
+      app.inputs[p.id] = '';
+      app.pick[p.id] = null;
+      view();
+    }
+
+    function resetAll() {
+      if (!confirm('Clear all solved problems?')) return;
+      app.solved.clear();
+      app.feedback = {}; app.inputs = {}; app.pick = {}; app.reveal = {}; app.hint = {}; app.tried = {};
+      save();
+      view();
+    }
+
+    load();
+    view();
+  </script>
+</body>
+
+</html>

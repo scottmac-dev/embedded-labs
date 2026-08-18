@@ -1,0 +1,2344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Linalg Lab — vectors and matrices for software and embedded engineers</title>
+  <style>
+    :root {
+      --bg: #0a0f1a;
+      --bg-1: #111827;
+      --bg-2: #1a2434;
+      --bg-3: #232f42;
+
+      --tx-1: #f3f4f6;
+      --tx-2: #9ca3af;
+      --tx-3: #6b7280;
+
+      --bd-1: #2b3648;
+      --bd-2: #374151;
+
+      --accent: #60a5fa;
+      --accent-dim: rgba(96, 165, 250, 0.15);
+
+      --on: #4ade80;
+      --off: #f87171;
+      --hl: #fbbf24;
+      --fill: #38bdf8;
+      --unk: #c084fc;
+
+      --r-sm: 5px;
+      --r-md: 8px;
+      --r-lg: 14px;
+
+      --font-sans: Inter, system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--tx-1);
+      background: var(--bg);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 4rem;
+    }
+
+    /* ---------- header / tabs ---------- */
+    .masthead {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .masthead h1 {
+      font-size: 19px;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+    }
+
+    .masthead .sub {
+      font-size: 13px;
+      color: var(--tx-3);
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--bd-1);
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 8px 15px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--tx-2);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+      transition: color .15s, background .15s;
+    }
+
+    .tab.active {
+      color: var(--tx-1);
+      border-bottom-color: var(--accent);
+      font-weight: 550;
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--tx-1);
+      background: rgba(255, 255, 255, .03);
+    }
+
+    .card {
+      background: var(--bg-1);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-lg);
+      padding: 1.25rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 8px 24px rgba(0, 0, 0, .18);
+    }
+
+    .card+.card {
+      margin-top: 1rem;
+    }
+
+    h2 {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: .92em;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--tx-1);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--r-md);
+      white-space: nowrap;
+    }
+
+    .badge-easy {
+      background: rgba(34, 197, 94, .15);
+      color: #86efac;
+    }
+
+    .badge-medium {
+      background: rgba(245, 158, 11, .15);
+      color: #fcd34d;
+    }
+
+    .badge-hard {
+      background: rgba(239, 68, 68, .15);
+      color: #fca5a5;
+    }
+
+    .badge-expert {
+      background: rgba(139, 92, 246, .15);
+      color: #c4b5fd;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin: 16px 0 6px;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
+    }
+
+    /* ---------- module intro ---------- */
+    .modcard {
+      background: linear-gradient(180deg, rgba(96, 165, 250, .10), rgba(96, 165, 250, .02));
+      border: 1px solid rgba(96, 165, 250, .28);
+      border-radius: var(--r-lg);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .modcard .t {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--accent);
+      font-weight: 650;
+    }
+
+    .modcard h2 {
+      margin: 2px 0 5px;
+    }
+
+    .modcard p {
+      font-size: 13.5px;
+      color: var(--tx-2);
+      max-width: 68ch;
+    }
+
+    /* ---------- problem chrome ---------- */
+    .problem-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .crumb {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 600;
+    }
+
+    .ask {
+      color: var(--tx-1);
+      margin-bottom: 12px;
+      font-size: 14.5px;
+    }
+
+    .note {
+      font-size: 13px;
+      color: var(--tx-2);
+      margin: 8px 0 2px;
+      max-width: 78ch;
+    }
+
+    /* ---------- equations ---------- */
+    .eqblk {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--r-md);
+      padding: 9px 13px;
+      margin: 8px 0;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      line-height: 1.7;
+    }
+
+    .eqblk .el {
+      display: block;
+    }
+
+    .eqblk .ec {
+      color: var(--tx-3);
+    }
+
+    .eqblk b {
+      color: var(--hl);
+      font-weight: 600;
+    }
+
+    .eqblk .q {
+      color: var(--unk);
+      font-weight: 700;
+    }
+
+    /* ---------- code block ---------- */
+    .code {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 10px 13px;
+      margin: 8px 0;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.6;
+    }
+
+    .code .k {
+      color: var(--accent);
+    }
+
+    .code .c {
+      color: var(--tx-3);
+    }
+
+    .code .h {
+      color: var(--hl);
+    }
+
+    /* ---------- plots ---------- */
+    .plot {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 9px 11px 6px;
+      margin: 8px 0;
+      overflow-x: auto;
+    }
+
+    .plot .plbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 650;
+      margin-bottom: 4px;
+    }
+
+    .plot svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-width: 320px;
+    }
+
+    .plotgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 10px;
+      margin: 8px 0;
+    }
+
+    .plotgrid .plot {
+      margin: 0;
+    }
+
+    .lgd {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 11.5px;
+      color: var(--tx-2);
+      margin-top: 4px;
+    }
+
+    .lgd i {
+      display: inline-block;
+      width: 14px;
+      height: 3px;
+      border-radius: 2px;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+
+    /* ---------- tables ---------- */
+    .board {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 10px 12px;
+      margin: 8px 0;
+      overflow-x: auto;
+    }
+
+    .board .blbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 650;
+      margin-bottom: 7px;
+    }
+
+    .memt {
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin: 2px 0;
+    }
+
+    .memt th,
+    .memt td {
+      border: 1px solid var(--bd-1);
+      padding: 4px 9px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .memt th {
+      color: var(--tx-3);
+      font-weight: 500;
+      background: var(--bg-1);
+      font-size: 11px;
+    }
+
+    .memt td {
+      background: var(--bg-3);
+      color: var(--tx-1);
+      font-weight: 600;
+    }
+
+    .memt td.lb {
+      background: var(--bg-1);
+      color: var(--tx-2);
+      font-weight: 500;
+      text-align: right;
+      font-size: 11px;
+    }
+
+    .memt td.mk {
+      background: rgba(56, 189, 248, .18);
+      border-color: var(--fill);
+      color: #bae6fd;
+    }
+
+    .memt td.mk2 {
+      background: rgba(251, 191, 36, .16);
+      border-color: var(--hl);
+      color: #fde68a;
+    }
+
+    .memt td.dim {
+      background: var(--bg-1);
+      color: var(--tx-3);
+      font-weight: 400;
+    }
+
+    .memt td.q {
+      color: var(--unk);
+      border-style: dashed;
+      border-color: rgba(192, 132, 252, .55);
+    }
+
+    /* ---------- value cells ---------- */
+    .rrow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .reg {
+      min-width: 118px;
+      background: var(--bg-3);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-sm);
+      padding: 5px 9px;
+    }
+
+    .reg .rn {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--tx-3);
+      letter-spacing: .03em;
+    }
+
+    .reg .rv {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--tx-1);
+      font-weight: 600;
+    }
+
+    .reg.hl {
+      border-color: var(--hl);
+      box-shadow: 0 0 0 1px rgba(251, 191, 36, .45);
+    }
+
+    .reg.new {
+      border-color: var(--on);
+      background: rgba(34, 197, 94, .14);
+    }
+
+    .reg.new .rv {
+      color: #bbf7d0;
+    }
+
+    .reg.q .rv {
+      color: var(--unk);
+    }
+
+    .reg.q {
+      border-style: dashed;
+      border-color: rgba(192, 132, 252, .55);
+    }
+
+    /* ---------- chips ---------- */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .chip {
+      font-size: 11.5px;
+      color: var(--tx-2);
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: 20px;
+      padding: 3px 11px;
+      font-family: var(--font-mono);
+    }
+
+    .chip b {
+      color: var(--tx-1);
+    }
+
+    .chip.hot {
+      border-color: rgba(251, 191, 36, .45);
+      color: #fde68a;
+    }
+
+    .chip.cool {
+      border-color: rgba(56, 189, 248, .45);
+      color: #bae6fd;
+    }
+
+    .chip.good {
+      border-color: rgba(34, 197, 94, .45);
+      color: #bbf7d0;
+    }
+
+    .chip.bad {
+      border-color: rgba(248, 113, 113, .45);
+      color: #fecaca;
+    }
+
+    /* ---------- answers ---------- */
+    .answer-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    input[type=text] {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      padding: 8px 11px;
+      width: 280px;
+      outline: none;
+    }
+
+    input[type=text]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    select {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 6px 9px;
+      outline: none;
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 13.5px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--bd-2);
+      background: var(--bg-2);
+      color: var(--tx-1);
+      padding: 8px 15px;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--accent);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0a0f1a;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.08);
+    }
+
+    .btn-sm {
+      padding: 5px 11px;
+      font-size: 12.5px;
+    }
+
+    .btn.on {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .linkbtn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      padding: 4px 2px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .choice {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      text-align: left;
+      width: 100%;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: inherit;
+      font-size: 13.5px;
+      padding: 9px 12px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+
+    .choice:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--bg-3);
+    }
+
+    .choice .key {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--tx-3);
+      border: 1px solid var(--bd-2);
+      border-radius: 4px;
+      padding: 0 6px;
+      line-height: 19px;
+      flex-shrink: 0;
+    }
+
+    .choice.picked {
+      border-color: var(--off);
+      background: rgba(248, 113, 113, .10);
+    }
+
+    .choice.right {
+      border-color: var(--on);
+      background: rgba(34, 197, 94, .12);
+    }
+
+    .choice.right .key,
+    .choice.picked .key {
+      color: var(--tx-1);
+    }
+
+    .choice:disabled {
+      cursor: default;
+      opacity: .85;
+    }
+
+    .feedback {
+      margin-top: 12px;
+      padding: 10px 13px;
+      border-radius: var(--r-md);
+      font-size: 13.5px;
+      border: 1px solid;
+    }
+
+    .feedback.correct {
+      background: rgba(34, 197, 94, .12);
+      border-color: rgba(34, 197, 94, .4);
+      color: #bbf7d0;
+    }
+
+    .feedback.wrong {
+      background: rgba(248, 113, 113, .10);
+      border-color: rgba(248, 113, 113, .4);
+      color: #fecaca;
+    }
+
+    .feedback.hint {
+      background: rgba(251, 191, 36, .09);
+      border-color: rgba(251, 191, 36, .33);
+      color: #fde68a;
+    }
+
+    .navrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--bd-1);
+      flex-wrap: wrap;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    /* ---------- problem list ---------- */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .stat {
+      background: var(--bg-1);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 11px 13px;
+    }
+
+    .stat-val {
+      font-size: 21px;
+      font-weight: 650;
+      font-family: var(--font-mono);
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .progress-bar {
+      height: 5px;
+      background: var(--bg-2);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width .25s;
+    }
+
+    .modhead {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 16px 0 6px;
+    }
+
+    .modhead:first-child {
+      margin-top: 0;
+    }
+
+    .modhead .t {
+      font-size: 11.5px;
+      font-weight: 650;
+      color: var(--tx-2);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .modhead .line {
+      flex: 1;
+      height: 1px;
+      background: var(--bd-1);
+    }
+
+    .modhead .c {
+      font-size: 11.5px;
+      color: var(--tx-3);
+      font-family: var(--font-mono);
+    }
+
+    .pitem {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 8px 10px;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .pitem:hover {
+      background: var(--bg-2);
+    }
+
+    .pitem.current {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .pi-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+      border: 1px solid var(--bd-2);
+      color: var(--tx-3);
+    }
+
+    .pi-icon.yes {
+      background: rgba(34, 197, 94, .18);
+      border-color: rgba(34, 197, 94, .5);
+      color: var(--on);
+    }
+
+    .pi-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .pi-title {
+      font-size: 13.5px;
+      font-weight: 550;
+    }
+
+    .pi-sub {
+      font-size: 12px;
+      color: var(--tx-3);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pitem.solved .pi-title {
+      color: var(--tx-2);
+    }
+
+    /* ---------- reference ---------- */
+    .reft {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 4px 0 6px;
+    }
+
+    .reft td {
+      border-bottom: 1px solid var(--bd-1);
+      padding: 6px 8px;
+      vertical-align: top;
+    }
+
+    .reft td:first-child {
+      font-family: var(--font-mono);
+      color: var(--tx-1);
+      white-space: nowrap;
+      width: 38%;
+    }
+
+    .reft td:last-child {
+      color: var(--tx-2);
+    }
+
+
+    /* ---------- inline maths ---------- */
+    .fr {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      margin: 0 3px;
+      line-height: 1.15;
+      font-size: .92em;
+    }
+
+    .fr .fn {
+      border-bottom: 1px solid currentColor;
+      padding: 0 3px;
+    }
+
+    .fr .fd {
+      padding: 0 3px;
+    }
+
+    .mtx {
+      display: inline-grid;
+      gap: 2px 12px;
+      padding: 4px 9px;
+      margin: 0 4px;
+      vertical-align: middle;
+      border-left: 2px solid var(--tx-3);
+      border-right: 2px solid var(--tx-3);
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: .92em;
+    }
+
+    .mtx .mc {
+      text-align: right;
+    }
+
+    .mtl {
+      color: var(--tx-3);
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" id="app"></div>
+
+  <script>
+    /* ============================================================
+       PART 1 — numeric helpers
+       ============================================================ */
+    const PI = Math.PI, TAU = 2 * Math.PI;
+    const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+    function shuffle(a) {const r = a.slice(); for (let i = r.length - 1; i > 0; i--) {const j = rnd(0, i);[r[i], r[j]] = [r[j], r[i]];} return r;}
+    function esc(s) {return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');}
+    const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+    /* round to n decimals and drop trailing zeros: 3.10 -> "3.1", 4.00 -> "4" */
+    function fmtN(v, d = 3) {
+      if (!isFinite(v)) return v > 0 ? '∞' : '-∞';
+      if (Math.abs(v) < 5e-11) v = 0;
+      let s = v.toFixed(d);
+      if (s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, '');
+      return s === '-0' ? '0' : s;
+    }
+    const f2 = v => fmtN(v, 2);
+    const f3 = v => fmtN(v, 3);
+    const gcd = (a, b) => b ? gcd(b, a % b) : Math.abs(a);
+    const lg2 = v => Math.log(v) / Math.LN2;
+
+    /* signed term for building expressions: sgn(-3, 'x') -> " - 3x" */
+    function sgn(c, sym = '') {
+      if (c === 0) return '';
+      const a = Math.abs(c);
+      const mag = (a === 1 && sym) ? '' : fmtN(a, 4);
+      return (c < 0 ? ' &minus; ' : ' + ') + mag + sym;
+    }
+    /* leading term of a polynomial — no " + " in front */
+    function lead(c, sym = '') {
+      const a = Math.abs(c), mag = (a === 1 && sym) ? '' : fmtN(a, 4);
+      return (c < 0 ? '&minus;' : '') + mag + sym;
+    }
+    /* x, x², x³ … as HTML */
+    const pw = (sym, n) => n === 0 ? '' : n === 1 ? sym : `${sym}<sup>${n}</sup>`;
+
+    /* build a polynomial string from coefficients, highest power first:
+       poly([2,0,-3,1]) -> "2x³ &minus; 3x + 1" */
+    function poly(co, sym = 'x') {
+      const n = co.length - 1;
+      let out = '', first = true;
+      co.forEach((c, i) => {
+        if (c === 0) return;
+        const p = n - i, t = pw(sym, p);
+        out += first ? lead(c, t) : sgn(c, t);
+        first = false;
+      });
+      return out || '0';
+    }
+
+    /* multiple-choice helper: shuffled {choices, ai, answer}.
+       `extra` carries any generated state the ask/render need. */
+    function mc(correct, wrong, extra) {
+      const opts = shuffle([correct, ...wrong]);
+      /* extra goes on first so it can never clobber the answer keys */
+      return Object.assign({}, extra || {}, {choices: opts, ai: opts.indexOf(correct), answer: correct});
+    }
+
+    /* numeric answer with a tolerance band. The printed answer keeps enough
+       decimals that it is itself comfortably inside the band. */
+    function num(v, tol, extra) {
+      const d = clamp(Math.ceil(-Math.log10(tol || 1e-3)) + 1, 2, 8);
+      return Object.assign({}, extra || {}, {answer: fmtN(v, d), val: v, tol});
+    }
+    /* yes / no answer */
+    function yn(v, extra) {return Object.assign({}, extra || {}, {answer: v ? 'yes' : 'no'});}
+
+    /* ============================================================
+       PART 2 — render helpers
+       Everything returns an HTML string, so it drops straight into
+       a problem's render(s, shown).
+       ============================================================ */
+    function title(t) {return `<div class="section-title">${t}</div>`;}
+    function note(html) {return `<div class="note">${html}</div>`;}
+    function chips(list) {return `<div class="chips">${list.map(c => `<span class="chip ${c[2] || ''}">${c[0]} <b>${c[1]}</b></span>`).join('')}</div>`;}
+
+    /* boxed formula. Lines starting with "#" are dimmed commentary. */
+    function eq(...lines) {
+      const body = lines.filter(l => l !== null && l !== undefined && l !== '').map(l => {
+        if (l.startsWith('#')) return `<span class="el ec">${l.slice(1).trim()}</span>`;
+        return `<span class="el">${l}</span>`;
+      }).join('');
+      return `<div class="eqblk">${body}</div>`;
+    }
+
+    /* inline fraction */
+    function frac(n, d) {return `<span class="fr"><span class="fn">${n}</span><span class="fd">${d}</span></span>`;}
+
+    /* C / pseudo-code block */
+    function code(src) {
+      const s = esc(src)
+        .replace(/(\b\d+\.\d+\b|\b0x[0-9A-Fa-f]+\b)/g, '<span class="h">$1</span>')
+        .replace(/\/\/[^\n]*/g, '<span class="c">$&</span>')
+        .replace(/\b(float|double|int|long|unsigned|uint8_t|uint16_t|uint32_t|int8_t|int16_t|int32_t|bool|size_t|void|static|const|for|if|else|while|do|return|struct|typedef|break|continue)\b/g, '<span class="k">$1</span>');
+      return `<div class="code">${s}</div>`;
+    }
+
+    /* labelled value cells. rows = [name, value, cls] */
+    function cells(rows, label) {
+      const body = rows.map(([n, v, cls]) =>
+        `<div class="reg ${cls || ''}"><div class="rn">${n}</div><div class="rv">${v}</div></div>`).join('');
+      return `<div class="board">${label ? `<div class="blbl">${label}</div>` : ''}<div class="rrow">${body}</div></div>`;
+    }
+
+    /* generic table: head = [..], rows = [[cell | [cell, cls], ...], ..] */
+    function tbl(head, rows, label) {
+      const th = head.map(h => `<th>${h}</th>`).join('');
+      const tr = rows.map(rw => '<tr>' + rw.map(c => {
+        const [v, cls] = Array.isArray(c) ? c : [c, ''];
+        return `<td class="${cls || ''}">${v}</td>`;
+      }).join('') + '</tr>').join('');
+      return `<div class="board">${label ? `<div class="blbl">${label}</div>` : ''}
+        <table class="memt"><tr>${th}</tr>${tr}</table></div>`;
+    }
+
+    /* a column vector / matrix, as a bracketed grid. rows = [[a,b],[c,d]] */
+    function mtx(rows, label) {
+      const cols = rows[0].length;
+      const body = rows.map(r => r.map(v => `<span class="mc">${v}</span>`).join('')).join('');
+      return `<span class="mtx" style="grid-template-columns:repeat(${cols}, auto)">${body}</span>` +
+        (label ? `<span class="mtl">${label}</span>` : '');
+    }
+
+    /* ---------- plot primitives ---------- */
+    const PAL = ['var(--accent)', 'var(--on)', 'var(--hl)', 'var(--unk)', 'var(--off)'];
+
+    function scales(o) {
+      const W = o.W || 640, H = o.H || 170, L = o.L === undefined ? 44 : o.L,
+        R = o.R === undefined ? 14 : o.R, T = o.T === undefined ? 12 : o.T, B = o.B === undefined ? 26 : o.B;
+      const [x0, x1] = o.x, [y0, y1] = o.y;
+      return {
+        W, H, L, R, T, B, x0, x1, y0, y1,
+        X: v => L + (clamp(v, x0, x1) - x0) / (x1 - x0) * (W - L - R),
+        Y: v => T + (y1 - clamp(v, y0, y1)) / (y1 - y0) * (H - T - B),
+        Xr: v => L + (v - x0) / (x1 - x0) * (W - L - R),
+        Yr: v => T + (y1 - v) / (y1 - y0) * (H - T - B)
+      };
+    }
+
+    function ticks(a, b, n) {
+      const raw = (b - a) / n;
+      const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+      const step = [1, 2, 2.5, 5, 10].find(m => m * mag >= raw * 0.999) * mag;
+      const out = [];
+      for (let v = Math.ceil(a / step) * step; v <= b + step * 1e-6; v += step) out.push(Math.abs(v) < step / 1e6 ? 0 : v);
+      return out;
+    }
+
+    function txt(x, y, s, o = {}) {
+      return `<text x="${f2(x)}" y="${f2(y)}" text-anchor="${o.anchor || 'middle'}" font-size="${o.size || 10}"
+        fill="${o.fill || 'var(--tx-3)'}" font-family="var(--font-mono)" ${o.weight ? `font-weight="${o.weight}"` : ''}
+        ${o.rotate ? `transform="rotate(${o.rotate} ${f2(x)} ${f2(y)})"` : ''}>${s}</text>`;
+    }
+
+    function axesSVG(sc, o) {
+      let g = '';
+      const xt = o.xticks || ticks(sc.x0, sc.x1, o.nxt || 6);
+      const yt = o.yticks || ticks(sc.y0, sc.y1, o.nyt || 4);
+      const xf = o.xfmt || (v => fmtN(v, 2)), yf = o.yfmt || (v => fmtN(v, 2));
+      xt.forEach(v => {
+        const X = sc.Xr(v);
+        if (X < sc.L - .5 || X > sc.W - sc.R + .5) return;
+        g += `<line x1="${f2(X)}" y1="${sc.T}" x2="${f2(X)}" y2="${sc.H - sc.B}" stroke="var(--bd-1)" stroke-width="1"/>`;
+        if (o.noxlab) return;
+        g += txt(X, sc.H - sc.B + 13, esc(xf(v)));
+      });
+      yt.forEach(v => {
+        const Y = sc.Yr(v);
+        if (Y < sc.T - .5 || Y > sc.H - sc.B + .5) return;
+        g += `<line x1="${sc.L}" y1="${f2(Y)}" x2="${sc.W - sc.R}" y2="${f2(Y)}" stroke="var(--bd-1)" stroke-width="1"/>`;
+        g += txt(sc.L - 6, Y + 3.5, esc(yf(v)), {anchor: 'end'});
+      });
+      /* the axes themselves, drawn brighter */
+      if (sc.y0 <= 0 && sc.y1 >= 0) g += `<line x1="${sc.L}" y1="${f2(sc.Yr(0))}" x2="${sc.W - sc.R}" y2="${f2(sc.Yr(0))}" stroke="var(--bd-2)" stroke-width="1.5"/>`;
+      if (sc.x0 <= 0 && sc.x1 >= 0) g += `<line x1="${f2(sc.Xr(0))}" y1="${sc.T}" x2="${f2(sc.Xr(0))}" y2="${sc.H - sc.B}" stroke="var(--bd-2)" stroke-width="1.5"/>`;
+      g += `<rect x="${sc.L}" y="${sc.T}" width="${sc.W - sc.L - sc.R}" height="${sc.H - sc.T - sc.B}" fill="none" stroke="var(--bd-1)"/>`;
+      if (o.xlabel) g += txt(sc.W - sc.R, sc.H - 3, esc(o.xlabel), {anchor: 'end', fill: 'var(--tx-2)', size: 10.5});
+      if (o.ylabel) g += txt(11, sc.T + (sc.H - sc.T - sc.B) / 2, esc(o.ylabel), {rotate: -90, fill: 'var(--tx-2)', size: 10.5});
+      return g;
+    }
+
+    function legend(items) {
+      if (!items || !items.length) return '';
+      return `<div class="lgd">${items.map(([c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join('')}</div>`;
+    }
+
+    function plotBox(label, sc, body, lgd) {
+      return `<div class="plot" style="max-width:${sc.W + 26}px">${label ? `<div class="plbl">${label}</div>` : ''}
+        <svg viewBox="0 0 ${sc.W} ${sc.H}" preserveAspectRatio="xMidYMid meet" role="img">${body}</svg>
+        ${legend(lgd)}</div>`;
+    }
+
+    /* annotations shared by every plot type */
+    function annotate(sc, o) {
+      let g = '';
+      (o.vlines || []).forEach(v => {
+        const X = sc.Xr(v.x);
+        g += `<line x1="${f2(X)}" y1="${sc.T}" x2="${f2(X)}" y2="${sc.H - sc.B}" stroke="${v.color || 'var(--hl)'}"
+          stroke-width="1.4" stroke-dasharray="${v.dash || '4 3'}"/>`;
+        if (v.label) g += txt(X, sc.T + 11, esc(v.label), {fill: v.color || 'var(--hl)', size: 10.5});
+      });
+      (o.hlines || []).forEach(v => {
+        const Y = sc.Yr(v.y);
+        g += `<line x1="${sc.L}" y1="${f2(Y)}" x2="${sc.W - sc.R}" y2="${f2(Y)}" stroke="${v.color || 'var(--hl)'}"
+          stroke-width="1.4" stroke-dasharray="${v.dash || '4 3'}"/>`;
+        if (v.label) g += txt(sc.W - sc.R - 4, Y - 4, esc(v.label), {anchor: 'end', fill: v.color || 'var(--hl)', size: 10.5});
+      });
+      (o.marks || []).forEach(m => {
+        const X = sc.Xr(m.x), Y = sc.Yr(m.y);
+        g += `<circle cx="${f2(X)}" cy="${f2(Y)}" r="4" fill="${m.color || 'var(--hl)'}" stroke="var(--bg-2)" stroke-width="1.5"/>`;
+        if (m.label) g += txt(X, Y - 9, esc(m.label), {fill: m.color || 'var(--hl)', size: 10.5, weight: 600});
+      });
+      (o.texts || []).forEach(t => {
+        g += txt(sc.Xr(t.x), sc.Yr(t.y), esc(t.s), {fill: t.color || 'var(--tx-2)', size: t.size || 10.5, anchor: t.anchor});
+      });
+      return g;
+    }
+
+    function pathOf(pts, sc) {
+      let d = '', pen = false;
+      pts.forEach(([x, y]) => {
+        if (!isFinite(y)) {pen = false; return;}
+        const cy = clamp(y, sc.y0, sc.y1);
+        d += (pen ? 'L' : 'M') + f2(sc.Xr(x)) + ' ' + f2(sc.Yr(cy)) + ' ';
+        pen = true;
+      });
+      return d.trim();
+    }
+
+    /* ---------- continuous-time waveform ---------- */
+    /* series: [{f: t=>y | pts:[[t,y]], color, dash, width, fill, label}] */
+    function plotCT(series, o = {}) {
+      o = Object.assign({x: [-1, 5], y: [-1.4, 1.4], W: 640, H: 170, xlabel: 't', N: 500}, o);
+      const sc = scales(o);
+      let g = axesSVG(sc, o);
+      series.forEach((s, i) => {
+        const col = s.color || PAL[i % PAL.length];
+        let pts = s.pts;
+        if (!pts) {
+          pts = [];
+          for (let k = 0; k <= o.N; k++) {const t = sc.x0 + (sc.x1 - sc.x0) * k / o.N; pts.push([t, s.f(t)]);}
+        }
+        const d = pathOf(pts, sc);
+        if (s.fill) {
+          const base = sc.Yr(clamp(0, sc.y0, sc.y1));
+          g += `<path d="${d} L ${f2(sc.Xr(pts[pts.length - 1][0]))} ${f2(base)} L ${f2(sc.Xr(pts[0][0]))} ${f2(base)} Z"
+            fill="${col}" opacity=".16" stroke="none"/>`;
+        }
+        g += `<path d="${d}" fill="none" stroke="${col}" stroke-width="${s.width || 2}"
+          ${s.dash ? `stroke-dasharray="${s.dash}"` : ''} stroke-linejoin="round" stroke-linecap="round" opacity="${s.op || 1}"/>`;
+      });
+      g += annotate(sc, o);
+      const lgd = series.filter(s => s.label).map((s, i) => [s.color || PAL[series.indexOf(s) % PAL.length], s.label]);
+      return plotBox(o.label, sc, g, o.legend === false ? null : lgd);
+    }
+
+    /* ---------- discrete-time stem plot ---------- */
+    /* seq: array of numbers; o.n0 = index of seq[0] */
+    function plotDT(seq, o = {}) {
+      const n0 = o.n0 === undefined ? 0 : o.n0;
+      const vals = seq.filter(v => isFinite(v));
+      const top = o.ymax !== undefined ? o.ymax : Math.max(1, ...vals.map(Math.abs)) * 1.25;
+      const bot = o.ymin !== undefined ? o.ymin : (Math.min(0, ...vals) < 0 ? -top : -top * 0.25);
+      o = Object.assign({
+        x: [n0 - 1, n0 + seq.length], y: [bot, top], W: 640, H: 170, xlabel: 'n',
+        xticks: seq.map((_, i) => n0 + i).filter((v, i) => seq.length <= 22 || i % 2 === 0)
+      }, o);
+      const sc = scales(o);
+      let g = axesSVG(sc, o);
+      const zero = sc.Yr(clamp(0, sc.y0, sc.y1));
+      const hi = o.hi || [], unknown = o.unknown || [];
+      seq.forEach((v, i) => {
+        const n = n0 + i, X = sc.Xr(n);
+        if (X < sc.L || X > sc.W - sc.R) return;
+        const isQ = unknown.includes(n);
+        const col = isQ ? 'var(--unk)' : (hi.includes(n) ? 'var(--hl)' : (o.color || 'var(--accent)'));
+        if (isQ) {
+          g += `<line x1="${f2(X)}" y1="${f2(zero)}" x2="${f2(X)}" y2="${f2(zero - 26)}" stroke="var(--unk)" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+          g += txt(X, zero - 31, '?', {fill: 'var(--unk)', size: 13, weight: 700});
+          return;
+        }
+        const Y = sc.Yr(v);
+        g += `<line x1="${f2(X)}" y1="${f2(zero)}" x2="${f2(X)}" y2="${f2(Y)}" stroke="${col}" stroke-width="${hi.includes(n) ? 2.4 : 1.8}"/>`;
+        g += `<circle cx="${f2(X)}" cy="${f2(Y)}" r="${hi.includes(n) ? 4.2 : 3.4}" fill="${col}"/>`;
+        if (o.values && v !== 0) g += txt(X, Y + (v >= 0 ? -8 : 13), esc(fmtN(v, 2)), {fill: col, size: 10});
+      });
+      g += annotate(sc, o);
+      return plotBox(o.label, sc, g, o.legend || null);
+    }
+
+    /* ---------- helpers specific to this lab ---------- */
+    const degOf = r => r * 180 / PI;
+    const radOf = d => d * PI / 180;
+
+    /* ---------- small vector / matrix maths ---------- */
+    const vAdd = (a, b) => a.map((v, i) => v + b[i]);
+    const vSub = (a, b) => a.map((v, i) => v - b[i]);
+    const vScale = (a, k) => a.map(v => v * k);
+    const vDot = (a, b) => a.reduce((s, v, i) => s + v * b[i], 0);
+    const vLen = a => Math.sqrt(vDot(a, a));
+    const vUnit = a => vScale(a, 1 / vLen(a));
+    const vCross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+    const vAngle = (a, b) => Math.acos(clamp(vDot(a, b) / (vLen(a) * vLen(b)), -1, 1));
+
+    /* 2×2 matrices as [[a,b],[c,d]] */
+    const mApply = (M, v) => M.map(row => vDot(row, v));
+    const mMul = (A, B) => A.map(row => B[0].map((_, j) => row.reduce((s, v, k) => s + v * B[k][j], 0)));
+    const mDet = M => M[0][0] * M[1][1] - M[0][1] * M[1][0];
+    const mT = M => M[0].map((_, j) => M.map(row => row[j]));
+    function mInv(M) {
+      const d = mDet(M);
+      return [[M[1][1] / d, -M[0][1] / d], [-M[1][0] / d, M[0][0] / d]];
+    }
+    const mRot = th => [[Math.cos(th), -Math.sin(th)], [Math.sin(th), Math.cos(th)]];
+
+    /* render a vector or matrix of numbers, rounded for display */
+    const vShow = (v, d = 2) => `(${v.map(x => fmtN(x, d).replace('-', '−')).join(', ')})`;
+    const mShow = (M, d = 2) => mtx(M.map(r => r.map(x => fmtN(x, d).replace('-', '−'))));
+
+    /* ---------- 2-D vector diagram ---------- */
+    /* vecs: [{v:[x,y], from:[x,y], label, color, dash, dot}] */
+    function vecPlot(vecs, o = {}) {
+      const all = vecs.flatMap(k => [Math.abs(k.v[0]), Math.abs(k.v[1]),
+        k.from ? Math.abs(k.from[0]) : 0, k.from ? Math.abs(k.from[1]) : 0]);
+      const lim = o.lim || Math.max(1, ...all) * 1.3;
+      o = Object.assign({x: [-lim, lim], y: [-lim, lim], W: 360, H: 320, L: 34, B: 24,
+        xlabel: 'x', ylabel: 'y', nxt: 4, nyt: 4}, o);
+      const sc = scales(o);
+      let g = axesSVG(sc, o);
+
+      vecs.forEach((k, i) => {
+        const col = k.color || PAL[i % PAL.length];
+        const a = k.from || [0, 0];
+        const x1 = sc.Xr(a[0]), y1 = sc.Yr(a[1]), x2 = sc.Xr(k.v[0]), y2 = sc.Yr(k.v[1]);
+        const ang = Math.atan2(y2 - y1, x2 - x1);
+        g += `<line x1="${f2(x1)}" y1="${f2(y1)}" x2="${f2(x2)}" y2="${f2(y2)}" stroke="${col}"
+          stroke-width="${k.width || 2.2}" ${k.dash ? `stroke-dasharray="${k.dash}"` : ''}/>`;
+        if (!k.noHead) {
+          g += `<path d="M ${f2(x2)} ${f2(y2)} L ${f2(x2 - 9 * Math.cos(ang - .4))} ${f2(y2 - 9 * Math.sin(ang - .4))}
+            L ${f2(x2 - 9 * Math.cos(ang + .4))} ${f2(y2 - 9 * Math.sin(ang + .4))} Z" fill="${col}"/>`;
+        }
+        if (k.label) {
+          g += txt(x2 + (k.v[0] >= a[0] ? 11 : -11), y2 + (k.v[1] >= a[1] ? -7 : 15), esc(k.label),
+            {fill: col, size: 11, weight: 600, anchor: k.v[0] >= a[0] ? 'start' : 'end'});
+        }
+      });
+
+      g += annotate(sc, o);
+      return plotBox(o.label, sc, g, o.legend || null);
+    }
+
+    /* ---------- unit square under a 2×2 transform ---------- */
+    function xformPlot(M, o = {}) {
+      const sq = [[0, 0], [1, 0], [1, 1], [0, 1]];
+      const out = sq.map(p => mApply(M, p));
+      const all = out.flat().concat([1, -1]);
+      const lim = o.lim || Math.max(...all.map(Math.abs)) * 1.4;
+      o = Object.assign({x: [-lim, lim], y: [-lim, lim], W: 360, H: 320, L: 34, B: 24,
+        xlabel: 'x', ylabel: 'y', nxt: 4, nyt: 4}, o);
+      const sc = scales(o);
+      let g = axesSVG(sc, o);
+
+      const poly = (pts, fill, stroke, dash) =>
+        `<path d="M ${pts.map(p => `${f2(sc.Xr(p[0]))} ${f2(sc.Yr(p[1]))}`).join(' L ')} Z"
+          fill="${fill}" opacity="${fill === 'none' ? 1 : .18}" stroke="${stroke}" stroke-width="1.8"
+          ${dash ? `stroke-dasharray="${dash}"` : ''}/>`;
+
+      g += poly(sq, 'none', 'var(--bd-2)', '4 3');
+      if (o.showOut !== false) g += poly(out, 'var(--accent)', 'var(--accent)');
+
+      /* the two basis vectors, which are the columns of M */
+      [[0, 'var(--hl)', 'î → col 1'], [1, 'var(--unk)', 'ĵ → col 2']].forEach(([j, col, lab]) => {
+        if (o.showOut === false) return;
+        const e = mApply(M, j === 0 ? [1, 0] : [0, 1]);
+        const x2 = sc.Xr(e[0]), y2 = sc.Yr(e[1]), x1 = sc.Xr(0), y1 = sc.Yr(0);
+        const ang = Math.atan2(y2 - y1, x2 - x1);
+        g += `<line x1="${f2(x1)}" y1="${f2(y1)}" x2="${f2(x2)}" y2="${f2(y2)}" stroke="${col}" stroke-width="2.2"/>`;
+        g += `<path d="M ${f2(x2)} ${f2(y2)} L ${f2(x2 - 9 * Math.cos(ang - .4))} ${f2(y2 - 9 * Math.sin(ang - .4))}
+          L ${f2(x2 - 9 * Math.cos(ang + .4))} ${f2(y2 - 9 * Math.sin(ang + .4))} Z" fill="${col}"/>`;
+        if (o.basisLabels !== false) g += txt(x2 + 10, y2 - 6, lab, {fill: col, size: 10, anchor: 'start', weight: 600});
+      });
+
+      g += annotate(sc, o);
+      return plotBox(o.label, sc, g, o.legend || null);
+    }
+
+    /* ============================================================
+       PART 3 — curriculum
+       Modules run in dependency order: nothing here needs an idea
+       that a later module introduces.
+       ============================================================ */
+    const MODULES = [
+      {id: 'vec', name: 'Vectors', blurb: 'A scalar is one number; a vector is a list of them that means something as a unit — a displacement, a velocity, a colour, a feature. Adding, scaling, measuring length and reducing to a pure direction is the whole vocabulary, and it is the same in two dimensions as in two hundred.'},
+      {id: 'dot', name: 'The dot product', blurb: 'One number that answers "how much do these two point the same way?". It gives you angles, projections, orthogonality tests and similarity scores, and it costs one multiply-accumulate per dimension — which is why it is the single most executed operation in graphics and machine learning.'},
+      {id: 'cross', name: 'The cross product', blurb: 'Three dimensions only. It produces a vector perpendicular to both inputs, with a length equal to the area of the parallelogram they span. Surface normals, torque, angular velocity and the sign of a turn all come from it.'},
+      {id: 'mat', name: 'Matrices', blurb: 'A matrix is a function that takes a vector and returns a vector, written as a grid. Its columns are where the basis vectors land, its determinant is the area scale factor, and its inverse — when it exists — undoes it.'},
+      {id: 'xform', name: 'Transformations', blurb: 'Rotate, scale, shear, translate. Composition is matrix multiplication, which does not commute, so the order you apply them in is a real decision. Homogeneous coordinates are the trick that lets a translation ride along as a matrix multiply.'},
+      {id: 'applied', name: 'Vectors in the machine', blurb: 'Tilt from an accelerometer, cosine similarity, dead reckoning, fixed-point normalisation, and the memory-layout question that decides whether your matrix loop runs at cache speed or at DRAM speed.'}
+    ];
+    const MOD_INDEX = Object.fromEntries(MODULES.map((m, i) => [m.id, i]));
+
+    const TRIPLES = [[3, 4, 5], [6, 8, 10], [5, 12, 13], [8, 15, 17], [7, 24, 25], [9, 12, 15]];
+
+    const P_A = [
+      {
+        id: 'v1', mod: 'vec', diff: 'easy', fmt: 'mc', title: 'Scalar or vector',
+        ask: 'Which of these quantities genuinely needs a vector rather than a scalar?',
+        hint: 'Ask whether the quantity has a direction that changes its meaning. Temperature at a point does not; a push does.',
+        concept: 'The distinction is not decoration — it decides your data layout and your arithmetic. Storing a heading as a single angle instead of a unit vector seems cheaper until you have to average two headings across the 359°/1° wrap, at which point the vector form is both simpler and correct.',
+        setup() {
+          return mc('the acceleration reported by an IMU',
+            ['the temperature of a die', 'the elapsed time of a task', 'the mass of a component']);
+        },
+        render(s, shown) {
+          return eq('scalar:  one number,  magnitude only',
+            'vector:  an ordered list,  magnitude and direction together',
+            '# a = (aₓ, a_y, a_z) — three numbers that only mean something as a set')
+            + (shown ? note('An accelerometer reports three axes at once, and rotating the board changes all three while the physical acceleration is unchanged. Temperature, time and mass have no such behaviour.') : '');
+        }
+      },
+      {
+        id: 'v2', mod: 'vec', diff: 'easy', fmt: 'num', title: 'Adding and scaling',
+        ask: s => `With <code>a = ${vShow(s.a, 0)}</code> and <code>b = ${vShow(s.b, 0)}</code>, what is the x component of <code>${s.k}a + b</code>?`,
+        hint: 'Scale every component of a by k, then add b componentwise. Only the first component is asked for.',
+        concept: 'Every vector operation at this level is elementwise, which means it vectorises perfectly — SIMD instructions exist precisely because this pattern is so common. It also means a bug in one component is invisible to the others, so unit tests on vector code should check each axis, not just the magnitude.',
+        setup() {
+          const a = [rnd(-6, 6), rnd(-6, 6)], b = [rnd(-6, 6), rnd(-6, 6)], k = rnd(-3, 4) || 2;
+          return num(k * a[0] + b[0], 0.01, {a, b, k});
+        },
+        render(s, shown) {
+          const r = vAdd(vScale(s.a, s.k), s.b);
+          return eq(`${s.k}a = ${vShow(vScale(s.a, s.k), 0)}`,
+            shown ? `${s.k}a + b = ${vShow(r, 0)}` : `${s.k}a + b = ?`)
+            + vecPlot([{v: s.a, label: 'a'}, {v: s.b, label: 'b'},
+            {v: r, label: shown ? vShow(r, 0) : '?', color: 'var(--hl)', dash: '5 3'}])
+            + (shown ? note(`x component = ${s.k}&times;${s.a[0]} + ${s.b[0]} = <b>${r[0]}</b>. Scaling by a negative number reverses the direction; scaling by zero collapses it to a point.`) : '');
+        }
+      },
+      {
+        id: 'v3', mod: 'vec', diff: 'easy', fmt: 'num', title: 'Magnitude',
+        ask: s => `What is the magnitude of <code>${vShow(s.a, 0)}</code>?`,
+        hint: '√(x² + y²) in two dimensions, √(x² + y² + z²) in three. The signs disappear when you square.',
+        concept: 'Magnitude is a length, a speed, a signal amplitude, a distance in feature space — always the same formula. In code you almost always want the squared magnitude instead: it avoids a square root, it is monotonic in the real thing, and comparing squared distances gives identical orderings.',
+        setup() {
+          const [x, y, m] = pick(TRIPLES);
+          const a = [pick([1, -1]) * x, pick([1, -1]) * y];
+          return num(m, 0.02, {a});
+        },
+        render(s, shown) {
+          return eq(`|a| = √(${s.a[0]}² + ${s.a[1]}²) = √${s.a[0] * s.a[0] + s.a[1] * s.a[1]}`,
+            shown ? `= ${fmtN(vLen(s.a), 3)}` : '= ?')
+            + vecPlot([{v: s.a, label: shown ? `|a| = ${fmtN(vLen(s.a), 2)}` : '|a| = ?'}])
+            + (shown ? note(`<b>${fmtN(vLen(s.a), 4)}</b>. The squared magnitude, ${s.a[0] * s.a[0] + s.a[1] * s.a[1]}, is what you should compare against a squared threshold whenever you can avoid the root.`) : '');
+        }
+      },
+      {
+        id: 'v4', mod: 'vec', diff: 'medium', fmt: 'num', title: 'Normalising to a pure direction',
+        ask: s => `Normalise <code>${vShow(s.a, 0)}</code> to unit length. What is its x component?`,
+        hint: 'Divide every component by the magnitude. The result always has length exactly 1.',
+        concept: 'Normalising strips the size away and leaves only the direction, which is what you need for a surface normal, a heading, or a cosine similarity. The trap is the zero vector: dividing by a magnitude of zero produces a <code>NaN</code> and quietly poisons everything downstream, so any normalise() worth shipping guards against it.',
+        setup() {
+          const [x, y, m] = pick(TRIPLES);
+          const a = [pick([1, -1]) * x, pick([1, -1]) * y];
+          return num(a[0] / m, 0.005, {a, m});
+        },
+        render(s, shown) {
+          const u = vUnit(s.a);
+          return eq(`|a| = ${fmtN(vLen(s.a), 3)}`,
+            shown ? `â = a / |a| = ${vShow(u, 4)}` : 'â = a / |a| = ?',
+            shown ? `check: |â| = ${fmtN(vLen(u), 4)}` : '# the result must come out at length 1')
+            + vecPlot([{v: s.a, label: 'a'}, {v: u, label: shown ? 'â' : '?', color: 'var(--hl)'}])
+            + (shown ? note(`x component = ${s.a[0]}/${s.m} = <b>${fmtN(u[0], 5)}</b>. Guard the zero case — <code>if (len &gt; 0)</code> — or a stationary sensor reading will hand you a <code>NaN</code>.`) : '');
+        }
+      },
+      {
+        id: 'v5', mod: 'vec', diff: 'easy', fmt: 'num', title: 'Distance between two points',
+        ask: s => `How far apart are the points <code>${vShow(s.p, 0)}</code> and <code>${vShow(s.q, 0)}</code>?`,
+        hint: 'Subtract to get the displacement vector, then take its magnitude.',
+        concept: 'Distance is the magnitude of a difference, and this one line generalises straight to any number of dimensions — including the high-dimensional feature spaces where nearest-neighbour search lives. It is also worth knowing when <em>not</em> to use it: on a grid where you can only move along axes, the Manhattan distance |Δx| + |Δy| is the honest metric.',
+        setup() {
+          const [dx, dy, m] = pick(TRIPLES);
+          const p = [rnd(-5, 5), rnd(-5, 5)];
+          const q = [p[0] + pick([1, -1]) * dx, p[1] + pick([1, -1]) * dy];
+          return num(m, 0.02, {p, q});
+        },
+        render(s, shown) {
+          const d = vSub(s.q, s.p);
+          return eq(`q − p = ${vShow(d, 0)}`,
+            shown ? `|q − p| = √(${d[0]}² + ${d[1]}²) = ${fmtN(vLen(d), 3)}` : '|q − p| = ?')
+            + vecPlot([{v: s.p, label: 'p', dash: '3 3'}, {v: s.q, label: 'q', dash: '3 3'},
+            {v: s.q, from: s.p, label: shown ? fmtN(vLen(d), 2) : '?', color: 'var(--hl)'}])
+            + (shown ? note(`<b>${fmtN(vLen(d), 4)}</b> straight line. Along grid axes only it would be |${d[0]}| + |${d[1]}| = ${Math.abs(d[0]) + Math.abs(d[1])} — a different metric for a different movement model.`) : '');
+        }
+      },
+      {
+        id: 'v6', mod: 'vec', diff: 'hard', fmt: 'num', title: 'Fixed-point normalisation',
+        ask: s => `A Q15 unit vector stores each component as an integer in &plusmn;32767 representing &plusmn;1. What integer represents the x component of the normalised <code>${vShow(s.a, 0)}</code>?`,
+        hint: 'Normalise first, then multiply by 32767 and round to the nearest integer.',
+        concept: 'Unit vectors are the natural case for fixed point, because every component is guaranteed to sit in [−1, 1] and cannot overflow. The awkward part is the reciprocal square root needed to normalise — which is why the famous fast inverse-square-root trick exists, and why modern instruction sets ship an rsqrt approximation.',
+        setup() {
+          const [x, y, m] = pick(TRIPLES);
+          const a = [pick([1, -1]) * x, pick([1, -1]) * y];
+          return num(Math.round(a[0] / m * 32767), 1.5, {a, m});
+        },
+        render(s, shown) {
+          const u = vUnit(s.a), q = u.map(v => Math.round(v * 32767));
+          return code(`int32_t len2 = x*x + y*y;            // ${s.a[0] * s.a[0] + s.a[1] * s.a[1]}\nint32_t len  = isqrt(len2);          // ${s.m}\nint16_t qx   = (x * 32767) / len;    // ${shown ? q[0] : '?'}\nint16_t qy   = (y * 32767) / len;    // ${shown ? q[1] : '?'}`)
+            + eq(`x̂ = ${s.a[0]}/${s.m} = ${fmtN(u[0], 5)}`,
+              shown ? `Q15 = round(${fmtN(u[0], 5)} × 32767) = ${q[0]}` : 'Q15 = ?')
+            + (shown ? note(`<b>${q[0]}</b>. Note the ordering in the code: multiply <em>before</em> dividing, or integer division truncates the value to zero and you lose the whole result.`) : '');
+        }
+      },
+
+      /* ---------- dot product ---------- */
+      {
+        id: 'd1', mod: 'dot', diff: 'easy', fmt: 'num', title: 'Compute a dot product',
+        ask: s => `What is <code>${vShow(s.a, 0)} &middot; ${vShow(s.b, 0)}</code>?`,
+        hint: 'Multiply matching components and add the results. The answer is a single number, not a vector.',
+        concept: 'Multiply-and-accumulate over matching elements is the shape of almost every hot loop in numerical code: a dot product, a convolution tap, a neuron. DSPs and vector units expose it as one instruction because it is so dominant, and the whole art of optimising such loops is feeding that instruction without stalling on memory.',
+        setup() {
+          const a = [rnd(-8, 8), rnd(-8, 8)], b = [rnd(-8, 8), rnd(-8, 8)];
+          return num(vDot(a, b), 0.01, {a, b});
+        },
+        render(s, shown) {
+          return eq(`a·b = ${s.a[0]}×${s.b[0]} + ${s.a[1]}×${s.b[1]}`,
+            shown ? `= ${s.a[0] * s.b[0]} + ${s.a[1] * s.b[1]} = ${vDot(s.a, s.b)}` : '= ?')
+            + vecPlot([{v: s.a, label: 'a'}, {v: s.b, label: 'b'}],
+              {label: shown ? (vDot(s.a, s.b) > 0 ? 'positive — they broadly agree' : vDot(s.a, s.b) < 0 ? 'negative — they broadly oppose' : 'zero — perpendicular') : 'what sign will it have?'})
+            + (shown ? note(`<b>${vDot(s.a, s.b)}</b>. The sign alone is informative: positive means the angle is under 90&deg;, negative means over, zero means exactly perpendicular.`) : '');
+        }
+      },
+      {
+        id: 'd2', mod: 'dot', diff: 'medium', fmt: 'num', title: 'Angle between two vectors',
+        ask: s => `What is the angle between <code>${vShow(s.a, 0)}</code> and <code>${vShow(s.b, 0)}</code>, in degrees?`,
+        hint: 'cos θ = (a·b) / (|a||b|). Compute the dot product and both magnitudes, then take the inverse cosine.',
+        concept: 'This is the geometric meaning of the dot product, and it is why a·b/(|a||b|) is called cosine similarity in machine learning — identical formula, different vocabulary. Because it divides out both magnitudes it compares direction only, which is exactly what you want when the lengths carry no meaning.',
+        setup() {
+          const a = [rnd(-6, 6) || 3, rnd(-6, 6) || 4], b = [rnd(-6, 6) || 2, rnd(-6, 6) || 5];
+          return num(degOf(vAngle(a, b)), 0.5, {a, b});
+        },
+        render(s, shown) {
+          const c = vDot(s.a, s.b) / (vLen(s.a) * vLen(s.b));
+          return eq(`cos θ = ${vDot(s.a, s.b)} / (${fmtN(vLen(s.a), 3)} × ${fmtN(vLen(s.b), 3)}) = ${fmtN(c, 4)}`,
+            shown ? `θ = acos(${fmtN(c, 4)}) = ${fmtN(degOf(vAngle(s.a, s.b)), 2)}°` : 'θ = ?')
+            + vecPlot([{v: s.a, label: 'a'}, {v: s.b, label: 'b'}],
+              {label: shown ? `${fmtN(degOf(vAngle(s.a, s.b)), 1)}° apart` : 'θ = ?'})
+            + (shown ? note(`<b>${fmtN(degOf(vAngle(s.a, s.b)), 3)}&deg;</b>. Clamp the cosine to [&minus;1, 1] before calling acos — rounding can push it a hair outside and hand you a <code>NaN</code>.`) : '');
+        }
+      },
+      {
+        id: 'd3', mod: 'dot', diff: 'easy', fmt: 'yesno', title: 'Are they perpendicular?',
+        ask: s => `Are <code>${vShow(s.a, 0)}</code> and <code>${vShow(s.b, 0)}</code> perpendicular?`,
+        hint: 'Perpendicular means the dot product is exactly zero — no trigonometry needed.',
+        concept: 'Testing orthogonality with a dot product is cheap and exact in integers, which makes it the standard collision and visibility test: if the dot of a surface normal with the view direction is negative, the face points away and can be skipped. Rendering a million triangles per frame is affordable largely because this test is three multiplies.',
+        setup() {
+          const perp = Math.random() < 0.5;
+          const a = [rnd(1, 7), rnd(1, 7)];
+          const b = perp ? [-a[1], a[0]] : [rnd(-7, 7) || 3, rnd(-7, 7) || 2];
+          return yn(vDot(a, b) === 0, {a, b});
+        },
+        render(s, shown) {
+          return eq(`a·b = ${s.a[0]}×${s.b[0]} + ${s.a[1]}×${s.b[1]} = ${vDot(s.a, s.b)}`,
+            '# perpendicular ⇔ a·b = 0')
+            + vecPlot([{v: s.a, label: 'a'}, {v: s.b, label: 'b'}],
+              {label: shown ? (vDot(s.a, s.b) === 0 ? 'exactly 90°' : `${fmtN(degOf(vAngle(s.a, s.b)), 1)}° — not perpendicular`) : ''})
+            + (shown ? note(`a&middot;b = ${vDot(s.a, s.b)}, so <b>${s.answer}</b>. In two dimensions, (&minus;y, x) is always perpendicular to (x, y) — a free 90&deg; rotation with no trigonometry at all.`) : '');
+        }
+      },
+      {
+        id: 'd4', mod: 'dot', diff: 'medium', fmt: 'num', title: 'Project one vector onto another',
+        ask: s => `How long is the projection of <code>${vShow(s.a, 0)}</code> onto the direction of <code>${vShow(s.b, 0)}</code>?`,
+        hint: 'The scalar projection is (a·b)/|b| — the dot product divided by the length of the thing you project onto.',
+        concept: 'Projection answers "how much of a lies along b", which is how you split a force into useful and wasted components, how you find the closest point on a line, and how least squares works — the residual is what is left after projecting onto the model. Gram-Schmidt, PCA and the whole idea of orthogonal decomposition are repeated projections.',
+        setup() {
+          const a = [rnd(-8, 8) || 4, rnd(-8, 8) || 3];
+          const [x, y] = pick(TRIPLES);
+          const b = [pick([1, -1]) * x, pick([1, -1]) * y];
+          const v = vDot(a, b) / vLen(b);
+          return num(v, Math.max(0.01, Math.abs(v) * 0.01), {a, b});
+        },
+        render(s, shown) {
+          const sp = vDot(s.a, s.b) / vLen(s.b);
+          const pv = vScale(vUnit(s.b), sp);
+          return eq(`a·b = ${vDot(s.a, s.b)},   |b| = ${fmtN(vLen(s.b), 3)}`,
+            shown ? `proj = ${vDot(s.a, s.b)} / ${fmtN(vLen(s.b), 3)} = ${fmtN(sp, 4)}` : 'proj = (a·b)/|b| = ?')
+            + vecPlot([{v: s.a, label: 'a'}, {v: s.b, label: 'b'},
+            {v: pv, label: shown ? `projection = ${fmtN(sp, 2)}` : '?', color: 'var(--hl)', width: 3.4},
+            {v: s.a, from: pv, color: 'var(--tx-3)', dash: '3 3', noHead: true}])
+            + (shown ? note(`<b>${fmtN(sp, 4)}</b>${sp < 0 ? ' — negative, meaning a points partly backwards along b' : ''}. The dashed line is the residual, and it is perpendicular to b by construction; that perpendicularity is the whole idea behind least squares.`) : '');
+        }
+      },
+      {
+        id: 'd5', mod: 'dot', diff: 'hard', fmt: 'num', title: 'Cosine similarity',
+        ask: s => `Two feature vectors are <code>${vShow(s.a, 0)}</code> and <code>${vShow(s.b, 0)}</code>. What is their cosine similarity?`,
+        hint: 'Same formula as the angle, but stop at the cosine — do not take the inverse cosine.',
+        concept: 'Cosine similarity ignores magnitude entirely, so a long document and a short one on the same topic score alike. That is usually what you want for text or embeddings, and usually not what you want for physical measurements where magnitude is the signal. Choosing between cosine and Euclidean distance is a modelling decision, not a performance one.',
+        setup() {
+          const a = [rnd(0, 9), rnd(0, 9), rnd(0, 9)], b = [rnd(0, 9), rnd(0, 9), rnd(0, 9)];
+          if (vLen(a) === 0) a[0] = 3;
+          if (vLen(b) === 0) b[1] = 4;
+          const c = vDot(a, b) / (vLen(a) * vLen(b));
+          return num(c, 0.01, {a, b});
+        },
+        render(s, shown) {
+          const c = vDot(s.a, s.b) / (vLen(s.a) * vLen(s.b));
+          return eq(`a·b = ${vDot(s.a, s.b)}`,
+            `|a| = ${fmtN(vLen(s.a), 4)},   |b| = ${fmtN(vLen(s.b), 4)}`,
+            shown ? `cos = ${vDot(s.a, s.b)} / ${fmtN(vLen(s.a) * vLen(s.b), 4)} = ${fmtN(c, 5)}` : 'cos = ?')
+            + chips([['similarity', shown ? fmtN(c, 4) : '?'], ['angle', shown ? `${fmtN(degOf(Math.acos(clamp(c, -1, 1))), 1)}°` : '?'],
+            ['range', '−1 … +1']])
+            + (shown ? note(`<b>${fmtN(c, 5)}</b>. Doubling every component of a would leave this completely unchanged — that is the point. Only direction survives.`) : '');
+        }
+      },
+      {
+        id: 'd6', mod: 'dot', diff: 'hard', fmt: 'num', title: 'Closest point on a line',
+        ask: s => `A robot at <code>${vShow(s.p, 0)}</code> must reach the line through the origin in direction <code>${vShow(s.d, 0)}</code>. How far is the shortest path?`,
+        hint: 'Project p onto d to find the closest point, then measure the distance from p to that point. Pythagoras also works: |p|² = proj² + perp².',
+        concept: 'Cross-track error — the perpendicular distance from a path — is exactly this quantity, and it is the input to every line-following controller. Computing it as a projection is stable and cheap, and the sign (which side of the line you are on) falls out of the 2-D cross product, so one small calculation gives both magnitude and direction of the correction.',
+        setup() {
+          const [x, y] = pick(TRIPLES);
+          const d = [x, y];
+          const p = [rnd(-9, 9) || 4, rnd(-9, 9) || 5];
+          const proj = vDot(p, d) / vLen(d);
+          const perp = Math.sqrt(Math.max(0, vDot(p, p) - proj * proj));
+          return num(perp, Math.max(0.01, perp * 0.01 + 0.005), {p, d});
+        },
+        render(s, shown) {
+          const proj = vDot(s.p, s.d) / vLen(s.d);
+          const foot = vScale(vUnit(s.d), proj);
+          const perp = vLen(vSub(s.p, foot));
+          return eq(`proj = (p·d)/|d| = ${vDot(s.p, s.d)} / ${fmtN(vLen(s.d), 3)} = ${fmtN(proj, 4)}`,
+            `|p|² = ${vDot(s.p, s.p)}`,
+            shown ? `perp = √(${vDot(s.p, s.p)} − ${fmtN(proj * proj, 3)}) = ${fmtN(perp, 4)}` : 'perp = √(|p|² − proj²) = ?')
+            + vecPlot([{v: vScale(vUnit(s.d), Math.max(vLen(s.p), Math.abs(proj)) * 1.1), label: 'the line', color: 'var(--tx-3)', noHead: true},
+            {v: s.p, label: 'p'},
+            {v: foot, from: s.p, label: shown ? fmtN(perp, 2) : '?', color: 'var(--hl)'}])
+            + (shown ? note(`<b>${fmtN(perp, 4)}</b>. The closest point on the line is ${vShow(foot, 2)}. In two dimensions the same number is |p&times;d̂|, which also tells you which side you are on from its sign.`) : '');
+        }
+      }
+    ];
+
+    const P_B = [
+      /* ---------- cross product ---------- */
+      {
+        id: 'c1', mod: 'cross', diff: 'medium', fmt: 'num', title: 'A perpendicular vector',
+        ask: s => `What is the z component of <code>${vShow(s.a, 0)} &times; ${vShow(s.b, 0)}</code>?`,
+        hint: 'The z component is aₓb_y − a_ybₓ. Take the first two columns and cross-multiply.',
+        concept: 'The cross product produces a vector perpendicular to both inputs, which is how you get a surface normal from two edges of a triangle. Every lighting calculation starts here: two subtractions to get the edges, one cross product for the normal, one normalise, then a dot product against the light direction.',
+        setup() {
+          const a = [rnd(-5, 5) || 2, rnd(-5, 5) || 3, rnd(-5, 5)];
+          const b = [rnd(-5, 5) || 1, rnd(-5, 5) || 4, rnd(-5, 5)];
+          return num(vCross(a, b)[2], 0.01, {a, b});
+        },
+        render(s, shown) {
+          const c = vCross(s.a, s.b);
+          return eq('a × b = ( a_y b_z − a_z b_y ,  a_z b_x − a_x b_z ,  a_x b_y − a_y b_x )',
+            shown ? `= ${vShow(c, 0)}` : '= ( ?, ?, ? )',
+            shown ? `check: (a×b)·a = ${vDot(c, s.a)},  (a×b)·b = ${vDot(c, s.b)}  — both zero, so it is perpendicular to both` : '# the result is perpendicular to both inputs')
+            + cells([['aₓ', s.a[0]], ['a_y', s.a[1]], ['a_z', s.a[2]], ['bₓ', s.b[0]], ['b_y', s.b[1]], ['b_z', s.b[2]],
+            ['z of a×b', shown ? c[2] : '?', shown ? 'new' : 'q']])
+            + (shown ? note(`z = ${s.a[0]}&times;${s.b[1]} &minus; ${s.a[1]}&times;${s.b[0]} = <b>${c[2]}</b>. Swapping the operands negates the whole result — the cross product anticommutes, unlike the dot product.`) : '');
+        }
+      },
+      {
+        id: 'c2', mod: 'cross', diff: 'medium', fmt: 'num', title: 'Area of a parallelogram',
+        ask: s => `Two edges of a parallelogram are <code>${vShow(s.a, 0)}</code> and <code>${vShow(s.b, 0)}</code> in the plane. What is its area?`,
+        hint: 'In 2-D the cross product has only a z component: aₓb_y − a_ybₓ. Its absolute value is the area.',
+        concept: 'The 2-D cross product is a signed area, and the sign tells you the turn direction — positive for anticlockwise, negative for clockwise. That single number drives convex-hull construction, point-in-triangle tests and the winding rule that decides which faces a renderer culls. Half of it is the area of the triangle, which is how mesh areas are computed.',
+        setup() {
+          const a = [rnd(1, 8), rnd(-6, 6)], b = [rnd(-6, 6), rnd(1, 8)];
+          const cz = a[0] * b[1] - a[1] * b[0];
+          return num(Math.abs(cz), 0.02, {a, b});
+        },
+        render(s, shown) {
+          const cz = s.a[0] * s.b[1] - s.a[1] * s.b[0];
+          return eq(`cross_z = ${s.a[0]}×${s.b[1]} − ${s.a[1]}×${s.b[0]} = ${cz}`,
+            shown ? `area = |${cz}| = ${Math.abs(cz)}` : 'area = ?')
+            + vecPlot([{v: s.a, label: 'a'}, {v: s.b, label: 'b'},
+            {v: vAdd(s.a, s.b), from: s.a, color: 'var(--tx-3)', dash: '3 3', noHead: true},
+            {v: vAdd(s.a, s.b), from: s.b, color: 'var(--tx-3)', dash: '3 3', noHead: true}],
+              {label: shown ? `area ${Math.abs(cz)}, turn is ${cz > 0 ? 'anticlockwise' : 'clockwise'}` : 'area = ?'})
+            + (shown ? note(`<b>${Math.abs(cz)}</b>, and the triangle on the same two edges has half that, ${fmtN(Math.abs(cz) / 2, 2)}. The sign ${cz > 0 ? '(positive)' : '(negative)'} says b is ${cz > 0 ? 'anticlockwise' : 'clockwise'} from a.`) : '');
+        }
+      },
+      {
+        id: 'c3', mod: 'cross', diff: 'medium', fmt: 'mc', title: 'Dot or cross?',
+        ask: 'You have two edge vectors of a triangle and need the surface normal for lighting. Which product?',
+        hint: 'One returns a number, the other returns a vector. A normal is a direction.',
+        concept: 'The type of the result is usually enough to choose: a dot product collapses to a scalar and answers "how aligned?", a cross product returns a vector and answers "what is perpendicular?". Keeping that straight prevents the most common beginner error in graphics code, which is trying to light a surface with a scalar.',
+        setup() {
+          return mc('cross product — it returns a vector perpendicular to both edges',
+            ['dot product — it returns the angle between the edges',
+              'dot product — it returns the area of the triangle',
+              'either works; the cross product is just faster']);
+        },
+        render(s, shown) {
+          return eq('a · b  =  |a||b| cos θ      →  a scalar:  how much they agree',
+            'a × b  =  |a||b| sin θ n̂     →  a vector:  perpendicular to both')
+            + (shown ? note('Normal = normalise(cross(e&#8321;, e&#8322;)). Reverse the edge order and the normal flips to point into the surface instead of out of it — which is exactly how a mesh ends up lit from the wrong side.') : '');
+        }
+      },
+      {
+        id: 'c4', mod: 'cross', diff: 'hard', fmt: 'num', title: 'Magnitude and the sine',
+        ask: s => `Two vectors have lengths ${s.la} and ${s.lb} with ${s.th}&deg; between them. What is the magnitude of their cross product?`,
+        hint: '|a × b| = |a||b| sin θ. Compare with the dot product, which uses cosine.',
+        concept: 'The pairing is worth memorising: dot goes with cosine and peaks when vectors are parallel, cross goes with sine and peaks when they are perpendicular. Torque is r × F for exactly this reason — a force pushing straight along the lever arm produces no turning at all, and the sine encodes that.',
+        setup() {
+          const la = rnd(2, 10), lb = rnd(2, 10), th = pick([0, 30, 45, 60, 90, 120, 150, 180]);
+          return num(la * lb * Math.sin(radOf(th)), Math.max(0.02, la * lb * 0.01), {la, lb, th});
+        },
+        render(s, shown) {
+          const m = s.la * s.lb * Math.sin(radOf(s.th));
+          return eq(`|a × b| = |a||b| sin θ = ${s.la} × ${s.lb} × sin(${s.th}°)`,
+            shown ? `= ${fmtN(m, 4)}` : '= ?',
+            `# for comparison: a·b = ${s.la} × ${s.lb} × cos(${s.th}°) = ${fmtN(s.la * s.lb * Math.cos(radOf(s.th)), 3)}`)
+            + (shown ? note(`<b>${fmtN(m, 4)}</b>. ${s.th === 0 || s.th === 180 ? 'The vectors are parallel, so the cross product vanishes entirely — no area is spanned.' : s.th === 90 ? 'At 90&deg; the cross product is at its maximum and the dot product is zero.' : 'Both products are non-zero here; they trade off as the angle changes.'}`) : '');
+        }
+      },
+
+      /* ---------- matrices ---------- */
+      {
+        id: 'm1', mod: 'mat', diff: 'easy', fmt: 'num', title: 'A matrix times a vector',
+        ask: s => `Compute <code>Mv</code> where M = ${mShow(s.M, 0)} and v = ${mtx([[s.v[0]], [s.v[1]]])}. What is the first component?`,
+        hint: 'Each output component is the dot product of one row of M with v.',
+        concept: 'A matrix-vector product is just a stack of dot products, one per row. Reading it that way explains the cost — rows × columns multiply-accumulates — and explains why the memory access pattern matters so much: each row must be walked contiguously if the cache is going to help you.',
+        setup() {
+          const M = [[rnd(-4, 5), rnd(-4, 5)], [rnd(-4, 5), rnd(-4, 5)]];
+          const v = [rnd(-5, 5) || 2, rnd(-5, 5) || 3];
+          return num(mApply(M, v)[0], 0.01, {M, v});
+        },
+        render(s, shown) {
+          const r = mApply(s.M, s.v);
+          return eq(`row 1 · v = ${s.M[0][0]}×${s.v[0]} + ${s.M[0][1]}×${s.v[1]}`,
+            `row 2 · v = ${s.M[1][0]}×${s.v[0]} + ${s.M[1][1]}×${s.v[1]}`,
+            shown ? `Mv = ${vShow(r, 0)}` : 'Mv = ( ?, ? )')
+            + vecPlot([{v: s.v, label: 'v'}, {v: r, label: shown ? `Mv = ${vShow(r, 0)}` : 'Mv = ?', color: 'var(--hl)'}])
+            + (shown ? note(`First component = <b>${r[0]}</b>. The matrix moved v to a new place; that is all a matrix ever does.`) : '');
+        }
+      },
+      {
+        id: 'm2', mod: 'mat', diff: 'medium', fmt: 'mc', title: 'What the columns mean',
+        ask: s => `For M = ${mShow(s.M, 0)}, what does the first column tell you?`,
+        hint: 'Apply M to the basis vector (1, 0) and see what comes out.',
+        concept: 'The columns of a matrix are the images of the basis vectors — where î and ĵ land. Once you see that, you can read a transformation matrix at a glance: columns still perpendicular and unit length means a rotation, columns scaled means a scaling, one column a multiple of the other means the matrix is singular and squashes the plane to a line.',
+        setup() {
+          const M = [[rnd(1, 4), rnd(-3, 3)], [rnd(-3, 3), rnd(1, 4)]];
+          return mc('where the basis vector (1, 0) lands after the transform',
+            ['the first component of every output vector',
+              'the scale factor applied along the x axis',
+              'the first row of the inverse transform'], {M});
+        },
+        render(s, shown) {
+          return eq(`M·(1,0) = ${vShow(mApply(s.M, [1, 0]), 0)}   ← column 1`,
+            `M·(0,1) = ${vShow(mApply(s.M, [0, 1]), 0)}   ← column 2`)
+            + xformPlot(s.M, {label: 'dashed: the unit square. solid: where it goes'})
+            + (shown ? note(`Multiplying by (1,0) picks out the first column exactly. That is why reading a matrix column-by-column tells you the geometry immediately — no arithmetic needed.`) : '');
+        }
+      },
+      {
+        id: 'm3', mod: 'mat', diff: 'medium', fmt: 'num', title: 'Determinant as an area factor',
+        ask: s => `What is the determinant of ${mShow(s.M, 0)}?`,
+        hint: 'For a 2×2 matrix [[a,b],[c,d]] the determinant is ad − bc.',
+        concept: 'The determinant is how much the transform multiplies areas by, and its sign says whether orientation is preserved or flipped. A determinant of zero means the transform collapses the plane onto a line — information is destroyed and the matrix has no inverse. Checking it before inverting is the cheapest possible guard against a singular solve.',
+        setup() {
+          const M = [[rnd(-5, 5) || 2, rnd(-5, 5)], [rnd(-5, 5), rnd(-5, 5) || 3]];
+          return num(mDet(M), 0.01, {M});
+        },
+        render(s, shown) {
+          const d = mDet(s.M);
+          return eq(`det = ad − bc = ${s.M[0][0]}×${s.M[1][1]} − ${s.M[0][1]}×${s.M[1][0]}`,
+            shown ? `= ${d}` : '= ?')
+            + xformPlot(s.M, {label: shown ? `the unit square (area 1) becomes area ${Math.abs(d)}` : 'how much does the area change?'})
+            + (shown ? note(`<b>${d}</b>. Areas are multiplied by ${Math.abs(d)}${d < 0 ? ', and the negative sign means the plane was flipped over — a reflection is baked in' : d === 0 ? ' — everything collapses onto a line, so the matrix is singular' : ''}.`) : '');
+        }
+      },
+      {
+        id: 'm4', mod: 'mat', diff: 'medium', fmt: 'yesno', title: 'Does an inverse exist?',
+        ask: s => `Is ${mShow(s.M, 0)} invertible?`,
+        hint: 'A matrix is invertible exactly when its determinant is non-zero.',
+        concept: 'A singular matrix has thrown information away — two different inputs produced the same output — so no inverse can exist. Numerically, "near singular" is just as dangerous: a determinant close to zero means the inverse has huge entries and amplifies every rounding error, which is what an ill-conditioned solve feels like in practice.',
+        setup() {
+          const sing = Math.random() < 0.4;
+          const a = rnd(1, 5), b = rnd(1, 5), k = rnd(2, 3);
+          const M = sing ? [[a, b], [a * k, b * k]] : [[a, b], [rnd(1, 5), rnd(1, 5) + 5]];
+          return yn(mDet(M) !== 0, {M});
+        },
+        render(s, shown) {
+          const d = mDet(s.M);
+          return eq(`det = ${s.M[0][0]}×${s.M[1][1]} − ${s.M[0][1]}×${s.M[1][0]} = ${d}`,
+            '# invertible ⇔ det ≠ 0')
+            + xformPlot(s.M, {label: d === 0 ? 'watch what happens to the square' : 'the square keeps its area, up to a factor'})
+            + (shown ? note(`det = ${d}, so <b>${s.answer}</b>. ${d === 0 ? 'The second row is a multiple of the first, so both basis vectors land on the same line — the plane is flattened and cannot be unflattened.' : 'The transform is reversible; the inverse scales areas by 1/' + d + '.'}`) : '');
+        }
+      },
+      {
+        id: 'm5', mod: 'mat', diff: 'hard', fmt: 'num', title: 'Invert a 2×2',
+        ask: s => `For M = ${mShow(s.M, 0)}, what is the top-left entry of M<sup>&minus;1</sup>?`,
+        hint: 'M⁻¹ = (1/det)·[[d, −b], [−c, a]] — swap the diagonal, negate the off-diagonal, divide by the determinant.',
+        concept: 'The 2×2 inverse is worth knowing by heart because it appears constantly in calibration: solving two equations for a gain and an offset, or undoing a small misalignment between sensor axes. For anything bigger, do not invert — solve the system directly with an LU or QR factorisation, which is faster and far better conditioned.',
+        setup() {
+          let M;
+          do {M = [[rnd(-4, 5), rnd(-4, 5)], [rnd(-4, 5), rnd(-4, 5)]];} while (mDet(M) === 0);
+          return num(mInv(M)[0][0], Math.max(0.005, Math.abs(mInv(M)[0][0]) * 0.01), {M});
+        },
+        render(s, shown) {
+          const d = mDet(s.M), I = mInv(s.M);
+          return eq(`det = ${d}`,
+            `M⁻¹ = (1/${d}) × ${'[[' + s.M[1][1] + ', ' + (-s.M[0][1]) + '], [' + (-s.M[1][0]) + ', ' + s.M[0][0] + ']]'}`,
+            shown ? `top-left = ${s.M[1][1]}/${d} = ${fmtN(I[0][0], 5)}` : 'top-left = ?')
+            + (shown ? note(`<b>${fmtN(I[0][0], 5)}</b>. Sanity check: M&thinsp;M<sup>&minus;1</sup> must be the identity, and here it is ${mShow(mMul(s.M, I), 0)} — always verify an inverse this way rather than trusting the algebra.`) : '');
+        }
+      },
+      {
+        id: 'm6', mod: 'mat', diff: 'hard', fmt: 'num', title: 'Matrix multiplication',
+        ask: s => `For A = ${mShow(s.A, 0)} and B = ${mShow(s.B, 0)}, what is the top-left entry of <code>AB</code>?`,
+        hint: 'Entry (1,1) is row 1 of A dotted with column 1 of B.',
+        concept: 'Matrix multiplication composes transforms — AB means "do B first, then A". Its cost is O(n³) with a memory access pattern that punishes naive loops, which is why cache blocking and libraries like BLAS exist. Almost all the performance of numerical computing comes down to doing this one operation well.',
+        setup() {
+          const A = [[rnd(-4, 5), rnd(-4, 5)], [rnd(-4, 5), rnd(-4, 5)]];
+          const B = [[rnd(-4, 5), rnd(-4, 5)], [rnd(-4, 5), rnd(-4, 5)]];
+          return num(mMul(A, B)[0][0], 0.01, {A, B});
+        },
+        render(s, shown) {
+          const P = mMul(s.A, s.B), Q = mMul(s.B, s.A);
+          return eq(`(AB)₁₁ = ${s.A[0][0]}×${s.B[0][0]} + ${s.A[0][1]}×${s.B[1][0]}`,
+            shown ? `= ${s.A[0][0] * s.B[0][0]} + ${s.A[0][1] * s.B[1][0]} = ${P[0][0]}` : '= ?')
+            + (shown ? eq(`AB = ${mShow(P, 0)}          BA = ${mShow(Q, 0)}`,
+              P[0][0] === Q[0][0] && P[0][1] === Q[0][1] && P[1][0] === Q[1][0] && P[1][1] === Q[1][1]
+                ? '# these happen to agree — but that is coincidence, not a rule'
+                : '# different — matrix multiplication does not commute') : '')
+            + (shown ? note(`<b>${P[0][0]}</b>. AB means apply B first, then A — the order reads right to left, which is the opposite of how most people first guess.`) : '');
+        }
+      },
+      {
+        id: 'm7', mod: 'mat', diff: 'hard', fmt: 'mc', title: 'What transpose does',
+        ask: 'For a rotation matrix R, what is R<sup>T</sup>?',
+        hint: 'A rotation preserves lengths and angles, so its columns are unit length and mutually perpendicular. Work out what RᵀR must be.',
+        concept: 'For an orthonormal matrix the transpose <em>is</em> the inverse, which turns an expensive inversion into a free relabelling of indices. Rotation matrices, DCT bases and orthogonal filter banks all exploit this, and it is why orientation code stores rotations rather than their inverses — you get both for the price of one.',
+        setup() {
+          return mc('its inverse — it rotates by the same angle in the opposite direction',
+            ['the same matrix, since rotations are symmetric',
+              'the rotation scaled by 1/det',
+              'a reflection in the x axis']);
+        },
+        render(s, shown) {
+          const R = mRot(radOf(30));
+          return eq('R = [[cos θ, −sin θ], [sin θ, cos θ]]',
+            'Rᵀ = [[cos θ, sin θ], [−sin θ, cos θ]] = R(−θ)',
+            'RᵀR = I',
+            '# true whenever the columns are unit length and mutually perpendicular')
+            + eq(`at θ = 30°:  R = ${mShow(R, 3)}   RᵀR = ${mShow(mMul(mT(R), R), 3)}`)
+            + (shown ? note('Transposing is free — it is an index swap, not arithmetic. So for orientation code you never invert a rotation; you transpose it, and the numerical error is exactly zero.') : '');
+        }
+      }
+    ];
+
+    const P_C = [
+      /* ---------- transformations ---------- */
+      {
+        id: 't1', mod: 'xform', diff: 'medium', fmt: 'num', title: 'Rotate a point',
+        ask: s => `Rotate <code>${vShow(s.v, 0)}</code> by ${s.th}&deg; anticlockwise about the origin. What is the new x?`,
+        hint: "x' = x cos θ − y sin θ. Note the minus sign — it is the half everyone forgets.",
+        concept: 'A rotation matrix is two cosines and two sines arranged so that lengths are preserved. On a microcontroller you would precompute the sine and cosine once and reuse them for every point, because the trig is far more expensive than the four multiplies that follow.',
+        setup() {
+          const th = pick([30, 45, 60, 90, 120, 135, 180, -45, -90]);
+          const v = [rnd(-6, 6) || 3, rnd(-6, 6) || 4];
+          const r = mApply(mRot(radOf(th)), v);
+          return num(r[0], Math.max(0.01, Math.abs(r[0]) * 0.01 + 0.01), {th, v});
+        },
+        render(s, shown) {
+          const R = mRot(radOf(s.th)), r = mApply(R, s.v);
+          return eq(`R(${s.th}°) = ${mShow(R, 3)}`,
+            `x' = ${s.v[0]}·cos(${s.th}°) − ${s.v[1]}·sin(${s.th}°)`,
+            shown ? `= ${fmtN(r[0], 4)},   y' = ${fmtN(r[1], 4)}` : "= ?")
+            + vecPlot([{v: s.v, label: 'v'}, {v: r, label: shown ? vShow(r, 2) : '?', color: 'var(--hl)'}],
+              {label: `rotated ${s.th}°`})
+            + (shown ? note(`x&prime; = <b>${fmtN(r[0], 4)}</b>. Lengths are unchanged: |v| = ${fmtN(vLen(s.v), 4)} before and ${fmtN(vLen(r), 4)} after — that is the defining property of a rotation.`) : '');
+        }
+      },
+      {
+        id: 't2', mod: 'xform', diff: 'medium', fmt: 'mc', title: 'Order matters',
+        ask: 'You want to rotate an object about its own centre, but it is not at the origin. What is the correct order?',
+        hint: 'A rotation matrix always rotates about the origin. Get the object there first.',
+        concept: 'Because matrix multiplication does not commute, transformation order is a real bug source: rotate-then-translate orbits the object around the origin, translate-then-rotate spins it in place. The standard idiom is translate-to-origin, rotate, translate-back, and it composes into a single matrix you can apply to every vertex.',
+        setup() {
+          return mc('translate to the origin, rotate, then translate back',
+            ['rotate, then translate to the origin',
+              'translate to the origin, translate back, then rotate',
+              'rotate and translate simultaneously — order does not matter']);
+        },
+        render(s, shown) {
+          return eq('M = T(+c) · R(θ) · T(−c)',
+            '# read right to left: the rightmost transform is applied first')
+            + (shown ? note('Getting this backwards makes the object orbit the origin instead of spinning on the spot — a distinctive and instantly recognisable bug. The composed matrix is computed once and reused for every vertex.') : '');
+        }
+      },
+      {
+        id: 't3', mod: 'xform', diff: 'medium', fmt: 'num', title: 'Scaling and area',
+        ask: s => `A transform scales x by ${s.sx} and y by ${s.sy}. By what factor does area change?`,
+        hint: 'Write the scaling matrix and take its determinant — or just reason about a rectangle directly.',
+        concept: 'Non-uniform scaling is why normals need special treatment in graphics: scale a surface unevenly and its normal is no longer perpendicular unless you transform it by the inverse transpose. It is also the source of the aspect-ratio bugs that appear when a viewport is resized without matching the projection.',
+        setup() {
+          const sx = pick([0.5, 1, 2, 3, 4]), sy = pick([0.5, 1, 2, 3, 4]);
+          return num(sx * sy, Math.max(0.005, sx * sy * 0.01), {sx, sy});
+        },
+        render(s, shown) {
+          const M = [[s.sx, 0], [0, s.sy]];
+          return eq(`S = ${mShow(M, 2)}`,
+            shown ? `det S = ${s.sx} × ${s.sy} = ${fmtN(s.sx * s.sy, 3)}` : 'det S = ?')
+            + xformPlot(M, {label: 'the unit square under the scaling'})
+            + (shown ? note(`<b>${fmtN(s.sx * s.sy, 3)}</b>&times;. ${s.sx === s.sy ? 'Uniform scaling — angles and shapes are preserved, only size changes.' : 'Non-uniform, so shapes are distorted and surface normals no longer transform the same way the surface does.'}`) : '');
+        }
+      },
+      {
+        id: 't4', mod: 'xform', diff: 'hard', fmt: 'num', title: 'Compose two rotations',
+        ask: s => `Apply a ${s.t1}&deg; rotation and then a ${s.t2}&deg; rotation. What single angle, in degrees between &minus;180 and 180, is equivalent?`,
+        hint: 'Rotations about the same axis add. Then wrap the total into range.',
+        concept: 'Rotations in the plane commute and add, which makes them easy. In three dimensions they do not commute at all — rotating about x then y is a different orientation from y then x — and that is the whole reason quaternions and rotation matrices are preferred over Euler angles for storing orientation.',
+        setup() {
+          const t1 = pick([30, 45, 60, 90, 120, 135]) * pick([1, -1]);
+          const t2 = pick([30, 45, 60, 90, 120, 135]) * pick([1, -1]);
+          let a = t1 + t2;
+          while (a > 180) a -= 360;
+          while (a <= -180) a += 360;
+          return num(a, 0.4, {t1, t2});
+        },
+        render(s, shown) {
+          let a = s.t1 + s.t2;
+          while (a > 180) a -= 360;
+          while (a <= -180) a += 360;
+          const R = mMul(mRot(radOf(s.t2)), mRot(radOf(s.t1)));
+          return eq(`R(${s.t2}°) · R(${s.t1}°) = R(${s.t1} + ${s.t2}) = R(${s.t1 + s.t2}°)`,
+            shown ? `wrapped: ${fmtN(a, 2)}°` : 'wrapped: ?')
+            + (shown ? eq(`product matrix = ${mShow(R, 3)}   =   R(${fmtN(a, 1)}°) = ${mShow(mRot(radOf(a)), 3)}`) : '')
+            + (shown ? note(`<b>${fmtN(a, 3)}&deg;</b>. In 2-D the order made no difference. In 3-D it would — which is exactly why Euler angles cause so much grief.`) : '');
+        }
+      },
+      {
+        id: 't5', mod: 'xform', diff: 'hard', fmt: 'num', title: 'Homogeneous coordinates',
+        ask: s => `A 3&times;3 homogeneous matrix has translation (${s.tx}, ${s.ty}) and no rotation or scaling. Apply it to the point (${s.px}, ${s.py}). What is the new x?`,
+        hint: 'Write the point as (x, y, 1). The translation column is added straight in.',
+        concept: 'Translation is not linear — it moves the origin — so it cannot be a 2×2 matrix. Adding a third coordinate fixed at 1 makes it fit, which is why every graphics pipeline uses 4×4 matrices for 3-D. The payoff is that rotation, scaling, translation and perspective all compose with a single multiply.',
+        setup() {
+          const tx = rnd(-8, 8), ty = rnd(-8, 8), px = rnd(-6, 6), py = rnd(-6, 6);
+          return num(px + tx, 0.01, {tx, ty, px, py});
+        },
+        render(s, shown) {
+          return eq(`M = [[1, 0, ${s.tx}], [0, 1, ${s.ty}], [0, 0, 1]]`,
+            `M · (${s.px}, ${s.py}, 1) = (${s.px} + ${s.tx}, ${s.py} + ${s.ty}, 1)`,
+            shown ? `= (${s.px + s.tx}, ${s.py + s.ty})` : '= ( ?, ? )')
+            + vecPlot([{v: [s.px, s.py], label: 'p'}, {v: [s.px + s.tx, s.py + s.ty], label: shown ? vShow([s.px + s.tx, s.py + s.ty], 0) : '?', color: 'var(--hl)'}])
+            + (shown ? note(`New x = <b>${s.px + s.tx}</b>. The fixed 1 in the third slot is what lets the translation column contribute; a direction vector uses 0 there instead, so directions are correctly left untranslated.`) : '');
+        }
+      },
+      {
+        id: 't6', mod: 'xform', diff: 'expert', fmt: 'mc', title: 'Why the transform came out wrong',
+        ask: 'A model appears at the right place but stretched along the wrong axis after you added a rotation. What is the likely cause?',
+        hint: 'Think about whether the scale is being applied in the object frame or the world frame.',
+        concept: 'Scale-then-rotate stretches the object along its own axes and then turns it; rotate-then-scale turns it and then stretches along the world axes, shearing it. Both compile, both run, and only one looks right — which is why transform order is written down explicitly in every graphics codebase rather than left to memory.',
+        setup() {
+          return mc('the scale is being applied after the rotation instead of before it',
+            ['the rotation angle is in degrees where radians were expected',
+              'the matrix was transposed somewhere',
+              'the translation column is in the wrong row']);
+        },
+        render(s, shown) {
+          const S = [[3, 0], [0, 1]], R = mRot(radOf(45));
+          return eq('want:  R · S   (scale in the object frame, then rotate)',
+            'got:   S · R   (rotate, then stretch along world axes → shear)')
+            + eq(`R·S = ${mShow(mMul(R, S), 2)}          S·R = ${mShow(mMul(S, R), 2)}`)
+            + xformPlot(mMul(S, R), {label: 'S·R — note the square has become a non-rectangular parallelogram'})
+            + (shown ? note('A wrong angle unit or a transpose would misplace or mirror the model, not shear it. Shear specifically means a non-uniform scale got applied in the wrong frame.') : '');
+        }
+      },
+
+      /* ---------- applied ---------- */
+      {
+        id: 'a1', mod: 'applied', diff: 'medium', fmt: 'num', title: 'Tilt from an accelerometer',
+        ask: s => `A stationary accelerometer reads <code>(${s.ax}, ${s.az})</code> g on its x and z axes. What is the tilt from vertical, in degrees?`,
+        hint: 'At rest the reading is the gravity vector in board coordinates. The tilt is atan2(x, z).',
+        concept: 'A stationary accelerometer measures nothing but gravity, so its direction in board coordinates gives you orientation for free — no gyro needed. The catch is the word stationary: any real acceleration adds to the reading and corrupts the angle, which is why tilt from accelerometers is fused with gyro data rather than trusted alone.',
+        setup() {
+          const th = pick([0, 10, 20, 30, 45, 60, 90, -30, -45]);
+          const ax = Math.round(Math.sin(radOf(th)) * 1000) / 1000;
+          const az = Math.round(Math.cos(radOf(th)) * 1000) / 1000;
+          return num(degOf(Math.atan2(ax, az)), 0.5, {ax, az});
+        },
+        render(s, shown) {
+          const t = degOf(Math.atan2(s.ax, s.az));
+          return eq(`tilt = atan2(aₓ, a_z) = atan2(${s.ax}, ${s.az})`,
+            shown ? `= ${fmtN(t, 3)}°` : '= ?',
+            `# magnitude check: √(${s.ax}² + ${s.az}²) = ${fmtN(Math.hypot(s.ax, s.az), 4)} g`)
+            + vecPlot([{v: [s.ax, s.az], label: shown ? `${fmtN(t, 1)}° from vertical` : 'gravity'}],
+              {lim: 1.4, xlabel: 'x (g)', ylabel: 'z (g)'})
+            + (shown ? note(`<b>${fmtN(t, 3)}&deg;</b>. The magnitude coming out at 1&thinsp;g is your validity check — if it is not close to 1, the board is accelerating and the angle is meaningless.`) : '');
+        }
+      },
+      {
+        id: 'a2', mod: 'applied', diff: 'medium', fmt: 'num', title: 'Dead reckoning',
+        ask: s => `A robot drives ${s.d1}&thinsp;m on a heading of ${s.h1}&deg;, then ${s.d2}&thinsp;m on ${s.h2}&deg; (0&deg; = +x, measured anticlockwise). How far is it from the start?`,
+        hint: 'Convert each leg to a vector, add them, then take the magnitude of the sum.',
+        concept: 'Dead reckoning is vector addition, and its weakness is also vectorial: heading errors rotate every subsequent leg, so position error grows with distance travelled rather than staying bounded. That is why wheel odometry is always paired with an absolute reference — a beacon, a wall, a magnetometer — to reset the accumulated drift.',
+        setup() {
+          const d1 = rnd(2, 12), d2 = rnd(2, 12);
+          const h1 = pick([0, 30, 45, 60, 90, 135, 180]), h2 = pick([0, 30, 45, 60, 90, 135, 180, -90]);
+          const p = [d1 * Math.cos(radOf(h1)) + d2 * Math.cos(radOf(h2)), d1 * Math.sin(radOf(h1)) + d2 * Math.sin(radOf(h2))];
+          return num(vLen(p), Math.max(0.02, vLen(p) * 0.01 + 0.01), {d1, d2, h1, h2});
+        },
+        render(s, shown) {
+          const l1 = [s.d1 * Math.cos(radOf(s.h1)), s.d1 * Math.sin(radOf(s.h1))];
+          const l2 = [s.d2 * Math.cos(radOf(s.h2)), s.d2 * Math.sin(radOf(s.h2))];
+          const p = vAdd(l1, l2);
+          return eq(`leg 1 = ${s.d1}·(cos ${s.h1}°, sin ${s.h1}°) = ${vShow(l1, 3)}`,
+            `leg 2 = ${s.d2}·(cos ${s.h2}°, sin ${s.h2}°) = ${vShow(l2, 3)}`,
+            shown ? `sum = ${vShow(p, 3)},  |sum| = ${fmtN(vLen(p), 4)} m` : 'sum = ?')
+            + vecPlot([{v: l1, label: 'leg 1'}, {v: p, from: l1, label: 'leg 2'},
+            {v: p, label: shown ? `${fmtN(vLen(p), 2)} m` : '?', color: 'var(--hl)', dash: '5 3'}])
+            + (shown ? note(`<b>${fmtN(vLen(p), 4)} m</b>, against ${s.d1 + s.d2}&thinsp;m actually driven. A 1&deg; heading error on leg 1 would displace the endpoint by about ${fmtN(s.d1 * radOf(1), 3)}&thinsp;m — and that error never goes away.`) : '');
+        }
+      },
+      {
+        id: 'a3', mod: 'applied', diff: 'medium', fmt: 'mc', title: 'Row-major and the cache',
+        ask: 'A C array <code>float m[1024][1024]</code> is summed. Which loop order runs faster, and why?',
+        hint: 'C stores rows contiguously. A cache line holds several adjacent floats.',
+        concept: 'C is row-major, so consecutive column indices are adjacent in memory. Walking a column instead of a row touches a new cache line every element and wastes most of each one, which can cost an order of magnitude on a large array. The same array, the same arithmetic, the same instruction count — only the access pattern differs.',
+        setup() {
+          return mc('rows outer, columns inner — consecutive accesses share a cache line',
+            ['columns outer, rows inner — it keeps the inner index small',
+              'both are identical; the compiler reorders the loops',
+              'columns outer, rows inner — it avoids repeated multiplication in the index']);
+        },
+        render(s, shown) {
+          return code(`for (int i = 0; i < 1024; i++)        // fast: row by row\n  for (int j = 0; j < 1024; j++)\n    sum += m[i][j];                  // m[i][j] and m[i][j+1] are adjacent\n\nfor (int j = 0; j < 1024; j++)        // slow: column by column\n  for (int i = 0; i < 1024; i++)\n    sum += m[i][j];                  // each step jumps 4096 bytes`)
+            + (shown ? note('A 64-byte cache line holds 16 floats. The row loop uses all 16; the column loop uses 1 and discards the rest, so it moves sixteen times the memory traffic for the same result. Fortran and MATLAB are column-major, so the advice inverts there.') : '');
+        }
+      },
+      {
+        id: 'a4', mod: 'applied', diff: 'hard', fmt: 'num', title: 'Cost of a matrix multiply',
+        ask: s => `Multiplying two ${s.n}&times;${s.n} matrices the straightforward way, how many multiply-accumulate operations does it take?`,
+        hint: 'One MAC per term. There are n² output entries, and each is a dot product of length n.',
+        concept: 'The n³ scaling is why matrix multiplication dominates the cost of numerical work, and why so much engineering goes into it: cache blocking, SIMD, and Strassen-style algorithms that trade multiplies for adds. For an embedded target the practical lesson is that doubling the matrix size costs eight times as much, so dimension reduction pays off enormously.',
+        setup() {
+          const n = pick([2, 3, 4, 8, 16, 32]);
+          return {answer: String(n * n * n), n, alts: [String(n * n * n)]};
+        },
+        render(s, shown) {
+          return eq(`n² output entries × n MACs each = n³`,
+            shown ? `${s.n}³ = ${s.n * s.n * s.n}` : `${s.n}³ = ?`)
+            + tbl(['n', '2', '4', '8', '16', '32'], [['MACs', '8', '64', '512', '4096', '32768']], 'cubic growth')
+            + (shown ? note(`<b>${s.n * s.n * s.n}</b> multiply-accumulates. Doubling n multiplies the work by 8 — which is why a 32&times;32 multiply on a microcontroller is a real budget item, not a rounding error.`) : '');
+        }
+      },
+      {
+        id: 'a5', mod: 'applied', diff: 'hard', fmt: 'num', title: 'Correct a misaligned sensor',
+        ask: s => `A two-axis sensor is misaligned by ${s.th}&deg;. To recover true readings you apply the inverse rotation to the raw pair <code>${vShow(s.raw, 0)}</code>. What is the corrected x?`,
+        hint: 'The inverse of R(θ) is R(−θ), which is also its transpose. Apply it to the raw vector.',
+        concept: 'Alignment calibration is a rotation matrix stored in flash and applied to every sample. Because rotations are orthonormal, the inverse is the transpose and costs nothing extra to compute — you store one matrix and use it in either direction. Getting the sign of the angle wrong doubles the misalignment instead of removing it, which is a satisfyingly obvious failure once you know to look for it.',
+        setup() {
+          const th = pick([5, 10, 15, 30, 45, -10, -30]);
+          const raw = [rnd(-9, 9) || 4, rnd(-9, 9) || 3];
+          const c = mApply(mRot(radOf(-th)), raw);
+          return num(c[0], Math.max(0.01, Math.abs(c[0]) * 0.01 + 0.01), {th, raw});
+        },
+        render(s, shown) {
+          const Ri = mRot(radOf(-s.th)), c = mApply(Ri, s.raw);
+          return eq(`R(${s.th}°)⁻¹ = R(${-s.th}°) = R(${s.th}°)ᵀ = ${mShow(Ri, 4)}`,
+            shown ? `corrected = ${vShow(c, 4)}` : 'corrected = ( ?, ? )')
+            + vecPlot([{v: s.raw, label: 'raw'}, {v: c, label: shown ? vShow(c, 2) : '?', color: 'var(--hl)'}])
+            + (shown ? note(`Corrected x = <b>${fmtN(c[0], 4)}</b>. Applying R(+${s.th}&deg;) instead would rotate to ${fmtN(mApply(mRot(radOf(s.th)), s.raw)[0], 3)} — twice the misalignment rather than none.`) : '');
+        }
+      },
+      {
+        id: 'a6', mod: 'applied', diff: 'expert', fmt: 'num', title: 'Solve a two-point calibration',
+        ask: s => `An ADC obeys <code>y = gx + o</code>. It reads ${s.y1} at input ${s.x1} and ${s.y2} at input ${s.x2}. What is the gain g?`,
+        hint: 'Two equations, two unknowns. Subtract them to eliminate the offset.',
+        concept: 'Two-point calibration is a 2×2 linear solve, and writing it as a matrix makes the failure mode obvious: if the two calibration inputs are close together, the system is nearly singular and the gain estimate amplifies every measurement error. Spreading the calibration points as far apart as the range allows is the whole reason calibration procedures specify near-zero and near-full-scale.',
+        setup() {
+          const g = pick([0.5, 1, 2, 2.5, 4]), o = rnd(-20, 20);
+          const x1 = rnd(0, 20), x2 = x1 + rnd(30, 200);
+          return num(g, Math.max(0.005, g * 0.01), {g, o, x1, x2, y1: g * x1 + o, y2: g * x2 + o});
+        },
+        render(s, shown) {
+          const g = (s.y2 - s.y1) / (s.x2 - s.x1), off = s.y1 - g * s.x1;
+          return eq(`${s.y1} = g·${s.x1} + o`,
+            `${s.y2} = g·${s.x2} + o`,
+            `subtract:  ${fmtN(s.y2 - s.y1, 3)} = g·${s.x2 - s.x1}`,
+            shown ? `g = ${fmtN(g, 5)},  o = ${fmtN(off, 4)}` : 'g = ?')
+            + plotCT([{f: x => g * x + off, label: 'fitted line', color: 'var(--hl)'}],
+              {x: [0, s.x2 * 1.2], y: [Math.min(0, s.y1, s.y2) - 5, Math.max(s.y1, s.y2) * 1.2 + 5], xlabel: 'input', ylabel: 'reading',
+                marks: [{x: s.x1, y: s.y1, color: 'var(--accent)'}, {x: s.x2, y: s.y2, color: 'var(--accent)'}]})
+            + (shown ? note(`g = <b>${fmtN(g, 5)}</b>, offset ${fmtN(off, 4)}. The two points are ${s.x2 - s.x1} apart; halving that separation would double the sensitivity of g to any noise on the readings.`) : '');
+        }
+      }
+    ];
+
+    const PROBLEMS = [...P_A, ...P_B, ...P_C].sort((a, b) => MOD_INDEX[a.mod] - MOD_INDEX[b.mod]);
+    const BY_ID = Object.fromEntries(PROBLEMS.map(p => [p.id, p]));
+    PROBLEMS.forEach(p => {p.s = p.setup();});
+
+    /* ============================================================
+       PART 4 — answer checking
+       Accept any reasonable spelling of the same value.
+       ============================================================ */
+    function norm(v) {return String(v).trim().toLowerCase().replace(/[\s_,]/g, '').replace(/[−–—]/g, '-');}
+
+    function boolOf(s) {
+      if (['yes', 'y', 'true', 't'].includes(s)) return true;
+      if (['no', 'n', 'false', 'f'].includes(s)) return false;
+      return null;
+    }
+
+    function numOf(s) {
+      if (/^-?\d*\.?\d+(e[-+]?\d+)?$/.test(s)) return parseFloat(s);
+      if (/^-?\d*\.?\d+\/-?\d*\.?\d+$/.test(s)) {const [a, b] = s.split('/').map(Number); return a / b;}
+      if (/^-?0x[0-9a-f]+$/.test(s)) return parseInt(s.replace('-0x', '0x'), 16) * (s[0] === '-' ? -1 : 1);
+      if (/^-?0b[01]+$/.test(s)) return parseInt(s.replace('-0b', '0b').slice(2), 2) * (s[0] === '-' ? -1 : 1);
+      return null;
+    }
+
+    function accepts(expected, given) {
+      const e = norm(expected), g = norm(given);
+      if (!g) return false;
+      if (e === g) return true;
+      const eb = boolOf(e);
+      if (eb !== null) return boolOf(g) === eb;
+      const en = numOf(e), gn = numOf(g);
+      return en !== null && gn !== null && Math.abs(en - gn) < 1e-9;
+    }
+
+    /* numeric problems carry s.val and s.tol */
+    function checkAnswer(p, given) {
+      const s = p.s;
+      if (s.tol !== undefined && s.val !== undefined) {
+        const g = numOf(norm(given));
+        if (g !== null && Math.abs(g - s.val) <= s.tol) return true;
+        return (s.alts || []).some(c => accepts(c, given));
+      }
+      return [s.answer, ...(s.alts || [])].some(c => accepts(c, given));
+    }
+
+    const FMT_HELP = {
+      num: 'a number — a couple of decimals is plenty',
+      dec: 'a whole number',
+      hex: 'answer in hex, e.g. 0x2A',
+      bin: 'answer in binary, e.g. 0b1011',
+      yesno: 'yes or no',
+      expr: 'an expression, e.g. 3x^2 - 2x',
+      mc: 'pick one'
+    };
+
+    /* ============================================================
+       PART 5 — application state
+       ============================================================ */
+    const STORE_KEY = 'linlab.progress.v1';
+
+    const app = {
+      tab: 'learn', cur: 0,
+      solved: new Set(),
+      tried: {}, feedback: {}, inputs: {}, pick: {}, hint: {}, reveal: {}, why: {}
+    };
+
+    function save() {try {localStorage.setItem(STORE_KEY, JSON.stringify([...app.solved]));} catch (e) { }}
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) JSON.parse(raw).forEach(id => {if (BY_ID[id]) app.solved.add(id);});
+      } catch (e) { }
+    }
+
+    const isShown = p => app.feedback[p.id] === 'correct' || app.reveal[p.id];
+    const askOf = p => typeof p.ask === 'function' ? p.ask(p.s) : p.ask;
+
+    /* ============================================================
+       PART 6 — views
+       ============================================================ */
+    function view() {
+      const solved = app.solved.size, total = PROBLEMS.length;
+      let h = `<div class="masthead">
+          <h1>Linalg Lab</h1>
+          <span class="sub">vectors, matrices &amp; transforms &mdash; ${total} problems across ${MODULES.length} modules</span>
+        </div>
+        <div class="tab-bar">
+          ${[['learn', 'Learn'], ['problems', `Problems (${solved}/${total})`], ['ref', 'Reference']]
+          .map(([k, t]) => `<button class="tab ${app.tab === k ? 'active' : ''}" onclick="setTab('${k}')">${t}</button>`).join('')}
+        </div>`;
+
+      if (app.tab === 'learn') h += viewLearn();
+      else if (app.tab === 'problems') h += viewList();
+      else h += viewRef();
+
+      document.getElementById('app').innerHTML = h;
+      if (app.tab === 'learn') {
+        const el = document.getElementById('ans');
+        if (el) el.focus();
+      }
+    }
+
+    function viewLearn() {
+      const p = PROBLEMS[app.cur], s = p.s, shown = isShown(p);
+      const mod = MODULES[MOD_INDEX[p.mod]];
+      const firstOfMod = PROBLEMS.findIndex(x => x.mod === p.mod) === app.cur;
+      const inMod = PROBLEMS.filter(x => x.mod === p.mod);
+
+      let h = '';
+      if (firstOfMod) {
+        h += `<div class="modcard">
+            <div class="t">Module ${MOD_INDEX[p.mod] + 1} of ${MODULES.length}</div>
+            <h2>${mod.name}</h2>
+            <p>${mod.blurb}</p>
+          </div>`;
+      }
+
+      h += `<div class="card">
+          <div class="problem-header">
+            <div>
+              <div class="crumb">${mod.name} &middot; ${inMod.indexOf(p) + 1} of ${inMod.length}</div>
+              <h3>${p.title}</h3>
+            </div>
+            <span class="badge badge-${p.diff}">${p.diff}</span>
+          </div>
+          <p class="ask">${askOf(p)}</p>
+          ${p.render(s, shown)}`;
+
+      if (p.fmt === 'mc') {
+        const picked = app.pick[p.id];
+        h += `<div class="choices">` + s.choices.map((c, i) => {
+          let cls = '';
+          if (shown && i === s.ai) cls = 'right';
+          else if (picked === i && app.feedback[p.id] === 'wrong') cls = 'picked';
+          return `<button class="choice ${cls}" ${shown ? 'disabled' : ''} onclick="chooseMC(${i})">
+              <span class="key">${'ABCD'[i]}</span><span>${c}</span></button>`;
+        }).join('') + `</div>`;
+      }
+
+      if (!shown) {
+        h += `<div class="answer-row">`;
+        if (p.fmt !== 'mc') {
+          h += `<input type="text" id="ans" placeholder="${FMT_HELP[p.fmt]}" value="${esc(app.inputs[p.id] || '')}"
+                   oninput="app.inputs['${p.id}']=this.value"
+                   onkeydown="if(event.key==='Enter')submit()">
+            <button class="btn btn-primary" onclick="submit()">Check</button>`;
+        }
+        h += `<button class="linkbtn" onclick="tog('hint','${p.id}')">${app.hint[p.id] ? 'hide hint' : 'hint'}</button>
+            <button class="linkbtn" onclick="tog('reveal','${p.id}')">show me</button>
+          </div>`;
+        if (app.hint[p.id]) h += `<div class="feedback hint">${p.hint}</div>`;
+        if (app.feedback[p.id] === 'wrong') {
+          const n = app.tried[p.id] || 0;
+          h += `<div class="feedback wrong">Not quite &mdash; ${n >= 3 ? 'try the hint, or use <b>show me</b> to walk through it.' : 'have another go.'}</div>`;
+        }
+      } else {
+        const correct = app.feedback[p.id] === 'correct';
+        h += `<div class="feedback ${correct ? 'correct' : 'hint'}">
+            ${correct ? '&#10003; Correct' : 'Answer'}: <span class="mono"><b>${esc(s.answer)}</b></span>
+            &nbsp;<button class="linkbtn" style="color:inherit" onclick="tog('why','${p.id}')">${app.why[p.id] ? 'hide' : 'why this matters'}</button>
+            ${app.why[p.id] ? `<div style="margin-top:8px;color:var(--tx-2)">${p.concept}</div>` : ''}
+          </div>`;
+      }
+
+      h += `<div class="navrow">
+          <button class="btn btn-sm" onclick="nav(-1)" ${app.cur === 0 ? 'disabled style="opacity:.4"' : ''}>&larr; Prev</button>
+          <button class="btn btn-sm" onclick="nav(1)" ${app.cur === PROBLEMS.length - 1 ? 'disabled style="opacity:.4"' : ''}>Next &rarr;</button>
+          <button class="btn btn-sm" onclick="regen()">${p.fmt === 'mc' ? 'Reshuffle' : 'New numbers'}</button>
+          <span class="spacer"></span>
+          <span style="font-size:12px;color:var(--tx-3)">${app.cur + 1} / ${PROBLEMS.length}</span>
+        </div></div>`;
+      return h;
+    }
+
+    function viewList() {
+      const solved = app.solved.size, total = PROBLEMS.length;
+      const byDiff = d => PROBLEMS.filter(p => p.diff === d && app.solved.has(p.id)).length;
+      let h = `<div class="stat-grid">
+          <div class="stat"><div class="stat-val">${solved}</div><div class="stat-lbl">solved</div></div>
+          <div class="stat"><div class="stat-val">${total - solved}</div><div class="stat-lbl">remaining</div></div>
+          <div class="stat"><div class="stat-val">${Math.round(solved / total * 100)}%</div><div class="stat-lbl">complete</div></div>
+          <div class="stat"><div class="stat-val">${byDiff('hard') + byDiff('expert')}</div><div class="stat-lbl">hard+ solved</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${solved / total * 100}%"></div></div>
+        <div class="card">`;
+
+      MODULES.forEach((m, mi) => {
+        const list = PROBLEMS.filter(p => p.mod === m.id);
+        const done = list.filter(p => app.solved.has(p.id)).length;
+        h += `<div class="modhead"><span class="t">${mi + 1}. ${m.name}</span><span class="line"></span><span class="c">${done}/${list.length}</span></div>`;
+        list.forEach(p => {
+          const i = PROBLEMS.indexOf(p), ok = app.solved.has(p.id);
+          h += `<div class="pitem ${ok ? 'solved' : ''} ${i === app.cur ? 'current' : ''}" onclick="go(${i})">
+              <div class="pi-icon ${ok ? 'yes' : 'no'}">${ok ? '&#10003;' : i + 1}</div>
+              <div class="pi-info"><div class="pi-title">${p.title}</div><div class="pi-sub">${askOf(p).replace(/<[^>]+>/g, '')}</div></div>
+              <span class="badge badge-${p.diff}">${p.diff}</span>
+            </div>`;
+        });
+      });
+
+      h += `<div class="navrow"><button class="btn btn-sm" onclick="resetAll()">Reset progress</button></div></div>`;
+      return h;
+    }
+
+
+    function viewRef() {
+      return `<div class="card">
+        <h2>Vectors</h2>
+        ${refTable([
+        ['a + b', 'componentwise; geometrically head-to-tail'],
+        ['ka', 'scales length; a negative k reverses direction'],
+        ['|a|', '√(x² + y² + z²) — prefer |a|² when you only need to compare'],
+        ['â = a/|a|', 'unit vector, pure direction — guard against |a| = 0 or you get NaN'],
+        ['distance', '|q − p| — the magnitude of the difference'],
+        ['Manhattan', '|Δx| + |Δy| — the right metric when movement is axis-aligned'],
+        ['perpendicular in 2-D', '(x, y) → (−y, x) — a free 90° rotation, no trigonometry']
+      ])}
+        <h2 style="margin-top:18px">Dot product — a scalar</h2>
+        ${refTable([
+        ['a·b', 'Σ aᵢbᵢ — one multiply-accumulate per dimension'],
+        ['a·b = |a||b| cos θ', 'the geometric meaning'],
+        ['sign of a·b', '+ under 90°, − over 90°, 0 exactly perpendicular'],
+        ['angle', 'θ = acos( a·b / (|a||b|) ) — clamp the cosine to [−1,1] first'],
+        ['scalar projection', '(a·b)/|b| — how much of a lies along b'],
+        ['cosine similarity', 'a·b / (|a||b|) — ignores magnitude entirely'],
+        ['cross-track error', 'perp = √(|p|² − proj²) — distance from a line'],
+        ['uses', 'lighting, back-face culling, least squares, correlation, similarity search']
+      ])}
+        <h2 style="margin-top:18px">Cross product — a vector, 3-D only</h2>
+        ${refTable([
+        ['a × b', '(a_y b_z − a_z b_y, a_z b_x − a_x b_z, a_x b_y − a_y b_x)'],
+        ['|a × b|', '|a||b| sin θ — the area of the parallelogram they span'],
+        ['direction', 'perpendicular to both; right-hand rule sets the sign'],
+        ['a × b = −(b × a)', 'anticommutes — swapping the operands flips the normal'],
+        ['2-D "cross"', 'aₓb_y − a_ybₓ — a signed area; the sign gives the turn direction'],
+        ['uses', 'surface normals, torque, winding order, convex hulls, point-in-triangle']
+      ])}
+        <h2 style="margin-top:18px">Matrices</h2>
+        ${refTable([
+        ['Mv', 'each output component is a row of M dotted with v'],
+        ['columns of M', 'where the basis vectors land — read the geometry straight off'],
+        ['det [[a,b],[c,d]]', 'ad − bc; the area scale factor, negative if orientation flips'],
+        ['det = 0', 'singular — the plane collapses to a line and there is no inverse'],
+        ['2×2 inverse', '(1/det)·[[d, −b], [−c, a]]; verify with M·M⁻¹ = I'],
+        ['bigger than 2×2', 'do not invert — solve the system with LU or QR instead'],
+        ['AB', 'apply B first, then A; reads right to left, and does not commute'],
+        ['cost of n×n multiply', 'n³ multiply-accumulates — doubling n costs 8×'],
+        ['Mᵀ for a rotation', 'equals M⁻¹ — transposing is free, so never invert a rotation']
+      ])}
+        <h2 style="margin-top:18px">Transforms and practice</h2>
+        ${refTable([
+        ['R(θ)', '[[cos θ, −sin θ], [sin θ, cos θ]] — preserves lengths and angles'],
+        ['rotate about a point c', 'T(+c) · R(θ) · T(−c) — rightmost applied first'],
+        ['scale', 'det = sxsy; non-uniform scaling distorts normals'],
+        ['homogeneous coords', 'append 1 to a point, 0 to a direction; lets translation be a matrix'],
+        ['scale vs rotate order', 'R·S scales in the object frame; S·R shears — a distinctive bug'],
+        ['tilt from accelerometer', 'atan2(aₓ, a_z); check the magnitude is ≈ 1 g or the reading is invalid'],
+        ['dead reckoning', 'add leg vectors; heading error grows the position error with distance'],
+        ['row-major (C)', 'iterate rows outer, columns inner — a column walk wastes 15/16 of every cache line'],
+        ['two-point calibration', 'a 2×2 solve; spread the points wide or the gain estimate amplifies noise'],
+        ['Q15 unit vector', 'components fit in ±32767 by construction; multiply before dividing']
+      ])}
+      </div>`;
+    }
+
+    function refTable(rows) {
+      return `<table class="reft">${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`;
+    }
+
+    /* ---------- actions ---------- */
+    function setTab(t) {app.tab = t; view();}
+    function go(i) {app.cur = i; app.tab = 'learn'; view();}
+    function nav(d) {app.cur = Math.max(0, Math.min(PROBLEMS.length - 1, app.cur + d)); view();}
+    function tog(k, id) {app[k][id] = !app[k][id]; view();}
+
+    function mark(p, ok) {
+      app.tried[p.id] = (app.tried[p.id] || 0) + 1;
+      if (ok) {app.feedback[p.id] = 'correct'; app.solved.add(p.id); save();}
+      else app.feedback[p.id] = 'wrong';
+      view();
+    }
+
+    function submit() {
+      const p = PROBLEMS[app.cur];
+      const given = app.inputs[p.id] || '';
+      if (!given.trim()) return;
+      mark(p, checkAnswer(p, given));
+    }
+
+    function chooseMC(i) {
+      const p = PROBLEMS[app.cur];
+      if (isShown(p)) return;
+      app.pick[p.id] = i;
+      mark(p, i === p.s.ai);
+    }
+
+    function regen() {
+      const p = PROBLEMS[app.cur];
+      p.s = p.setup();
+      app.feedback[p.id] = null;
+      app.reveal[p.id] = false;
+      app.inputs[p.id] = '';
+      app.pick[p.id] = null;
+      view();
+    }
+
+    function resetAll() {
+      if (!confirm('Clear all solved problems?')) return;
+      app.solved.clear();
+      app.feedback = {}; app.inputs = {}; app.pick = {}; app.reveal = {}; app.hint = {}; app.tried = {};
+      save();
+      view();
+    }
+
+    load();
+    view();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,2286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Complex Lab — complex numbers for software and embedded engineers</title>
+  <style>
+    :root {
+      --bg: #0a0f1a;
+      --bg-1: #111827;
+      --bg-2: #1a2434;
+      --bg-3: #232f42;
+
+      --tx-1: #f3f4f6;
+      --tx-2: #9ca3af;
+      --tx-3: #6b7280;
+
+      --bd-1: #2b3648;
+      --bd-2: #374151;
+
+      --accent: #60a5fa;
+      --accent-dim: rgba(96, 165, 250, 0.15);
+
+      --on: #4ade80;
+      --off: #f87171;
+      --hl: #fbbf24;
+      --fill: #38bdf8;
+      --unk: #c084fc;
+
+      --r-sm: 5px;
+      --r-md: 8px;
+      --r-lg: 14px;
+
+      --font-sans: Inter, system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--tx-1);
+      background: var(--bg);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 4rem;
+    }
+
+    /* ---------- header / tabs ---------- */
+    .masthead {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .masthead h1 {
+      font-size: 19px;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+    }
+
+    .masthead .sub {
+      font-size: 13px;
+      color: var(--tx-3);
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--bd-1);
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 8px 15px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--tx-2);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+      transition: color .15s, background .15s;
+    }
+
+    .tab.active {
+      color: var(--tx-1);
+      border-bottom-color: var(--accent);
+      font-weight: 550;
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--tx-1);
+      background: rgba(255, 255, 255, .03);
+    }
+
+    .card {
+      background: var(--bg-1);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-lg);
+      padding: 1.25rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 8px 24px rgba(0, 0, 0, .18);
+    }
+
+    .card+.card {
+      margin-top: 1rem;
+    }
+
+    h2 {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: .92em;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--tx-1);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--r-md);
+      white-space: nowrap;
+    }
+
+    .badge-easy {
+      background: rgba(34, 197, 94, .15);
+      color: #86efac;
+    }
+
+    .badge-medium {
+      background: rgba(245, 158, 11, .15);
+      color: #fcd34d;
+    }
+
+    .badge-hard {
+      background: rgba(239, 68, 68, .15);
+      color: #fca5a5;
+    }
+
+    .badge-expert {
+      background: rgba(139, 92, 246, .15);
+      color: #c4b5fd;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin: 16px 0 6px;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
+    }
+
+    /* ---------- module intro ---------- */
+    .modcard {
+      background: linear-gradient(180deg, rgba(96, 165, 250, .10), rgba(96, 165, 250, .02));
+      border: 1px solid rgba(96, 165, 250, .28);
+      border-radius: var(--r-lg);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .modcard .t {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--accent);
+      font-weight: 650;
+    }
+
+    .modcard h2 {
+      margin: 2px 0 5px;
+    }
+
+    .modcard p {
+      font-size: 13.5px;
+      color: var(--tx-2);
+      max-width: 68ch;
+    }
+
+    /* ---------- problem chrome ---------- */
+    .problem-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .crumb {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 600;
+    }
+
+    .ask {
+      color: var(--tx-1);
+      margin-bottom: 12px;
+      font-size: 14.5px;
+    }
+
+    .note {
+      font-size: 13px;
+      color: var(--tx-2);
+      margin: 8px 0 2px;
+      max-width: 78ch;
+    }
+
+    /* ---------- equations ---------- */
+    .eqblk {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--r-md);
+      padding: 9px 13px;
+      margin: 8px 0;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      line-height: 1.7;
+    }
+
+    .eqblk .el {
+      display: block;
+    }
+
+    .eqblk .ec {
+      color: var(--tx-3);
+    }
+
+    .eqblk b {
+      color: var(--hl);
+      font-weight: 600;
+    }
+
+    .eqblk .q {
+      color: var(--unk);
+      font-weight: 700;
+    }
+
+    /* ---------- code block ---------- */
+    .code {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 10px 13px;
+      margin: 8px 0;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.6;
+    }
+
+    .code .k {
+      color: var(--accent);
+    }
+
+    .code .c {
+      color: var(--tx-3);
+    }
+
+    .code .h {
+      color: var(--hl);
+    }
+
+    /* ---------- plots ---------- */
+    .plot {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 9px 11px 6px;
+      margin: 8px 0;
+      overflow-x: auto;
+    }
+
+    .plot .plbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 650;
+      margin-bottom: 4px;
+    }
+
+    .plot svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-width: 320px;
+    }
+
+    .plotgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 10px;
+      margin: 8px 0;
+    }
+
+    .plotgrid .plot {
+      margin: 0;
+    }
+
+    .lgd {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 11.5px;
+      color: var(--tx-2);
+      margin-top: 4px;
+    }
+
+    .lgd i {
+      display: inline-block;
+      width: 14px;
+      height: 3px;
+      border-radius: 2px;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+
+    /* ---------- tables ---------- */
+    .board {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 10px 12px;
+      margin: 8px 0;
+      overflow-x: auto;
+    }
+
+    .board .blbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 650;
+      margin-bottom: 7px;
+    }
+
+    .memt {
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin: 2px 0;
+    }
+
+    .memt th,
+    .memt td {
+      border: 1px solid var(--bd-1);
+      padding: 4px 9px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .memt th {
+      color: var(--tx-3);
+      font-weight: 500;
+      background: var(--bg-1);
+      font-size: 11px;
+    }
+
+    .memt td {
+      background: var(--bg-3);
+      color: var(--tx-1);
+      font-weight: 600;
+    }
+
+    .memt td.lb {
+      background: var(--bg-1);
+      color: var(--tx-2);
+      font-weight: 500;
+      text-align: right;
+      font-size: 11px;
+    }
+
+    .memt td.mk {
+      background: rgba(56, 189, 248, .18);
+      border-color: var(--fill);
+      color: #bae6fd;
+    }
+
+    .memt td.mk2 {
+      background: rgba(251, 191, 36, .16);
+      border-color: var(--hl);
+      color: #fde68a;
+    }
+
+    .memt td.dim {
+      background: var(--bg-1);
+      color: var(--tx-3);
+      font-weight: 400;
+    }
+
+    .memt td.q {
+      color: var(--unk);
+      border-style: dashed;
+      border-color: rgba(192, 132, 252, .55);
+    }
+
+    /* ---------- value cells ---------- */
+    .rrow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .reg {
+      min-width: 118px;
+      background: var(--bg-3);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-sm);
+      padding: 5px 9px;
+    }
+
+    .reg .rn {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--tx-3);
+      letter-spacing: .03em;
+    }
+
+    .reg .rv {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--tx-1);
+      font-weight: 600;
+    }
+
+    .reg.hl {
+      border-color: var(--hl);
+      box-shadow: 0 0 0 1px rgba(251, 191, 36, .45);
+    }
+
+    .reg.new {
+      border-color: var(--on);
+      background: rgba(34, 197, 94, .14);
+    }
+
+    .reg.new .rv {
+      color: #bbf7d0;
+    }
+
+    .reg.q .rv {
+      color: var(--unk);
+    }
+
+    .reg.q {
+      border-style: dashed;
+      border-color: rgba(192, 132, 252, .55);
+    }
+
+    /* ---------- chips ---------- */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .chip {
+      font-size: 11.5px;
+      color: var(--tx-2);
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: 20px;
+      padding: 3px 11px;
+      font-family: var(--font-mono);
+    }
+
+    .chip b {
+      color: var(--tx-1);
+    }
+
+    .chip.hot {
+      border-color: rgba(251, 191, 36, .45);
+      color: #fde68a;
+    }
+
+    .chip.cool {
+      border-color: rgba(56, 189, 248, .45);
+      color: #bae6fd;
+    }
+
+    .chip.good {
+      border-color: rgba(34, 197, 94, .45);
+      color: #bbf7d0;
+    }
+
+    .chip.bad {
+      border-color: rgba(248, 113, 113, .45);
+      color: #fecaca;
+    }
+
+    /* ---------- answers ---------- */
+    .answer-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    input[type=text] {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      padding: 8px 11px;
+      width: 280px;
+      outline: none;
+    }
+
+    input[type=text]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    select {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 6px 9px;
+      outline: none;
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 13.5px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--bd-2);
+      background: var(--bg-2);
+      color: var(--tx-1);
+      padding: 8px 15px;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--accent);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0a0f1a;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.08);
+    }
+
+    .btn-sm {
+      padding: 5px 11px;
+      font-size: 12.5px;
+    }
+
+    .btn.on {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .linkbtn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      padding: 4px 2px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .choice {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      text-align: left;
+      width: 100%;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: inherit;
+      font-size: 13.5px;
+      padding: 9px 12px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+
+    .choice:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--bg-3);
+    }
+
+    .choice .key {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--tx-3);
+      border: 1px solid var(--bd-2);
+      border-radius: 4px;
+      padding: 0 6px;
+      line-height: 19px;
+      flex-shrink: 0;
+    }
+
+    .choice.picked {
+      border-color: var(--off);
+      background: rgba(248, 113, 113, .10);
+    }
+
+    .choice.right {
+      border-color: var(--on);
+      background: rgba(34, 197, 94, .12);
+    }
+
+    .choice.right .key,
+    .choice.picked .key {
+      color: var(--tx-1);
+    }
+
+    .choice:disabled {
+      cursor: default;
+      opacity: .85;
+    }
+
+    .feedback {
+      margin-top: 12px;
+      padding: 10px 13px;
+      border-radius: var(--r-md);
+      font-size: 13.5px;
+      border: 1px solid;
+    }
+
+    .feedback.correct {
+      background: rgba(34, 197, 94, .12);
+      border-color: rgba(34, 197, 94, .4);
+      color: #bbf7d0;
+    }
+
+    .feedback.wrong {
+      background: rgba(248, 113, 113, .10);
+      border-color: rgba(248, 113, 113, .4);
+      color: #fecaca;
+    }
+
+    .feedback.hint {
+      background: rgba(251, 191, 36, .09);
+      border-color: rgba(251, 191, 36, .33);
+      color: #fde68a;
+    }
+
+    .navrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--bd-1);
+      flex-wrap: wrap;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    /* ---------- problem list ---------- */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .stat {
+      background: var(--bg-1);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 11px 13px;
+    }
+
+    .stat-val {
+      font-size: 21px;
+      font-weight: 650;
+      font-family: var(--font-mono);
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .progress-bar {
+      height: 5px;
+      background: var(--bg-2);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width .25s;
+    }
+
+    .modhead {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 16px 0 6px;
+    }
+
+    .modhead:first-child {
+      margin-top: 0;
+    }
+
+    .modhead .t {
+      font-size: 11.5px;
+      font-weight: 650;
+      color: var(--tx-2);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .modhead .line {
+      flex: 1;
+      height: 1px;
+      background: var(--bd-1);
+    }
+
+    .modhead .c {
+      font-size: 11.5px;
+      color: var(--tx-3);
+      font-family: var(--font-mono);
+    }
+
+    .pitem {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 8px 10px;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .pitem:hover {
+      background: var(--bg-2);
+    }
+
+    .pitem.current {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .pi-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+      border: 1px solid var(--bd-2);
+      color: var(--tx-3);
+    }
+
+    .pi-icon.yes {
+      background: rgba(34, 197, 94, .18);
+      border-color: rgba(34, 197, 94, .5);
+      color: var(--on);
+    }
+
+    .pi-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .pi-title {
+      font-size: 13.5px;
+      font-weight: 550;
+    }
+
+    .pi-sub {
+      font-size: 12px;
+      color: var(--tx-3);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pitem.solved .pi-title {
+      color: var(--tx-2);
+    }
+
+    /* ---------- reference ---------- */
+    .reft {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 4px 0 6px;
+    }
+
+    .reft td {
+      border-bottom: 1px solid var(--bd-1);
+      padding: 6px 8px;
+      vertical-align: top;
+    }
+
+    .reft td:first-child {
+      font-family: var(--font-mono);
+      color: var(--tx-1);
+      white-space: nowrap;
+      width: 38%;
+    }
+
+    .reft td:last-child {
+      color: var(--tx-2);
+    }
+
+
+    /* ---------- inline maths ---------- */
+    .fr {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      margin: 0 3px;
+      line-height: 1.15;
+      font-size: .92em;
+    }
+
+    .fr .fn {
+      border-bottom: 1px solid currentColor;
+      padding: 0 3px;
+    }
+
+    .fr .fd {
+      padding: 0 3px;
+    }
+
+    .mtx {
+      display: inline-grid;
+      gap: 2px 12px;
+      padding: 4px 9px;
+      margin: 0 4px;
+      vertical-align: middle;
+      border-left: 2px solid var(--tx-3);
+      border-right: 2px solid var(--tx-3);
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: .92em;
+    }
+
+    .mtx .mc {
+      text-align: right;
+    }
+
+    .mtl {
+      color: var(--tx-3);
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" id="app"></div>
+
+  <script>
+    /* ============================================================
+       PART 1 — numeric helpers
+       ============================================================ */
+    const PI = Math.PI, TAU = 2 * Math.PI;
+    const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+    function shuffle(a) {const r = a.slice(); for (let i = r.length - 1; i > 0; i--) {const j = rnd(0, i);[r[i], r[j]] = [r[j], r[i]];} return r;}
+    function esc(s) {return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');}
+    const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+    /* round to n decimals and drop trailing zeros: 3.10 -> "3.1", 4.00 -> "4" */
+    function fmtN(v, d = 3) {
+      if (!isFinite(v)) return v > 0 ? '∞' : '-∞';
+      if (Math.abs(v) < 5e-11) v = 0;
+      let s = v.toFixed(d);
+      if (s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, '');
+      return s === '-0' ? '0' : s;
+    }
+    const f2 = v => fmtN(v, 2);
+    const f3 = v => fmtN(v, 3);
+    const gcd = (a, b) => b ? gcd(b, a % b) : Math.abs(a);
+    const lg2 = v => Math.log(v) / Math.LN2;
+
+    /* signed term for building expressions: sgn(-3, 'x') -> " - 3x" */
+    function sgn(c, sym = '') {
+      if (c === 0) return '';
+      const a = Math.abs(c);
+      const mag = (a === 1 && sym) ? '' : fmtN(a, 4);
+      return (c < 0 ? ' &minus; ' : ' + ') + mag + sym;
+    }
+    /* leading term of a polynomial — no " + " in front */
+    function lead(c, sym = '') {
+      const a = Math.abs(c), mag = (a === 1 && sym) ? '' : fmtN(a, 4);
+      return (c < 0 ? '&minus;' : '') + mag + sym;
+    }
+    /* x, x², x³ … as HTML */
+    const pw = (sym, n) => n === 0 ? '' : n === 1 ? sym : `${sym}<sup>${n}</sup>`;
+
+    /* build a polynomial string from coefficients, highest power first:
+       poly([2,0,-3,1]) -> "2x³ &minus; 3x + 1" */
+    function poly(co, sym = 'x') {
+      const n = co.length - 1;
+      let out = '', first = true;
+      co.forEach((c, i) => {
+        if (c === 0) return;
+        const p = n - i, t = pw(sym, p);
+        out += first ? lead(c, t) : sgn(c, t);
+        first = false;
+      });
+      return out || '0';
+    }
+
+    /* multiple-choice helper: shuffled {choices, ai, answer}.
+       `extra` carries any generated state the ask/render need. */
+    function mc(correct, wrong, extra) {
+      const opts = shuffle([correct, ...wrong]);
+      /* extra goes on first so it can never clobber the answer keys */
+      return Object.assign({}, extra || {}, {choices: opts, ai: opts.indexOf(correct), answer: correct});
+    }
+
+    /* numeric answer with a tolerance band. The printed answer keeps enough
+       decimals that it is itself comfortably inside the band. */
+    function num(v, tol, extra) {
+      const d = clamp(Math.ceil(-Math.log10(tol || 1e-3)) + 1, 2, 8);
+      return Object.assign({}, extra || {}, {answer: fmtN(v, d), val: v, tol});
+    }
+    /* yes / no answer */
+    function yn(v, extra) {return Object.assign({}, extra || {}, {answer: v ? 'yes' : 'no'});}
+
+    /* ============================================================
+       PART 2 — render helpers
+       Everything returns an HTML string, so it drops straight into
+       a problem's render(s, shown).
+       ============================================================ */
+    function title(t) {return `<div class="section-title">${t}</div>`;}
+    function note(html) {return `<div class="note">${html}</div>`;}
+    function chips(list) {return `<div class="chips">${list.map(c => `<span class="chip ${c[2] || ''}">${c[0]} <b>${c[1]}</b></span>`).join('')}</div>`;}
+
+    /* boxed formula. Lines starting with "#" are dimmed commentary. */
+    function eq(...lines) {
+      const body = lines.filter(l => l !== null && l !== undefined && l !== '').map(l => {
+        if (l.startsWith('#')) return `<span class="el ec">${l.slice(1).trim()}</span>`;
+        return `<span class="el">${l}</span>`;
+      }).join('');
+      return `<div class="eqblk">${body}</div>`;
+    }
+
+    /* inline fraction */
+    function frac(n, d) {return `<span class="fr"><span class="fn">${n}</span><span class="fd">${d}</span></span>`;}
+
+    /* C / pseudo-code block */
+    function code(src) {
+      const s = esc(src)
+        .replace(/(\b\d+\.\d+\b|\b0x[0-9A-Fa-f]+\b)/g, '<span class="h">$1</span>')
+        .replace(/\/\/[^\n]*/g, '<span class="c">$&</span>')
+        .replace(/\b(float|double|int|long|unsigned|uint8_t|uint16_t|uint32_t|int8_t|int16_t|int32_t|bool|size_t|void|static|const|for|if|else|while|do|return|struct|typedef|break|continue)\b/g, '<span class="k">$1</span>');
+      return `<div class="code">${s}</div>`;
+    }
+
+    /* labelled value cells. rows = [name, value, cls] */
+    function cells(rows, label) {
+      const body = rows.map(([n, v, cls]) =>
+        `<div class="reg ${cls || ''}"><div class="rn">${n}</div><div class="rv">${v}</div></div>`).join('');
+      return `<div class="board">${label ? `<div class="blbl">${label}</div>` : ''}<div class="rrow">${body}</div></div>`;
+    }
+
+    /* generic table: head = [..], rows = [[cell | [cell, cls], ...], ..] */
+    function tbl(head, rows, label) {
+      const th = head.map(h => `<th>${h}</th>`).join('');
+      const tr = rows.map(rw => '<tr>' + rw.map(c => {
+        const [v, cls] = Array.isArray(c) ? c : [c, ''];
+        return `<td class="${cls || ''}">${v}</td>`;
+      }).join('') + '</tr>').join('');
+      return `<div class="board">${label ? `<div class="blbl">${label}</div>` : ''}
+        <table class="memt"><tr>${th}</tr>${tr}</table></div>`;
+    }
+
+    /* a column vector / matrix, as a bracketed grid. rows = [[a,b],[c,d]] */
+    function mtx(rows, label) {
+      const cols = rows[0].length;
+      const body = rows.map(r => r.map(v => `<span class="mc">${v}</span>`).join('')).join('');
+      return `<span class="mtx" style="grid-template-columns:repeat(${cols}, auto)">${body}</span>` +
+        (label ? `<span class="mtl">${label}</span>` : '');
+    }
+
+    /* ---------- plot primitives ---------- */
+    const PAL = ['var(--accent)', 'var(--on)', 'var(--hl)', 'var(--unk)', 'var(--off)'];
+
+    function scales(o) {
+      const W = o.W || 640, H = o.H || 170, L = o.L === undefined ? 44 : o.L,
+        R = o.R === undefined ? 14 : o.R, T = o.T === undefined ? 12 : o.T, B = o.B === undefined ? 26 : o.B;
+      const [x0, x1] = o.x, [y0, y1] = o.y;
+      return {
+        W, H, L, R, T, B, x0, x1, y0, y1,
+        X: v => L + (clamp(v, x0, x1) - x0) / (x1 - x0) * (W - L - R),
+        Y: v => T + (y1 - clamp(v, y0, y1)) / (y1 - y0) * (H - T - B),
+        Xr: v => L + (v - x0) / (x1 - x0) * (W - L - R),
+        Yr: v => T + (y1 - v) / (y1 - y0) * (H - T - B)
+      };
+    }
+
+    function ticks(a, b, n) {
+      const raw = (b - a) / n;
+      const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+      const step = [1, 2, 2.5, 5, 10].find(m => m * mag >= raw * 0.999) * mag;
+      const out = [];
+      for (let v = Math.ceil(a / step) * step; v <= b + step * 1e-6; v += step) out.push(Math.abs(v) < step / 1e6 ? 0 : v);
+      return out;
+    }
+
+    function txt(x, y, s, o = {}) {
+      return `<text x="${f2(x)}" y="${f2(y)}" text-anchor="${o.anchor || 'middle'}" font-size="${o.size || 10}"
+        fill="${o.fill || 'var(--tx-3)'}" font-family="var(--font-mono)" ${o.weight ? `font-weight="${o.weight}"` : ''}
+        ${o.rotate ? `transform="rotate(${o.rotate} ${f2(x)} ${f2(y)})"` : ''}>${s}</text>`;
+    }
+
+    function axesSVG(sc, o) {
+      let g = '';
+      const xt = o.xticks || ticks(sc.x0, sc.x1, o.nxt || 6);
+      const yt = o.yticks || ticks(sc.y0, sc.y1, o.nyt || 4);
+      const xf = o.xfmt || (v => fmtN(v, 2)), yf = o.yfmt || (v => fmtN(v, 2));
+      xt.forEach(v => {
+        const X = sc.Xr(v);
+        if (X < sc.L - .5 || X > sc.W - sc.R + .5) return;
+        g += `<line x1="${f2(X)}" y1="${sc.T}" x2="${f2(X)}" y2="${sc.H - sc.B}" stroke="var(--bd-1)" stroke-width="1"/>`;
+        if (o.noxlab) return;
+        g += txt(X, sc.H - sc.B + 13, esc(xf(v)));
+      });
+      yt.forEach(v => {
+        const Y = sc.Yr(v);
+        if (Y < sc.T - .5 || Y > sc.H - sc.B + .5) return;
+        g += `<line x1="${sc.L}" y1="${f2(Y)}" x2="${sc.W - sc.R}" y2="${f2(Y)}" stroke="var(--bd-1)" stroke-width="1"/>`;
+        g += txt(sc.L - 6, Y + 3.5, esc(yf(v)), {anchor: 'end'});
+      });
+      /* the axes themselves, drawn brighter */
+      if (sc.y0 <= 0 && sc.y1 >= 0) g += `<line x1="${sc.L}" y1="${f2(sc.Yr(0))}" x2="${sc.W - sc.R}" y2="${f2(sc.Yr(0))}" stroke="var(--bd-2)" stroke-width="1.5"/>`;
+      if (sc.x0 <= 0 && sc.x1 >= 0) g += `<line x1="${f2(sc.Xr(0))}" y1="${sc.T}" x2="${f2(sc.Xr(0))}" y2="${sc.H - sc.B}" stroke="var(--bd-2)" stroke-width="1.5"/>`;
+      g += `<rect x="${sc.L}" y="${sc.T}" width="${sc.W - sc.L - sc.R}" height="${sc.H - sc.T - sc.B}" fill="none" stroke="var(--bd-1)"/>`;
+      if (o.xlabel) g += txt(sc.W - sc.R, sc.H - 3, esc(o.xlabel), {anchor: 'end', fill: 'var(--tx-2)', size: 10.5});
+      if (o.ylabel) g += txt(11, sc.T + (sc.H - sc.T - sc.B) / 2, esc(o.ylabel), {rotate: -90, fill: 'var(--tx-2)', size: 10.5});
+      return g;
+    }
+
+    function legend(items) {
+      if (!items || !items.length) return '';
+      return `<div class="lgd">${items.map(([c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join('')}</div>`;
+    }
+
+    function plotBox(label, sc, body, lgd) {
+      return `<div class="plot" style="max-width:${sc.W + 26}px">${label ? `<div class="plbl">${label}</div>` : ''}
+        <svg viewBox="0 0 ${sc.W} ${sc.H}" preserveAspectRatio="xMidYMid meet" role="img">${body}</svg>
+        ${legend(lgd)}</div>`;
+    }
+
+    /* annotations shared by every plot type */
+    function annotate(sc, o) {
+      let g = '';
+      (o.vlines || []).forEach(v => {
+        const X = sc.Xr(v.x);
+        g += `<line x1="${f2(X)}" y1="${sc.T}" x2="${f2(X)}" y2="${sc.H - sc.B}" stroke="${v.color || 'var(--hl)'}"
+          stroke-width="1.4" stroke-dasharray="${v.dash || '4 3'}"/>`;
+        if (v.label) g += txt(X, sc.T + 11, esc(v.label), {fill: v.color || 'var(--hl)', size: 10.5});
+      });
+      (o.hlines || []).forEach(v => {
+        const Y = sc.Yr(v.y);
+        g += `<line x1="${sc.L}" y1="${f2(Y)}" x2="${sc.W - sc.R}" y2="${f2(Y)}" stroke="${v.color || 'var(--hl)'}"
+          stroke-width="1.4" stroke-dasharray="${v.dash || '4 3'}"/>`;
+        if (v.label) g += txt(sc.W - sc.R - 4, Y - 4, esc(v.label), {anchor: 'end', fill: v.color || 'var(--hl)', size: 10.5});
+      });
+      (o.marks || []).forEach(m => {
+        const X = sc.Xr(m.x), Y = sc.Yr(m.y);
+        g += `<circle cx="${f2(X)}" cy="${f2(Y)}" r="4" fill="${m.color || 'var(--hl)'}" stroke="var(--bg-2)" stroke-width="1.5"/>`;
+        if (m.label) g += txt(X, Y - 9, esc(m.label), {fill: m.color || 'var(--hl)', size: 10.5, weight: 600});
+      });
+      (o.texts || []).forEach(t => {
+        g += txt(sc.Xr(t.x), sc.Yr(t.y), esc(t.s), {fill: t.color || 'var(--tx-2)', size: t.size || 10.5, anchor: t.anchor});
+      });
+      return g;
+    }
+
+    function pathOf(pts, sc) {
+      let d = '', pen = false;
+      pts.forEach(([x, y]) => {
+        if (!isFinite(y)) {pen = false; return;}
+        const cy = clamp(y, sc.y0, sc.y1);
+        d += (pen ? 'L' : 'M') + f2(sc.Xr(x)) + ' ' + f2(sc.Yr(cy)) + ' ';
+        pen = true;
+      });
+      return d.trim();
+    }
+
+    /* ---------- continuous-time waveform ---------- */
+    /* series: [{f: t=>y | pts:[[t,y]], color, dash, width, fill, label}] */
+    function plotCT(series, o = {}) {
+      o = Object.assign({x: [-1, 5], y: [-1.4, 1.4], W: 640, H: 170, xlabel: 't', N: 500}, o);
+      const sc = scales(o);
+      let g = axesSVG(sc, o);
+      series.forEach((s, i) => {
+        const col = s.color || PAL[i % PAL.length];
+        let pts = s.pts;
+        if (!pts) {
+          pts = [];
+          for (let k = 0; k <= o.N; k++) {const t = sc.x0 + (sc.x1 - sc.x0) * k / o.N; pts.push([t, s.f(t)]);}
+        }
+        const d = pathOf(pts, sc);
+        if (s.fill) {
+          const base = sc.Yr(clamp(0, sc.y0, sc.y1));
+          g += `<path d="${d} L ${f2(sc.Xr(pts[pts.length - 1][0]))} ${f2(base)} L ${f2(sc.Xr(pts[0][0]))} ${f2(base)} Z"
+            fill="${col}" opacity=".16" stroke="none"/>`;
+        }
+        g += `<path d="${d}" fill="none" stroke="${col}" stroke-width="${s.width || 2}"
+          ${s.dash ? `stroke-dasharray="${s.dash}"` : ''} stroke-linejoin="round" stroke-linecap="round" opacity="${s.op || 1}"/>`;
+      });
+      g += annotate(sc, o);
+      const lgd = series.filter(s => s.label).map((s, i) => [s.color || PAL[series.indexOf(s) % PAL.length], s.label]);
+      return plotBox(o.label, sc, g, o.legend === false ? null : lgd);
+    }
+
+    /* ---------- discrete-time stem plot ---------- */
+    /* seq: array of numbers; o.n0 = index of seq[0] */
+    function plotDT(seq, o = {}) {
+      const n0 = o.n0 === undefined ? 0 : o.n0;
+      const vals = seq.filter(v => isFinite(v));
+      const top = o.ymax !== undefined ? o.ymax : Math.max(1, ...vals.map(Math.abs)) * 1.25;
+      const bot = o.ymin !== undefined ? o.ymin : (Math.min(0, ...vals) < 0 ? -top : -top * 0.25);
+      o = Object.assign({
+        x: [n0 - 1, n0 + seq.length], y: [bot, top], W: 640, H: 170, xlabel: 'n',
+        xticks: seq.map((_, i) => n0 + i).filter((v, i) => seq.length <= 22 || i % 2 === 0)
+      }, o);
+      const sc = scales(o);
+      let g = axesSVG(sc, o);
+      const zero = sc.Yr(clamp(0, sc.y0, sc.y1));
+      const hi = o.hi || [], unknown = o.unknown || [];
+      seq.forEach((v, i) => {
+        const n = n0 + i, X = sc.Xr(n);
+        if (X < sc.L || X > sc.W - sc.R) return;
+        const isQ = unknown.includes(n);
+        const col = isQ ? 'var(--unk)' : (hi.includes(n) ? 'var(--hl)' : (o.color || 'var(--accent)'));
+        if (isQ) {
+          g += `<line x1="${f2(X)}" y1="${f2(zero)}" x2="${f2(X)}" y2="${f2(zero - 26)}" stroke="var(--unk)" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+          g += txt(X, zero - 31, '?', {fill: 'var(--unk)', size: 13, weight: 700});
+          return;
+        }
+        const Y = sc.Yr(v);
+        g += `<line x1="${f2(X)}" y1="${f2(zero)}" x2="${f2(X)}" y2="${f2(Y)}" stroke="${col}" stroke-width="${hi.includes(n) ? 2.4 : 1.8}"/>`;
+        g += `<circle cx="${f2(X)}" cy="${f2(Y)}" r="${hi.includes(n) ? 4.2 : 3.4}" fill="${col}"/>`;
+        if (o.values && v !== 0) g += txt(X, Y + (v >= 0 ? -8 : 13), esc(fmtN(v, 2)), {fill: col, size: 10});
+      });
+      g += annotate(sc, o);
+      return plotBox(o.label, sc, g, o.legend || null);
+    }
+
+    /* ---------- helpers specific to this lab ---------- */
+
+    /* ---------- complex numbers, as {re, im} ---------- */
+    const C = (re, im = 0) => ({re, im});
+    const cAdd = (a, b) => C(a.re + b.re, a.im + b.im);
+    const cSub = (a, b) => C(a.re - b.re, a.im - b.im);
+    const cMul = (a, b) => C(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+    function cDiv(a, b) {
+      const d = b.re * b.re + b.im * b.im;
+      return C((a.re * b.re + a.im * b.im) / d, (a.im * b.re - a.re * b.im) / d);
+    }
+    const cExp = th => C(Math.cos(th), Math.sin(th));            /* e^{jθ} */
+    const cAbs = a => Math.hypot(a.re, a.im);
+    const cArg = a => Math.atan2(a.im, a.re);
+    const degOf = r => r * 180 / PI;
+    const radOf = d => d * PI / 180;
+
+    /* "3 + j4" / "5 ∠ 53.13°" */
+    function rect(z, d = 2) {
+      const im = z.im;
+      const re = fmtN(z.re, d).replace('-', '−');      /* display minus, not a hyphen */
+      if (Math.abs(im) < 5e-11) return re;
+      if (Math.abs(z.re) < 5e-11) return (im < 0 ? '−j' : 'j') + fmtN(Math.abs(im), d);
+      return `${re} ${im < 0 ? '−' : '+'} j${fmtN(Math.abs(im), d)}`;
+    }
+    function polar(z, d = 2) {return `${fmtN(cAbs(z), d)} ∠ ${fmtN(degOf(cArg(z)), d)}°`;}
+
+
+    function argand(vecs, o = {}) {
+      const all = vecs.flatMap(v => [Math.abs(v.z.re), Math.abs(v.z.im), v.from ? Math.abs(v.from.re) : 0, v.from ? Math.abs(v.from.im) : 0]);
+      const lim = o.lim || Math.max(1, ...all) * 1.35;
+      o = Object.assign({x: [-lim, lim], y: [-lim, lim], W: 330, H: 300, L: 34, B: 24, xlabel: 'Re', ylabel: 'Im', nxt: 4, nyt: 4}, o);
+      const sc = scales(o);
+      let g = axesSVG(sc, o);
+      vecs.forEach((v, i) => {
+        const col = v.color || PAL[i % PAL.length];
+        const a = v.from || C(0, 0);
+        const x1 = sc.Xr(a.re), y1 = sc.Yr(a.im), x2 = sc.Xr(v.z.re), y2 = sc.Yr(v.z.im);
+        const ang = Math.atan2(y2 - y1, x2 - x1);
+        g += `<line x1="${f2(x1)}" y1="${f2(y1)}" x2="${f2(x2)}" y2="${f2(y2)}" stroke="${col}" stroke-width="2.2"
+          ${v.dash ? `stroke-dasharray="${v.dash}"` : ''}/>`;
+        g += `<path d="M ${f2(x2)} ${f2(y2)} L ${f2(x2 - 9 * Math.cos(ang - .4))} ${f2(y2 - 9 * Math.sin(ang - .4))}
+          L ${f2(x2 - 9 * Math.cos(ang + .4))} ${f2(y2 - 9 * Math.sin(ang + .4))} Z" fill="${col}"/>`;
+        if (v.label) g += txt(x2 + (v.z.re >= 0 ? 12 : -12), y2 + (v.z.im >= 0 ? -7 : 14), esc(v.label), {fill: col, size: 11, weight: 600, anchor: v.z.re >= 0 ? 'start' : 'end'});
+      });
+      g += annotate(sc, o);
+      return plotBox(o.label, sc, g, o.legend || null);
+    }
+
+
+    /* ============================================================
+       PART 3 — curriculum
+       Modules run in dependency order: nothing here needs an idea
+       that a later module introduces.
+       ============================================================ */
+    const MODULES = [
+      {id: 'basics', name: 'Imaginary & complex arithmetic', blurb: 'One new symbol, j, defined by j² = −1, and every arithmetic rule you already know still applies. Electrical engineering writes j rather than i because i is already current — and a complex number is just an ordered pair with a multiplication rule attached.'},
+      {id: 'plane', name: 'The complex plane', blurb: 'Plot the real part east and the imaginary part north and a complex number becomes a point, or an arrow. Addition is head-to-tail, magnitude is Pythagoras, and the argument is an angle you must compute with atan2 and never with atan.'},
+      {id: 'polar', name: 'Polar form', blurb: 'Rectangular form is built for addition; polar form is built for multiplication. In polar, multiplying scales and rotates — which is the single fact that makes complex numbers worth the trouble in signal processing and control.'},
+      {id: 'euler', name: "Euler's formula", blurb: 'e^(jθ) = cos θ + j sin θ turns rotation into exponentiation. Every phasor, every Fourier basis function and every oscillator model in DSP is a point walking around the unit circle at a constant rate, written this way.'},
+      {id: 'demoivre', name: "De Moivre's theorem & roots", blurb: 'Raising to a power multiplies the angle; taking a root divides it. The N-th roots of unity are the N points evenly spaced around the unit circle, and they are literally the twiddle factors an FFT multiplies by.'},
+      {id: 'applied', name: 'Complex numbers on the job', blurb: 'Impedance, filter response, pole locations, IQ samples, and the numerically controlled oscillator inside every software radio. This is what the previous five modules were for.'}
+    ];
+    const MOD_INDEX = Object.fromEntries(MODULES.map((m, i) => [m.id, i]));
+
+    /* a handful of Pythagorean triples so magnitudes come out clean */
+    const TRIPLES = [[3, 4, 5], [6, 8, 10], [5, 12, 13], [8, 15, 17], [7, 24, 25], [9, 12, 15], [12, 16, 20]];
+
+    const P_A = [
+      {
+        id: 'b1', mod: 'basics', diff: 'easy', fmt: 'mc', title: 'Powers of j cycle',
+        ask: s => `What is <code>j<sup>${s.k}</sup></code>?`,
+        hint: 'j² = −1, so j³ = −j and j⁴ = +1. After that it repeats. Divide the exponent by 4 and keep the remainder.',
+        concept: 'The powers of j walk around a four-step cycle: 1, j, −1, −j. That cycle is a 90° rotation applied over and over, and it is the first hint that multiplication by a complex number is rotation. In code it also means a quarter-wave sine table plus sign flips can generate a full sine and cosine pair — no extra storage needed.',
+        setup() {
+          const k = rnd(2, 23);
+          const vals = ['1', 'j', '&minus;1', '&minus;j'];
+          const correct = vals[k % 4];
+          return mc(correct, vals.filter(v => v !== correct), {k});
+        },
+        render(s, shown) {
+          return eq('j¹ = j      j² = −1      j³ = −j      j⁴ = 1',
+            `# ${s.k} mod 4 = ${s.k % 4}, so j^${s.k} lands on the same rung as j^${s.k % 4}`)
+            + (shown ? note(`${s.k} &divide; 4 leaves a remainder of ${s.k % 4}, so j<sup>${s.k}</sup> = <b>${['1', 'j', '&minus;1', '&minus;j'][s.k % 4]}</b>. Each step of the exponent is another 90&deg; turn.`) : '');
+        }
+      },
+      {
+        id: 'b2', mod: 'basics', diff: 'easy', fmt: 'num', title: 'Adding is componentwise',
+        ask: s => `With <code>z&#8321; = ${rect(s.z1)}</code> and <code>z&#8322; = ${rect(s.z2)}</code>, what is the imaginary part of z&#8321; + z&#8322;?`,
+        hint: 'Real parts add to real parts, imaginary to imaginary. They never mix.',
+        concept: 'Addition treats a complex number as a plain 2-vector — nothing complex about it. This is why summing IQ samples, averaging phasors, or superposing two signals is just two independent real additions. All the interesting behaviour lives in multiplication, not addition.',
+        setup() {
+          const z1 = C(rnd(-9, 9), rnd(-9, 9)), z2 = C(rnd(-9, 9), rnd(-9, 9));
+          return num(z1.im + z2.im, 0.01, {z1, z2});
+        },
+        render(s, shown) {
+          const sum = cAdd(s.z1, s.z2);
+          return eq(`(${rect(s.z1)}) + (${rect(s.z2)})`,
+            shown ? `= ${rect(sum)}` : '= ?')
+            + argand([{z: s.z1, label: 'z₁'}, {z: s.z2, label: 'z₂'},
+            {z: sum, from: s.z1, label: shown ? 'sum' : '?', color: 'var(--hl)', dash: '5 3'}],
+              {label: 'head-to-tail, exactly like vectors'})
+            + (shown ? note(`Imaginary parts: ${s.z1.im} + ${s.z2.im} = <b>${s.z1.im + s.z2.im}</b>. The real parts add separately to ${s.z1.re + s.z2.re}.`) : '');
+        }
+      },
+      {
+        id: 'b3', mod: 'basics', diff: 'easy', fmt: 'num', title: 'Multiplying mixes the parts',
+        ask: s => `With <code>z&#8321; = ${rect(s.z1)}</code> and <code>z&#8322; = ${rect(s.z2)}</code>, what is the real part of z&#8321;z&#8322;?`,
+        hint: 'Expand as you would (a + b)(c + d), then use j² = −1 on the last term. That minus sign is the whole trick.',
+        concept: 'Multiplication is where the real and imaginary channels cross over, and the j² = −1 turns one product into a subtraction. Every complex multiply in a DSP kernel is these four real multiplies and two adds; get the sign wrong and your FFT comes out mirrored, which is one of the classic hard-to-spot bugs.',
+        setup() {
+          const z1 = C(rnd(-7, 7), rnd(-7, 7)), z2 = C(rnd(-7, 7), rnd(-7, 7));
+          return num(z1.re * z2.re - z1.im * z2.im, 0.01, {z1, z2});
+        },
+        render(s, shown) {
+          const p = cMul(s.z1, s.z2);
+          return eq('(a + jb)(c + jd) = (ac − bd) + j(ad + bc)',
+            '# the −bd comes from j·j = −1',
+            shown ? `real part = (${s.z1.re})(${s.z2.re}) − (${s.z1.im})(${s.z2.im}) = ${p.re}` : 'real part = ?')
+            + cells([['a', s.z1.re], ['b', s.z1.im], ['c', s.z2.re], ['d', s.z2.im],
+            ['ac − bd', shown ? p.re : '?', shown ? 'new' : 'q']])
+            + (shown ? note(`<b>${p.re}</b>. Full product: ${rect(p)}. Note the magnitudes multiplied — |z&#8321;||z&#8322;| = ${fmtN(cAbs(s.z1) * cAbs(s.z2), 3)} = |z&#8321;z&#8322;|.`) : '');
+        }
+      },
+      {
+        id: 'b4', mod: 'basics', diff: 'medium', fmt: 'num', title: 'A number times its conjugate',
+        ask: s => `For <code>z = ${rect(s.z)}</code>, what is z &middot; z*?`,
+        hint: 'The conjugate flips the sign of the imaginary part. Multiply out and watch the cross terms cancel.',
+        concept: 'z·z* = |z|², always real and never negative. That is how you get power from an IQ sample without a square root, how you rationalise a division, and how a matched filter computes correlation energy. Squared magnitude is cheaper than magnitude and monotonic in it, so use it wherever you only need to compare.',
+        setup() {
+          const z = C(rnd(-9, 9) || 3, rnd(-9, 9) || 4);
+          return num(z.re * z.re + z.im * z.im, 0.01, {z});
+        },
+        render(s, shown) {
+          const zc = C(s.z.re, -s.z.im);
+          return eq(`z = ${rect(s.z)}          z* = ${rect(zc)}`,
+            '(a + jb)(a − jb) = a² − (jb)² = a² + b²',
+            '# the cross terms +jab and −jab cancel exactly')
+            + argand([{z: s.z, label: 'z'}, {z: zc, label: 'z*', color: 'var(--hl)'}],
+              {label: 'the conjugate is a mirror in the real axis'})
+            + (shown ? note(`${s.z.re}&sup2; + ${s.z.im}&sup2; = <b>${s.z.re * s.z.re + s.z.im * s.z.im}</b>, which is |z|&sup2;. So |z| = ${fmtN(cAbs(s.z), 4)}.`) : '');
+        }
+      },
+      {
+        id: 'b5', mod: 'basics', diff: 'medium', fmt: 'num', title: 'Division by the conjugate trick',
+        ask: s => `Compute the real part of <code>(${rect(s.z1)}) / (${rect(s.z2)})</code>.`,
+        hint: 'Multiply top and bottom by the conjugate of the denominator. The denominator becomes real, and the rest is ordinary arithmetic.',
+        concept: 'There is no direct way to divide by a complex number, so you make the denominator real first. The cost is one extra multiply and a reciprocal — which is why DSP code avoids complex division in inner loops and instead pre-computes reciprocals or works in polar form, where division is a subtraction of angles.',
+        setup() {
+          const z1 = C(rnd(-8, 8), rnd(-8, 8)), z2 = C(rnd(1, 6) * pick([1, -1]), rnd(1, 6) * pick([1, -1]));
+          const q = cDiv(z1, z2);
+          return num(q.re, Math.max(0.01, Math.abs(q.re) * 0.01), {z1, z2});
+        },
+        render(s, shown) {
+          const q = cDiv(s.z1, s.z2), d = s.z2.re * s.z2.re + s.z2.im * s.z2.im;
+          return eq(`z₁/z₂ = z₁ z₂* / (z₂ z₂*) = z₁ z₂* / |z₂|²`,
+            `|z₂|² = ${s.z2.re}² + ${s.z2.im}² = ${d}`,
+            shown ? `real part = (${s.z1.re}·${s.z2.re} + ${s.z1.im}·${s.z2.im}) / ${d} = ${fmtN(q.re, 4)}` : 'real part = ?')
+            + (shown ? note(`<b>${fmtN(q.re, 4)}</b>. Full quotient: ${rect(q, 3)}. Sanity check in polar: |z&#8321;|/|z&#8322;| = ${fmtN(cAbs(s.z1) / cAbs(s.z2), 3)} = |quotient|.`) : '');
+        }
+      },
+      {
+        id: 'b6', mod: 'basics', diff: 'medium', fmt: 'dec', title: 'Cost of a complex multiply',
+        ask: 'Done the obvious way, how many <em>real</em> multiplications does one complex multiply need?',
+        hint: 'Write out (a + jb)(c + jd) fully expanded and count the products of two real numbers.',
+        concept: 'Four multiplies and two adds — and an FFT does N log N of them, so this count is the unit of cost in every DSP budget. There is a three-multiply variant (Karatsuba/Gauss) that trades one multiply for three extra adds, which was a real win when multipliers were slow; on a modern DSP with a single-cycle MAC it is usually a loss. Knowing the baseline is what lets you tell.',
+        setup() {return {answer: '4'};},
+        render(s, shown) {
+          return eq('(a + jb)(c + jd) = (ac − bd) + j(ad + bc)',
+            '# products: ac, bd, ad, bc')
+            + (shown ? code(`// the Gauss trick: 3 multiplies, 5 adds instead of 4 and 2\nfloat k1 = c * (a + b);\nfloat k2 = a * (d - c);\nfloat k3 = b * (c + d);\nreal = k1 - k3;\nimag = k1 + k2;`)
+              + note('<b>4</b> multiplies and 2 adds. The Gauss form above uses 3 multiplies — worth it only when a multiply costs noticeably more than an add.') : '');
+        }
+      },
+
+      /* ---------- the complex plane ---------- */
+      {
+        id: 'n1', mod: 'plane', diff: 'easy', fmt: 'num', title: 'Magnitude is Pythagoras',
+        ask: s => `What is the magnitude |z| of <code>z = ${rect(s.z)}</code>?`,
+        hint: '|z| = √(real² + imag²). The signs do not matter — both get squared.',
+        concept: 'The magnitude is the length of the arrow, and physically it is amplitude: the size of the signal regardless of its phase. An AM demodulator, an RSSI reading and a spectrum-analyser bin height are all this one number. It is also why |z|² is preferred in code — it skips the square root.',
+        setup() {
+          const [a, b, c] = pick(TRIPLES);
+          const z = C(pick([1, -1]) * a, pick([1, -1]) * b);
+          return num(c, 0.02, {z});
+        },
+        render(s, shown) {
+          return eq(`|z| = √(${s.z.re}² + ${s.z.im}²) = √${s.z.re * s.z.re + s.z.im * s.z.im}`)
+            + argand([{z: s.z, label: shown ? `|z| = ${fmtN(cAbs(s.z), 2)}` : '|z| = ?'}], {label: 'the arrow from the origin'})
+            + (shown ? note(`&radic;${s.z.re * s.z.re + s.z.im * s.z.im} = <b>${fmtN(cAbs(s.z), 4)}</b>. Negative components make no difference — magnitude is never negative.`) : '');
+        }
+      },
+      {
+        id: 'n2', mod: 'plane', diff: 'medium', fmt: 'num', title: 'Argument, with the right quadrant',
+        ask: s => `What is the argument of <code>z = ${rect(s.z)}</code>, in degrees, in the range &minus;180&deg; to +180&deg;?`,
+        hint: 'Use atan2(imag, real), not atan(imag/real). Sketch the point first and check your answer lands in the right quadrant.',
+        concept: 'The argument is phase, and phase is what carries information in every modulation scheme more sophisticated than on-off keying. Getting the quadrant wrong by 180° is the classic bug: atan alone cannot tell (−3, −4) from (3, 4) because the ratio is identical. atan2 takes both signs and resolves it.',
+        setup() {
+          const [a, b] = pick(TRIPLES);
+          const z = C(pick([1, -1]) * a, pick([1, -1]) * b);
+          return num(degOf(cArg(z)), 0.4, {z});
+        },
+        render(s, shown) {
+          const q = s.z.re >= 0 ? (s.z.im >= 0 ? 1 : 4) : (s.z.im >= 0 ? 2 : 3);
+          return eq(`arg(z) = atan2(${s.z.im}, ${s.z.re})`,
+            `# the point sits in quadrant ${q}, so the answer must be ${['', 'between 0° and +90°', 'between +90° and +180°', 'between −180° and −90°', 'between −90° and 0°'][q]}`)
+            + argand([{z: s.z, label: shown ? `∠ ${fmtN(degOf(cArg(s.z)), 2)}°` : '∠ ?'}], {label: 'which quadrant?'})
+            + (shown ? note(`<b>${fmtN(degOf(cArg(s.z)), 3)}&deg;</b>. Plain atan(${s.z.im}/${s.z.re}) would give ${fmtN(degOf(Math.atan(s.z.im / s.z.re)), 3)}&deg; — ${Math.abs(degOf(Math.atan(s.z.im / s.z.re)) - degOf(cArg(s.z))) > 1 ? 'off by 180&deg;, because it never sees the signs separately' : 'correct here only because the point happens to be on the right-hand side'}.`) : '');
+        }
+      },
+      {
+        id: 'n3', mod: 'plane', diff: 'medium', fmt: 'mc', title: 'Why atan2 exists',
+        ask: 'Why does every language ship <code>atan2(y, x)</code> alongside <code>atan(y/x)</code>?',
+        hint: 'Think about what information is destroyed the moment you compute the ratio y/x.',
+        concept: 'Dividing first throws away both signs, collapsing four quadrants into two. atan2 keeps them and returns a full ±180° range, and it also survives x = 0 without dividing by zero. In embedded code the standard fast substitute is a polynomial approximation of atan on the octant plus sign-and-swap logic to recover the full circle — the same idea, done cheaply.',
+        setup() {
+          return mc('the ratio y/x loses both signs, so atan cannot tell opposite quadrants apart, and x = 0 divides by zero',
+            ['atan2 is more accurate for small angles',
+              'atan returns radians while atan2 returns degrees',
+              'atan2 is faster because it avoids a division']);
+        },
+        render(s, shown) {
+          return tbl(['point', 'y/x', 'atan(y/x)', 'atan2(y, x)'],
+            [['(3, 4)', '1.333', '53.1°', ['53.1°', 'mk']],
+            ['(−3, −4)', '1.333', '53.1°', ['−126.9°', 'mk']],
+            ['(0, 5)', '∞', 'div by zero', ['90°', 'mk']]], 'same ratio, different points')
+            + (shown ? note('Two genuinely opposite phasors produce an identical ratio. atan2 sees (y, x) as a pair rather than a quotient, so it keeps the quadrant and handles x = 0 cleanly.') : '');
+        }
+      },
+      {
+        id: 'n4', mod: 'plane', diff: 'medium', fmt: 'num', title: 'Distance between two points',
+        ask: s => `How far apart are <code>${rect(s.z1)}</code> and <code>${rect(s.z2)}</code> in the complex plane?`,
+        hint: 'Distance is |z₁ − z₂|. Subtract componentwise, then take the magnitude of the difference.',
+        concept: 'The magnitude of a difference is an error metric. In a digital receiver this is exactly the distance from a received symbol to the nearest constellation point — the decision rule is "pick the nearest", and the error-vector magnitude that quantifies link quality is the average of these distances.',
+        setup() {
+          const [a, b, c] = pick(TRIPLES);
+          const z1 = C(rnd(-6, 6), rnd(-6, 6));
+          const z2 = C(z1.re + pick([1, -1]) * a, z1.im + pick([1, -1]) * b);
+          return num(c, 0.02, {z1, z2});
+        },
+        render(s, shown) {
+          const d = cSub(s.z2, s.z1);
+          return eq(`z₂ − z₁ = ${rect(d)}`,
+            shown ? `|z₂ − z₁| = √(${d.re}² + ${d.im}²) = ${fmtN(cAbs(d), 3)}` : '|z₂ − z₁| = ?')
+            + argand([{z: s.z1, label: 'z₁'}, {z: s.z2, label: 'z₂'},
+            {z: s.z2, from: s.z1, label: shown ? fmtN(cAbs(d), 2) : '?', color: 'var(--hl)', dash: '5 3'}])
+            + (shown ? note(`<b>${fmtN(cAbs(d), 4)}</b>. This is the error vector between the two points; its magnitude is what a receiver thresholds against.`) : '');
+        }
+      },
+      {
+        id: 'n5', mod: 'plane', diff: 'hard', fmt: 'num', title: 'Two phasors do not simply add up',
+        ask: s => `Two signals have phasors <code>${rect(s.z1)}</code> and <code>${rect(s.z2)}</code>. What is the magnitude of their sum?`,
+        hint: 'Add componentwise first, then take the magnitude of the result. |z₁| + |z₂| is a different (larger) number.',
+        concept: 'Magnitudes do not add — that is interference in one sentence. Two equal-amplitude signals 180° apart cancel completely; in phase they double. This is why antenna nulls exist, why a badly placed decoupling capacitor can make ringing worse, and why summing FFT bins gives you nonsense unless you sum the complex values, not the magnitudes.',
+        setup() {
+          const z1 = C(rnd(-8, 8), rnd(-8, 8)), z2 = C(rnd(-8, 8), rnd(-8, 8));
+          const m = cAbs(cAdd(z1, z2));
+          return num(m, Math.max(0.02, m * 0.01), {z1, z2});
+        },
+        render(s, shown) {
+          const sum = cAdd(s.z1, s.z2);
+          return eq(`sum = ${rect(sum)}`,
+            shown ? `|sum| = ${fmtN(cAbs(sum), 3)}` : '|sum| = ?',
+            `# for comparison: |z₁| + |z₂| = ${fmtN(cAbs(s.z1) + cAbs(s.z2), 3)}`)
+            + argand([{z: s.z1, label: 'z₁'}, {z: s.z2, label: 'z₂'},
+            {z: sum, label: shown ? `|sum| = ${fmtN(cAbs(sum), 2)}` : 'sum', color: 'var(--hl)'}])
+            + (shown ? note(`<b>${fmtN(cAbs(sum), 4)}</b>, against ${fmtN(cAbs(s.z1) + cAbs(s.z2), 3)} if you had naively added magnitudes. The two are equal only when the phasors point the same way.`) : '');
+        }
+      }
+    ];
+
+    const P_B = [
+      /* ---------- polar form ---------- */
+      {
+        id: 'r1', mod: 'polar', diff: 'easy', fmt: 'num', title: 'Rectangular to polar',
+        ask: s => `Express <code>${rect(s.z)}</code> in polar form. What is the angle, in degrees?`,
+        hint: 'r = |z| by Pythagoras, θ = atan2(imag, real). You are asked only for θ.',
+        concept: 'Polar form separates "how big" from "which way", and those two facts usually have completely different physical meanings — amplitude and phase, gain and delay, speed and heading. Any time a problem is about rotation or scaling rather than superposition, converting to polar first makes the arithmetic collapse to almost nothing.',
+        setup() {
+          const [a, b] = pick(TRIPLES);
+          const z = C(pick([1, -1]) * a, pick([1, -1]) * b);
+          return num(degOf(cArg(z)), 0.4, {z});
+        },
+        render(s, shown) {
+          return eq(`r = |z| = ${fmtN(cAbs(s.z), 3)}`,
+            shown ? `θ = atan2(${s.z.im}, ${s.z.re}) = ${fmtN(degOf(cArg(s.z)), 2)}°` : `θ = atan2(${s.z.im}, ${s.z.re}) = ?`,
+            shown ? `z = ${polar(s.z)}` : 'z = r ∠ θ')
+            + argand([{z: s.z, label: shown ? polar(s.z) : '?'}])
+            + (shown ? note(`<b>${fmtN(degOf(cArg(s.z)), 3)}&deg;</b>. Both forms describe the same point — polar just names it by distance and bearing instead of by grid reference.`) : '');
+        }
+      },
+      {
+        id: 'r2', mod: 'polar', diff: 'easy', fmt: 'num', title: 'Polar back to rectangular',
+        ask: s => `A phasor is <code>${s.r} &ang; ${s.th}&deg;</code>. What is its real part?`,
+        hint: 'real = r·cos θ, imaginary = r·sin θ. Make sure your calculator or code is in the right angle units.',
+        concept: 'Going back to rectangular is what you must do before you can add anything, so a real system converts constantly. The cos/sin pair here is exactly the IQ pair of a modulated carrier — the real part is the in-phase component, the imaginary part the quadrature one, and a mixer produces both at once.',
+        setup() {
+          const r = rnd(2, 20), th = pick([0, 30, 45, 60, 90, 120, 135, 150, 180, -30, -45, -60, -90, -135]);
+          return num(r * Math.cos(radOf(th)), Math.max(0.01, Math.abs(r * Math.cos(radOf(th))) * 0.01 + 0.01), {r, th});
+        },
+        render(s, shown) {
+          const z = C(s.r * Math.cos(radOf(s.th)), s.r * Math.sin(radOf(s.th)));
+          return eq(`Re = r cos θ = ${s.r} × cos(${s.th}°)`,
+            `Im = r sin θ = ${s.r} × sin(${s.th}°)`,
+            shown ? `z = ${rect(z, 3)}` : 'z = ?')
+            + argand([{z, label: shown ? rect(z, 2) : `${s.r} ∠ ${s.th}°`}])
+            + (shown ? note(`Re = <b>${fmtN(z.re, 4)}</b>, Im = ${fmtN(z.im, 4)}. In a radio these two numbers are the I and Q samples of a carrier at amplitude ${s.r} and phase ${s.th}&deg;.`) : '');
+        }
+      },
+      {
+        id: 'r3', mod: 'polar', diff: 'medium', fmt: 'num', title: 'Multiplication scales and rotates',
+        ask: s => `Multiply <code>${s.r1} &ang; ${s.t1}&deg;</code> by <code>${s.r2} &ang; ${s.t2}&deg;</code>. What is the angle of the result, in degrees between &minus;180 and +180?`,
+        hint: 'Magnitudes multiply, angles add. If the sum falls outside ±180°, wrap it by adding or subtracting 360°.',
+        concept: 'This is the reason complex numbers exist in engineering. Passing a signal through a filter multiplies its phasor by the filter response: the magnitude tells you the gain, the angle tells you the phase shift. Cascading two filters is one multiplication, not a convolution — the entire frequency-domain method rests on this.',
+        setup() {
+          const r1 = rnd(2, 9), r2 = rnd(2, 9);
+          const t1 = pick([0, 30, 45, 60, 90, 120, 135, 150]) * pick([1, -1]);
+          const t2 = pick([0, 30, 45, 60, 90, 120, 135, 150]) * pick([1, -1]);
+          let a = t1 + t2;
+          while (a > 180) a -= 360;
+          while (a <= -180) a += 360;
+          return num(a, 0.4, {r1, r2, t1, t2});
+        },
+        render(s, shown) {
+          let a = s.t1 + s.t2;
+          while (a > 180) a -= 360;
+          while (a <= -180) a += 360;
+          const z = C(s.r1 * s.r2 * Math.cos(radOf(a)), s.r1 * s.r2 * Math.sin(radOf(a)));
+          return eq(`(r₁∠θ₁)(r₂∠θ₂) = r₁r₂ ∠ (θ₁ + θ₂)`,
+            `magnitude: ${s.r1} × ${s.r2} = ${s.r1 * s.r2}`,
+            shown ? `angle: ${s.t1}° + ${s.t2}° = ${s.t1 + s.t2}° → ${fmtN(a, 2)}° after wrapping` : `angle: ${s.t1}° + ${s.t2}° = ?`)
+            + argand([{z: C(s.r1 * Math.cos(radOf(s.t1)), s.r1 * Math.sin(radOf(s.t1))), label: 'z₁'},
+            {z, label: shown ? `${s.r1 * s.r2} ∠ ${fmtN(a, 1)}°` : 'product', color: 'var(--hl)'}])
+            + (shown ? note(`<b>${fmtN(a, 3)}&deg;</b>, with magnitude ${s.r1 * s.r2}. Multiplying by z&#8322; rotated z&#8321; by ${s.t2}&deg; and stretched it ${s.r2}&times;.`) : '');
+        }
+      },
+      {
+        id: 'r4', mod: 'polar', diff: 'medium', fmt: 'num', title: 'Division subtracts angles',
+        ask: s => `Divide <code>${s.r1} &ang; ${s.t1}&deg;</code> by <code>${s.r2} &ang; ${s.t2}&deg;</code>. What is the magnitude of the result?`,
+        hint: 'Magnitudes divide, angles subtract. Only the magnitude is asked for here.',
+        concept: 'A transfer function is output divided by input, so H(jω) = Y/X is exactly this operation: the magnitude ratio is the gain and the angle difference is the phase shift. Measuring both at a range of frequencies and plotting them is a Bode plot — one division per frequency point.',
+        setup() {
+          const r1 = rnd(4, 40), r2 = rnd(2, 8);
+          const t1 = pick([0, 30, 45, 60, 90, 135]) * pick([1, -1]);
+          const t2 = pick([0, 30, 45, 60, 90, 135]) * pick([1, -1]);
+          return num(r1 / r2, Math.max(0.01, r1 / r2 * 0.01), {r1, r2, t1, t2});
+        },
+        render(s, shown) {
+          let a = s.t1 - s.t2;
+          while (a > 180) a -= 360;
+          while (a <= -180) a += 360;
+          return eq(`(r₁∠θ₁) / (r₂∠θ₂) = (r₁/r₂) ∠ (θ₁ − θ₂)`,
+            shown ? `magnitude: ${s.r1} / ${s.r2} = ${fmtN(s.r1 / s.r2, 4)}` : `magnitude: ${s.r1} / ${s.r2} = ?`,
+            `angle: ${s.t1}° − ${s.t2}° = ${fmtN(a, 1)}°`)
+            + (shown ? note(`<b>${fmtN(s.r1 / s.r2, 4)}</b> at ${fmtN(a, 2)}&deg;. In rectangular form this same division needed a conjugate multiply and a real division; in polar it is one divide and one subtract.`) : '');
+        }
+      },
+      {
+        id: 'r5', mod: 'polar', diff: 'hard', fmt: 'num', title: 'Reciprocal of a complex number',
+        ask: s => `For <code>z = ${rect(s.z)}</code>, what is the angle of <code>1/z</code>, in degrees?`,
+        hint: '1 has magnitude 1 and angle 0°. Dividing subtracts angles, so arg(1/z) = −arg(z).',
+        concept: 'The reciprocal reflects across the real axis and inverts the length — so 1/z has the same angle as the conjugate z*, but a different magnitude. This turns up immediately in impedance work, where admittance is 1/impedance, and in filter design, where poles and zeros swap roles when you invert a transfer function.',
+        setup() {
+          const [a, b] = pick(TRIPLES);
+          const z = C(pick([1, -1]) * a, pick([1, -1]) * b);
+          return num(-degOf(cArg(z)), 0.4, {z});
+        },
+        render(s, shown) {
+          const inv = cDiv(C(1, 0), s.z);
+          return eq(`1/z = z* / |z|²`,
+            `|1/z| = 1/${fmtN(cAbs(s.z), 3)} = ${fmtN(1 / cAbs(s.z), 4)}`,
+            shown ? `arg(1/z) = −(${fmtN(degOf(cArg(s.z)), 2)}°) = ${fmtN(-degOf(cArg(s.z)), 2)}°` : 'arg(1/z) = ?')
+            + argand([{z: s.z, label: 'z'}, {z: cMul(inv, C(cAbs(s.z) * cAbs(s.z), 0)), label: shown ? '1/z (scaled up to show the angle)' : '1/z', color: 'var(--hl)', dash: '5 3'}])
+            + (shown ? note(`<b>${fmtN(-degOf(cArg(s.z)), 3)}&deg;</b> — the negative of arg(z). Its magnitude is ${fmtN(1 / cAbs(s.z), 4)}, so points outside the unit circle map inside it and vice versa.`) : '');
+        }
+      },
+      {
+        id: 'r6', mod: 'polar', diff: 'hard', fmt: 'mc', title: 'What multiplying by j does',
+        ask: 'Geometrically, what does multiplying any complex number by j do to it?',
+        hint: 'j has magnitude 1 and angle 90°. Multiplication multiplies magnitudes and adds angles.',
+        concept: 'Multiplying by j is a pure 90° rotation with no change of size — which is precisely the relationship between a signal and its Hilbert transform, and between voltage and current in a pure inductor or capacitor. It is also why the imaginary axis is drawn perpendicular: the geometry falls out of the algebra, not the other way round.',
+        setup() {
+          return mc('rotates it 90&deg; anticlockwise, leaving the magnitude unchanged',
+            ['rotates it 90&deg; clockwise, leaving the magnitude unchanged',
+              'reflects it in the real axis', 'doubles its magnitude and leaves the angle alone']);
+        },
+        render(s, shown) {
+          const z = C(4, 2);
+          return eq('j = 1 ∠ 90°',
+            'j·(r ∠ θ) = r ∠ (θ + 90°)',
+            '# magnitude ×1, angle +90°')
+            + argand([{z, label: 'z'}, {z: cMul(C(0, 1), z), label: 'jz', color: 'var(--hl)'},
+            {z: cMul(C(0, 1), cMul(C(0, 1), z)), label: 'j²z = −z', color: 'var(--off)', dash: '4 3'}])
+            + (shown ? note('Two of them is a 180&deg; turn — which is j&sup2; = &minus;1, the defining rule, now read as geometry rather than algebra.') : '');
+        }
+      },
+
+      /* ---------- Euler ---------- */
+      {
+        id: 'e1', mod: 'euler', diff: 'easy', fmt: 'mc', title: "Euler's formula",
+        ask: 'What does <code>e<sup>j&theta;</sup></code> equal?',
+        hint: 'It is the point on the unit circle at angle θ, written in rectangular form.',
+        concept: 'This identity is the bridge between exponentials and rotation, and it is why the whole of Fourier analysis is written with exponentials rather than sines and cosines: one e^(jθ) carries both, and exponentials multiply and differentiate trivially where trig identities do not. Every DSP derivation you will read assumes it as reflex.',
+        setup() {
+          return mc('cos θ + j sin θ',
+            ['cos θ − j sin θ', 'j(cos θ + sin θ)', 'sin θ + j cos θ']);
+        },
+        render(s, shown) {
+          return eq('e^(jθ) = cos θ + j sin θ',
+            '|e^(jθ)| = √(cos²θ + sin²θ) = 1',
+            '# always on the unit circle, whatever θ is')
+            + argand([{z: cExp(radOf(50)), label: 'e^(j50°)'}], {lim: 1.4})
+            + (shown ? note('Setting &theta; = &pi; gives e<sup>j&pi;</sup> = &minus;1, the famous identity — which is just the statement that half a turn lands you on &minus;1.') : '');
+        }
+      },
+      {
+        id: 'e2', mod: 'euler', diff: 'easy', fmt: 'num', title: 'A point on the unit circle',
+        ask: s => `What is the real part of <code>e<sup>j&middot;${s.th}&deg;</sup></code>?`,
+        hint: 'By Euler, the real part is cos θ.',
+        concept: 'e^(jθ) is a unit-length arrow at angle θ, so its real part is a cosine and its imaginary part a sine. Sampling that arrow at a steady rate is exactly what a numerically controlled oscillator does: keep a phase accumulator, add a fixed increment each tick, and read off cos and sin — no trig call in the loop if you use a table.',
+        setup() {
+          const th = pick([0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 240, 270, 300, 330]);
+          return num(Math.cos(radOf(th)), 0.01, {th});
+        },
+        render(s, shown) {
+          const z = cExp(radOf(s.th));
+          return eq(`e^(j·${s.th}°) = cos(${s.th}°) + j sin(${s.th}°)`,
+            shown ? `= ${rect(z, 4)}` : '= ?')
+            + argand([{z, label: shown ? rect(z, 3) : `∠ ${s.th}°`}], {lim: 1.4})
+            + (shown ? note(`Real part = cos(${s.th}&deg;) = <b>${fmtN(Math.cos(radOf(s.th)), 4)}</b>, imaginary part = ${fmtN(Math.sin(radOf(s.th)), 4)}. The magnitude is 1 no matter what &theta; is.`) : '');
+        }
+      },
+      {
+        id: 'e3', mod: 'euler', diff: 'medium', fmt: 'num', title: 'Magnitude of a pure rotation',
+        ask: s => `What is <code>|${s.A} e<sup>j&middot;${s.th}&deg;</sup>|</code>?`,
+        hint: 'The exponential contributes magnitude 1 whatever the angle. Only the leading amplitude survives.',
+        concept: 'Splitting a phasor into amplitude × rotation is the standard way to reason about a signal: the amplitude is what the power meter reads, the exponential is what the phase detector reads, and they never interfere. It also means multiplying by e^(jθ) can never change a signal\'s power — which is what makes phase modulation constant-envelope and therefore friendly to efficient amplifiers.',
+        setup() {
+          const A = pick([0.5, 2, 3, 5, 12, 100]), th = rnd(-180, 180);
+          return num(A, Math.max(0.005, A * 0.005), {A, th});
+        },
+        render(s, shown) {
+          return eq(`|A e^(jθ)| = |A| · |e^(jθ)| = |A| · 1`,
+            shown ? `= ${s.A}` : '= ?',
+            `# the angle ${s.th}° is irrelevant to the magnitude`)
+            + (shown ? note(`<b>${s.A}</b>. Rotation never changes length, which is why e<sup>j&theta;</sup> is called a unit phasor.`) : '');
+        }
+      },
+      {
+        id: 'e4', mod: 'euler', diff: 'medium', fmt: 'num', title: 'A phasor is a frozen sinusoid',
+        ask: s => `The signal <code>v(t) = ${s.A} cos(&omega;t + ${s.ph}&deg;)</code> is written as the real part of <code>V e<sup>j&omega;t</sup></code>. What is the imaginary part of the phasor V?`,
+        hint: 'V = A·e^(jφ), so its imaginary part is A·sin φ.',
+        concept: 'A phasor drops the e^(jωt) that every signal in a linear circuit shares at steady state, keeping only amplitude and phase. That is what turns differential equations into algebra: differentiation becomes multiplication by jω. The whole of AC circuit analysis is this substitution, and it only works because the system is linear and at one frequency.',
+        setup() {
+          const A = rnd(2, 20), ph = pick([0, 30, 45, 60, 90, -30, -45, -60, -90, 120, 135]);
+          return num(A * Math.sin(radOf(ph)), Math.max(0.01, Math.abs(A * Math.sin(radOf(ph))) * 0.01 + 0.01), {A, ph});
+        },
+        render(s, shown) {
+          const V = C(s.A * Math.cos(radOf(s.ph)), s.A * Math.sin(radOf(s.ph)));
+          return eq(`V = ${s.A} ∠ ${s.ph}° = ${s.A}(cos ${s.ph}° + j sin ${s.ph}°)`,
+            shown ? `V = ${rect(V, 3)}` : 'V = ?')
+            + plotCT([{f: t => s.A * Math.cos(t + radOf(s.ph)), label: 'v(t)'}],
+              {x: [0, 2 * PI], y: [-s.A * 1.2, s.A * 1.2], xlabel: 'ωt (rad)',
+                vlines: [{x: 0, label: 'phase offset shifts the whole wave'}]})
+            + (shown ? note(`Imaginary part = ${s.A}&thinsp;sin(${s.ph}&deg;) = <b>${fmtN(V.im, 4)}</b>; real part = ${fmtN(V.re, 4)}. A leading phase moves the peak earlier in time.`) : '');
+        }
+      },
+      {
+        id: 'e5', mod: 'euler', diff: 'hard', fmt: 'num', title: 'Cosine as two counter-rotating arrows',
+        ask: s => `Using <code>cos&thinsp;&theta; = (e<sup>j&theta;</sup> + e<sup>&minus;j&theta;</sup>)/2</code>, evaluate it at &theta; = ${s.th}&deg;.`,
+        hint: 'The two exponentials are mirror images across the real axis; their imaginary parts cancel and their real parts add.',
+        concept: 'A real cosine is two complex arrows spinning in opposite directions, and that is why a real signal\'s spectrum is symmetric about zero: every positive frequency comes with a negative-frequency twin. Delete the negative half and you get the analytic signal — the basis of single-sideband modulation and of every IQ receiver.',
+        setup() {
+          const th = pick([0, 30, 45, 60, 90, 120, 135, 150, 180]);
+          return num(Math.cos(radOf(th)), 0.01, {th});
+        },
+        render(s, shown) {
+          const p = cExp(radOf(s.th)), m = cExp(-radOf(s.th));
+          return eq(`e^(j${s.th}°) = ${rect(p, 3)}`,
+            `e^(−j${s.th}°) = ${rect(m, 3)}`,
+            shown ? `sum / 2 = ${fmtN(Math.cos(radOf(s.th)), 4)}` : 'sum / 2 = ?')
+            + argand([{z: p, label: `e^(j${s.th}°)`}, {z: m, label: `e^(−j${s.th}°)`},
+            {z: C(Math.cos(radOf(s.th)), 0), label: shown ? `cos = ${fmtN(Math.cos(radOf(s.th)), 3)}` : 'sum/2', color: 'var(--hl)'}], {lim: 1.4})
+            + (shown ? note(`<b>${fmtN(Math.cos(radOf(s.th)), 4)}</b>. The imaginary parts are equal and opposite, so the sum is purely real — always, for any &theta;.`) : '');
+        }
+      },
+      {
+        id: 'e6', mod: 'euler', diff: 'hard', fmt: 'num', title: 'A complex exponential that grows or decays',
+        ask: s => `A mode evolves as <code>e<sup>(&sigma; + j&omega;)t</sup></code> with &sigma; = ${s.sig} s&#8315;&sup1;. What is its magnitude at t = ${s.t}&thinsp;s?`,
+        hint: 'Split it: e^(σt)·e^(jωt). The second factor has magnitude 1, so only the real exponent matters.',
+        concept: 'The real part of the exponent controls the envelope and the imaginary part controls the oscillation — completely independently. That is the whole content of a pole location in the s-plane: left half-plane (σ < 0) means decaying and stable, right half-plane means growing and unstable, and the imaginary part just sets the ringing frequency.',
+        setup() {
+          const sig = pick([-2, -1, -0.5, 0, 0.5, 1]), t = pick([0.5, 1, 2, 3]);
+          const m = Math.exp(sig * t);
+          return num(m, Math.max(0.005, m * 0.01), {sig, t});
+        },
+        render(s, shown) {
+          const m = Math.exp(s.sig * s.t);
+          return eq(`|e^((σ + jω)t)| = e^(σt) · |e^(jωt)| = e^(σt)`,
+            shown ? `= e^(${s.sig} × ${s.t}) = ${fmtN(m, 4)}` : `= e^(${s.sig} × ${s.t}) = ?`)
+            + plotCT([
+              {f: t => Math.exp(s.sig * t) * Math.cos(6 * t), label: 'the mode'},
+              {f: t => Math.exp(s.sig * t), label: 'envelope e^(σt)', dash: '5 3', color: 'var(--hl)'}
+            ], {x: [0, 4], y: [-Math.max(1.2, Math.exp(s.sig * 4) * 1.2), Math.max(1.2, Math.exp(s.sig * 4) * 1.2)], xlabel: 't (s)'})
+            + (shown ? note(`<b>${fmtN(m, 4)}</b>. &sigma; = ${s.sig} means ${s.sig < 0 ? 'the envelope decays — a stable mode' : s.sig > 0 ? 'the envelope grows — an unstable mode' : 'the envelope is flat — marginally stable, it rings forever'}.`) : '');
+        }
+      }
+    ];
+
+    const P_C = [
+      /* ---------- De Moivre and roots ---------- */
+      {
+        id: 'm1', mod: 'demoivre', diff: 'medium', fmt: 'num', title: 'Raising a phasor to a power',
+        ask: s => `What is the magnitude of <code>(${s.r} &ang; ${s.th}&deg;)<sup>${s.n}</sup></code>?`,
+        hint: 'De Moivre: (r∠θ)ⁿ = rⁿ ∠ nθ. Magnitudes are raised to the power; angles are multiplied by it.',
+        concept: 'Repeated multiplication is repeated scaling and rotation, so a power is a single scale and a single rotation. In a discrete system, z^n is what a mode does after n samples — so |z| > 1 means it grows without bound and |z| < 1 means it dies away. That is the whole unit-circle stability test, derived in one line.',
+        setup() {
+          const r = pick([0.5, 0.8, 1, 1.2, 2, 3]), th = pick([15, 30, 45, 60, 90]), n = rnd(2, 6);
+          return num(Math.pow(r, n), Math.max(0.005, Math.pow(r, n) * 0.01), {r, th, n});
+        },
+        render(s, shown) {
+          const M = Math.pow(s.r, s.n);
+          return eq(`(r ∠ θ)ⁿ = rⁿ ∠ nθ`,
+            shown ? `magnitude = ${s.r}^${s.n} = ${fmtN(M, 4)}` : `magnitude = ${s.r}^${s.n} = ?`,
+            `angle = ${s.n} × ${s.th}° = ${s.n * s.th}°`)
+            + argand(Array.from({length: s.n + 1}, (_, k) =>
+              ({z: C(Math.pow(s.r, k) * Math.cos(radOf(k * s.th)), Math.pow(s.r, k) * Math.sin(radOf(k * s.th))),
+                label: k === s.n ? (shown ? `z^${s.n}` : '?') : (k === 0 ? '1' : ''),
+                color: k === s.n ? 'var(--hl)' : 'var(--accent)', dash: k === s.n ? '' : '3 3'})),
+              {label: `each multiplication turns another ${s.th}° and scales by ${s.r}`})
+            + (shown ? note(`<b>${fmtN(M, 4)}</b>. ${s.r > 1 ? 'Since r > 1 the point spirals outwards — in a discrete system that is an unstable mode.' : s.r < 1 ? 'Since r < 1 the point spirals inwards — a decaying, stable mode.' : 'With r = 1 it stays on the unit circle forever — it oscillates without growing or dying.'}`) : '');
+        }
+      },
+      {
+        id: 'm2', mod: 'demoivre', diff: 'medium', fmt: 'num', title: 'Angles wrap',
+        ask: s => `What is the angle of <code>(1 &ang; ${s.th}&deg;)<sup>${s.n}</sup></code>, expressed between &minus;180&deg; and +180&deg;?`,
+        hint: 'Multiply the angle by n, then keep adding or subtracting 360° until it lands in range.',
+        concept: 'Phase lives on a circle, so it must be wrapped, and unwrapping it correctly is a recurring source of bugs — a phase-locked loop that jumps 359° instead of −1° will slam the wrong way. Any code that accumulates phase should reduce modulo 2π every iteration, both to stay in range and to stop a float phase accumulator from losing precision as it grows.',
+        setup() {
+          const th = pick([30, 45, 60, 72, 90, 120, 135]), n = rnd(3, 8);
+          let a = th * n;
+          while (a > 180) a -= 360;
+          while (a <= -180) a += 360;
+          return num(a, 0.4, {th, n});
+        },
+        render(s, shown) {
+          let a = s.th * s.n;
+          while (a > 180) a -= 360;
+          while (a <= -180) a += 360;
+          return eq(`n θ = ${s.n} × ${s.th}° = ${s.n * s.th}°`,
+            shown ? `wrapped into (−180°, 180°]:  ${fmtN(a, 2)}°` : 'wrapped into (−180°, 180°]:  ?')
+            + argand([{z: cExp(radOf(a)), label: shown ? `∠ ${fmtN(a, 1)}°` : '?'}], {lim: 1.4})
+            + (shown ? note(`${s.n * s.th}&deg; &minus; ${Math.round((s.n * s.th - a) / 360)}&times;360&deg; = <b>${fmtN(a, 3)}&deg;</b>. It is the same point on the circle — only the label changed.`) : '');
+        }
+      },
+      {
+        id: 'm3', mod: 'demoivre', diff: 'hard', fmt: 'num', title: 'Roots of unity are evenly spaced',
+        ask: s => `The ${s.N} complex ${s.N}th roots of 1 sit on the unit circle. How many degrees apart are neighbouring roots?`,
+        hint: 'They divide the full circle into N equal parts.',
+        concept: 'The N-th roots of unity are e^(j2πk/N) for k = 0…N−1 — evenly spaced points on the unit circle. These are precisely the twiddle factors of an N-point DFT, and their symmetry is what the FFT exploits: half of them are the negatives of the other half, so you compute one and reuse it, turning N² operations into N log N.',
+        setup() {
+          const N = pick([3, 4, 5, 6, 8, 10, 12, 16]);
+          return num(360 / N, 0.05, {N});
+        },
+        render(s, shown) {
+          return eq(`the N-th roots of 1 are  e^(j2πk/N),  k = 0 … N−1`,
+            shown ? `spacing = 360° / ${s.N} = ${fmtN(360 / s.N, 3)}°` : `spacing = 360° / ${s.N} = ?`)
+            + argand(Array.from({length: s.N}, (_, k) =>
+              ({z: cExp(TAU * k / s.N), label: k === 0 ? '1' : (k === 1 ? (shown ? `${fmtN(360 / s.N, 1)}°` : '?') : ''),
+                color: k === 0 ? 'var(--hl)' : 'var(--accent)'})), {lim: 1.4, label: `${s.N} roots, evenly spaced`})
+            + (shown ? note(`<b>${fmtN(360 / s.N, 3)}&deg;</b>. All ${s.N} of them sum to exactly zero — the arrows cancel by symmetry, which is why a DFT bin reads zero for any frequency that is not present.`) : '');
+        }
+      },
+      {
+        id: 'm4', mod: 'demoivre', diff: 'hard', fmt: 'num', title: 'An FFT twiddle factor',
+        ask: s => `An ${s.N}-point FFT uses <code>W = e<sup>&minus;j2&pi;k/N</sup></code>. For N = ${s.N} and k = ${s.k}, what is the real part of W?`,
+        hint: 'The angle is −2πk/N radians, or −360k/N degrees. The real part is its cosine.',
+        concept: 'Twiddle factors are the only constants an FFT butterfly needs, and they are usually precomputed into a table because trig in an inner loop is unaffordable. The minus sign in the exponent is the forward-transform convention; flip it and you have the inverse transform, which is why the same routine can do both with one sign change and a scale factor.',
+        setup() {
+          const N = pick([4, 8, 16]), k = rnd(0, N - 1);
+          return num(Math.cos(-TAU * k / N), 0.01, {N, k});
+        },
+        render(s, shown) {
+          const th = -TAU * s.k / s.N, W = cExp(th);
+          return eq(`W = e^(−j2π·${s.k}/${s.N}) = e^(−j·${fmtN(360 * s.k / s.N, 2)}°)`,
+            shown ? `= ${rect(W, 4)}` : '= ?')
+            + argand(Array.from({length: s.N}, (_, i) =>
+              ({z: cExp(-TAU * i / s.N), label: i === s.k ? (shown ? rect(W, 2) : '?') : '',
+                color: i === s.k ? 'var(--hl)' : 'var(--bd-2)'})), {lim: 1.4, label: `all ${s.N} twiddle factors`})
+            + (shown ? note(`Real part = cos(&minus;${fmtN(360 * s.k / s.N, 2)}&deg;) = <b>${fmtN(W.re, 4)}</b>. Only ${s.N / 2} of these need storing: W<sup>k+N/2</sup> = &minus;W<sup>k</sup>.`) : '');
+        }
+      },
+      {
+        id: 'm5', mod: 'demoivre', diff: 'expert', fmt: 'num', title: 'All the roots cancel',
+        ask: s => `Add all ${s.N} of the ${s.N}th roots of unity together. What is the magnitude of the sum?`,
+        hint: 'Sketch them: evenly spaced arrows of equal length around a full circle. Where is their centre of mass?',
+        concept: 'Evenly spaced unit arrows around a full circle sum to zero, and this orthogonality is what makes the DFT work at all: correlating a signal against a frequency it does not contain gives a complete cancellation, not a small residue. It is also the reason DC and Nyquist bins behave differently from the rest — they are the only self-conjugate ones.',
+        setup() {
+          const N = pick([3, 4, 5, 6, 8, 12]);
+          return num(0, 0.02, {N});
+        },
+        render(s, shown) {
+          return eq(`Σ_{k=0}^{${s.N - 1}} e^(j2πk/${s.N})  =  (1 − e^(j2π)) / (1 − e^(j2π/${s.N}))`,
+            '# geometric series — the numerator is 1 − 1 = 0, and the denominator is not zero for N > 1')
+            + argand(Array.from({length: s.N}, (_, k) => ({z: cExp(TAU * k / s.N), label: '', color: 'var(--accent)'})),
+              {lim: 1.4, label: 'equal arrows, evenly spread — no net direction'})
+            + (shown ? note('<b>0</b>. Every arrow is cancelled by the balance of all the others. This exact cancellation is what gives a DFT its selectivity.') : '');
+        }
+      },
+
+      /* ---------- applied ---------- */
+      {
+        id: 'x1', mod: 'applied', diff: 'easy', fmt: 'num', title: 'Impedance of a capacitor',
+        ask: s => `A ${s.C}&thinsp;&micro;F capacitor at ${s.f}&thinsp;Hz has impedance <code>Z = 1/(j&omega;C)</code>. What is |Z| in ohms?`,
+        hint: '|Z| = 1/(ωC) with ω = 2πf. Convert the capacitance to farads first.',
+        concept: 'A capacitor is a frequency-dependent resistor with a −90° phase shift, and writing it as 1/(jωC) lets you use Ohm\'s law unchanged on AC circuits. The 1/f behaviour is why a decoupling capacitor looks like a short to high-frequency switching noise and an open circuit to DC — that is the entire principle of power-rail decoupling.',
+        setup() {
+          const C_uF = pick([0.1, 1, 4.7, 10, 100]), f = pick([50, 60, 1000, 10000, 100000]);
+          const Z = 1 / (TAU * f * C_uF * 1e-6);
+          return num(Z, Math.max(0.001, Z * 0.02), {C: C_uF, f});
+        },
+        render(s, shown) {
+          const w = TAU * s.f, Z = 1 / (w * s.C * 1e-6);
+          return eq(`ω = 2π × ${s.f} = ${fmtN(w, 1)} rad/s`,
+            `|Z| = 1 / (ω C) = 1 / (${fmtN(w, 1)} × ${s.C}e−6)`,
+            shown ? `= ${fmtN(Z, 4)} Ω` : '= ?')
+            + chips([['C', `${s.C} µF`], ['f', `${s.f} Hz`], ['|Z|', shown ? `${fmtN(Z, 3)} Ω` : '?'], ['phase', '−90°']])
+            + (shown ? note(`<b>${fmtN(Z, 4)} &Omega;</b>, at a phase of &minus;90&deg; — current leads voltage. Ten times the frequency would give a tenth of the impedance.`) : '');
+        }
+      },
+      {
+        id: 'x2', mod: 'applied', diff: 'medium', fmt: 'num', title: 'Series impedance magnitude',
+        ask: s => `A series circuit has <code>Z = ${s.R} + j${s.X}</code> ohms. What is |Z|?`,
+        hint: 'Real and imaginary parts add as vectors, not as numbers. Use Pythagoras.',
+        concept: 'Resistance and reactance are perpendicular, so they combine by Pythagoras rather than by addition — a 3 Ω resistor in series with a 4 Ω reactance gives 5 Ω, not 7 Ω. Getting this wrong overestimates the impedance and undersizes the current, which is exactly the kind of error that lets a supply rail sag under a switching load.',
+        setup() {
+          const [a, b, c] = pick(TRIPLES);
+          const scale = pick([1, 10, 100]);
+          return num(c * scale, Math.max(0.02, c * scale * 0.01), {R: a * scale, X: b * scale});
+        },
+        render(s, shown) {
+          const Z = C(s.R, s.X);
+          return eq(`|Z| = √(R² + X²) = √(${s.R}² + ${s.X}²)`,
+            shown ? `= ${fmtN(cAbs(Z), 4)} Ω` : '= ?')
+            + argand([{z: C(s.R, 0), label: 'R'}, {z: Z, label: shown ? `|Z| = ${fmtN(cAbs(Z), 1)}` : '|Z| = ?', color: 'var(--hl)'}],
+              {xlabel: 'R (Ω)', ylabel: 'X (Ω)'})
+            + (shown ? note(`<b>${fmtN(cAbs(Z), 4)} &Omega;</b>, not ${s.R + s.X} &Omega;. The phase angle is ${fmtN(degOf(cArg(Z)), 2)}&deg;, so the circuit is ${s.X > 0 ? 'inductive — current lags' : 'capacitive — current leads'}.`) : '');
+        }
+      },
+      {
+        id: 'x3', mod: 'applied', diff: 'medium', fmt: 'num', title: 'Phase shift of an RC low-pass',
+        ask: s => `An RC low-pass has <code>H(j&omega;) = 1/(1 + j&omega;RC)</code>. At &omega;RC = ${s.wrc}, what is the phase of H in degrees?`,
+        hint: 'The phase of a reciprocal is minus the phase of the denominator: −atan(ωRC).',
+        concept: 'A first-order low-pass gives −45° at its corner and approaches −90° far above it, and that lag is the thing that eats phase margin in a control loop. Adding a filter to clean up a noisy feedback signal always costs stability; the phase plot is where you see how much, before the hardware oscillates and tells you the expensive way.',
+        setup() {
+          const wrc = pick([0.1, 0.5, 1, 2, 5, 10]);
+          return num(-degOf(Math.atan(wrc)), 0.3, {wrc});
+        },
+        render(s, shown) {
+          const ph = -degOf(Math.atan(s.wrc));
+          const mag = 1 / Math.hypot(1, s.wrc);
+          return eq(`H = 1 / (1 + j·${s.wrc})`,
+            `∠H = −atan(${s.wrc})`,
+            shown ? `= ${fmtN(ph, 3)}°` : '= ?')
+            + chips([['ωRC', s.wrc], ['|H|', fmtN(mag, 4)], ['gain', `${fmtN(20 * Math.log10(mag), 2)} dB`],
+            ['phase', shown ? `${fmtN(ph, 2)}°` : '?']])
+            + (shown ? note(`<b>${fmtN(ph, 3)}&deg;</b>. At the corner (&omega;RC = 1) it is exactly &minus;45&deg; and the gain is &minus;3&thinsp;dB; that pairing is the definition of the corner frequency.`) : '');
+        }
+      },
+      {
+        id: 'x4', mod: 'applied', diff: 'medium', fmt: 'num', title: 'Gain of a filter at a frequency',
+        ask: s => `For the same low-pass <code>H = 1/(1 + j&omega;RC)</code>, what is |H| at &omega;RC = ${s.wrc}?`,
+        hint: '|H| = 1/|1 + jωRC| = 1/√(1 + (ωRC)²).',
+        concept: 'The magnitude response is what a spectrum looks like after the filter, and it rolls off at 20 dB per decade for a single pole. Knowing you get a factor of ten attenuation for a factor of ten in frequency is enough to size an anti-aliasing filter on the back of an envelope, before any simulation.',
+        setup() {
+          const wrc = pick([0.1, 0.5, 1, 2, 5, 10, 100]);
+          const m = 1 / Math.hypot(1, wrc);
+          return num(m, Math.max(0.0005, m * 0.02), {wrc});
+        },
+        render(s, shown) {
+          const m = 1 / Math.hypot(1, s.wrc);
+          return eq(`|H| = 1 / √(1 + (ωRC)²) = 1 / √(1 + ${fmtN(s.wrc * s.wrc, 4)})`,
+            shown ? `= ${fmtN(m, 5)}   (${fmtN(20 * Math.log10(m), 2)} dB)` : '= ?')
+            + plotCT([{f: x => 1 / Math.hypot(1, Math.pow(10, x))}], {
+              x: [-2, 2.2], y: [0, 1.1], xlabel: 'log₁₀(ωRC)', ylabel: '|H|',
+              vlines: [{x: Math.log10(s.wrc), label: `ωRC = ${s.wrc}`}]
+            })
+            + (shown ? note(`<b>${fmtN(m, 5)}</b>, or ${fmtN(20 * Math.log10(m), 3)}&thinsp;dB. Far above the corner |H| &asymp; 1/(&omega;RC) — a straight &minus;20&thinsp;dB/decade line on a log plot.`) : '');
+        }
+      },
+      {
+        id: 'x5', mod: 'applied', diff: 'hard', fmt: 'yesno', title: 'Is this discrete filter stable?',
+        ask: s => `A digital filter has a pole at <code>z = ${rect(s.p)}</code>. Is it stable?`,
+        hint: 'For a discrete-time system, stability means every pole lies strictly inside the unit circle. Compute |z| and compare with 1.',
+        concept: 'A pole is a mode that behaves like z^n, so its magnitude is the per-sample growth factor: inside the circle it decays, outside it explodes. This one test is the whole of discrete-time stability, and it is why a fixed-point IIR filter is dangerous — quantising the coefficients moves the poles, and near the circle a tiny move flips the verdict.',
+        setup() {
+          const r = pick([0.3, 0.6, 0.9, 0.95, 1.0, 1.05, 1.3]);
+          const th = pick([0, 30, 45, 90, 135, 180]);
+          const p = C(r * Math.cos(radOf(th)), r * Math.sin(radOf(th)));
+          return yn(r < 1, {p, r});
+        },
+        render(s, shown) {
+          return eq(`|z| = ${fmtN(cAbs(s.p), 4)}`,
+            '# stable ⇔ |z| < 1 strictly;  |z| = 1 rings forever;  |z| > 1 diverges')
+            + argand([{z: s.p, label: shown ? `|z| = ${fmtN(cAbs(s.p), 3)}` : 'pole', color: s.r < 1 ? 'var(--on)' : 'var(--off)'}],
+              {lim: 1.5, label: 'the unit circle is the whole test'})
+            + plotDT(Array.from({length: 16}, (_, n) => Math.pow(s.r, n) * Math.cos(cArg(s.p) * n)),
+              {n0: 0, xlabel: 'n', label: 'the mode, sample by sample'})
+            + (shown ? note(`|z| = ${fmtN(cAbs(s.p), 4)}, so <b>${s.r < 1 ? 'yes' : 'no'}</b>. ${s.r < 1 ? `Each sample shrinks the mode by ${fmtN(s.r, 3)}&times;.` : s.r === 1 ? 'On the circle exactly — it oscillates forever without decaying, which is marginal, not stable.' : `Each sample grows it by ${fmtN(s.r, 3)}&times;; after 100 samples that is a factor of ${fmtN(Math.pow(s.r, 100), 1)}.`}`) : '');
+        }
+      },
+      {
+        id: 'x6', mod: 'applied', diff: 'hard', fmt: 'num', title: 'Amplitude from an IQ sample',
+        ask: s => `A receiver reports I = ${s.I} and Q = ${s.Q}. What is the signal amplitude?`,
+        hint: 'I and Q are the real and imaginary parts of one complex sample. Amplitude is its magnitude.',
+        concept: 'An IQ pair is a complex number arriving once per sample, and every measurement you want from it is a complex operation: amplitude is the magnitude, phase is atan2, frequency is the rate of change of phase, and power is I² + Q². A software radio is, at bottom, complex arithmetic applied at a few million samples a second.',
+        setup() {
+          const [a, b, c] = pick(TRIPLES);
+          const k = pick([1, 10, 100]);
+          return num(c * k, Math.max(0.02, c * k * 0.01), {I: pick([1, -1]) * a * k, Q: pick([1, -1]) * b * k});
+        },
+        render(s, shown) {
+          const z = C(s.I, s.Q);
+          return eq(`amplitude = √(I² + Q²) = √(${s.I}² + ${s.Q}²)`,
+            `phase = atan2(Q, I) = ${fmtN(degOf(cArg(z)), 2)}°`,
+            shown ? `amplitude = ${fmtN(cAbs(z), 4)}` : 'amplitude = ?')
+            + argand([{z, label: shown ? `${fmtN(cAbs(z), 1)} ∠ ${fmtN(degOf(cArg(z)), 1)}°` : 'I + jQ'}],
+              {xlabel: 'I', ylabel: 'Q'})
+            + (shown ? note(`<b>${fmtN(cAbs(z), 4)}</b>. Power is I&sup2; + Q&sup2; = ${s.I * s.I + s.Q * s.Q}, available without the square root — which is why RSSI is usually reported in dB of power, not amplitude.`) : '');
+        }
+      },
+      {
+        id: 'x7', mod: 'applied', diff: 'expert', fmt: 'num', title: 'Phase step of an oscillator',
+        ask: s => `An NCO generates <code>e<sup>j2&pi;ft/f<sub>s</sub></sup></code> at f = ${s.f}&thinsp;Hz with a sample rate of ${s.fs}&thinsp;Hz. How many degrees does the phase advance per sample?`,
+        hint: 'One sample is 1/fs seconds. Per sample the phase advances 2πf/fs radians — convert to degrees.',
+        concept: 'A numerically controlled oscillator is a phase accumulator plus a lookup table: add a fixed increment each sample, wrap, read cos and sin. The increment is this angle, and if it exceeds 180° per sample you have violated Nyquist — the output aliases to a different, lower frequency, which is why an NCO tuning word is only ever meaningful below fs/2.',
+        setup() {
+          const fs = pick([8000, 44100, 48000, 1000000]);
+          const f = pick([100, 440, 1000, 4000, Math.round(fs / 4), Math.round(fs / 3)]);
+          return num(360 * f / fs, Math.max(0.01, 360 * f / fs * 0.01), {f, fs});
+        },
+        render(s, shown) {
+          const d = 360 * s.f / s.fs;
+          return eq(`Δφ = 360° × f / f_s = 360° × ${s.f} / ${s.fs}`,
+            shown ? `= ${fmtN(d, 5)}° per sample` : '= ?')
+            + chips([['f', `${s.f} Hz`], ['fs', `${s.fs} Hz`], ['Δφ', shown ? `${fmtN(d, 3)}°` : '?'],
+            ['Nyquist', d < 180 ? 'satisfied' : 'violated', d < 180 ? 'good' : 'bad']])
+            + (shown ? note(`<b>${fmtN(d, 5)}&deg;</b> per sample, so a full cycle takes ${fmtN(s.fs / s.f, 3)} samples. Nyquist caps this at 180&deg; per sample — beyond that the sequence is indistinguishable from a lower frequency.`) : '');
+        }
+      }
+    ];
+
+    const PROBLEMS = [...P_A, ...P_B, ...P_C].sort((a, b) => MOD_INDEX[a.mod] - MOD_INDEX[b.mod]);
+    const BY_ID = Object.fromEntries(PROBLEMS.map(p => [p.id, p]));
+    PROBLEMS.forEach(p => {p.s = p.setup();});
+
+    /* ============================================================
+       PART 4 — answer checking
+       Accept any reasonable spelling of the same value.
+       ============================================================ */
+    function norm(v) {return String(v).trim().toLowerCase().replace(/[\s_,]/g, '').replace(/[−–—]/g, '-');}
+
+    function boolOf(s) {
+      if (['yes', 'y', 'true', 't'].includes(s)) return true;
+      if (['no', 'n', 'false', 'f'].includes(s)) return false;
+      return null;
+    }
+
+    function numOf(s) {
+      if (/^-?\d*\.?\d+(e[-+]?\d+)?$/.test(s)) return parseFloat(s);
+      if (/^-?\d*\.?\d+\/-?\d*\.?\d+$/.test(s)) {const [a, b] = s.split('/').map(Number); return a / b;}
+      if (/^-?0x[0-9a-f]+$/.test(s)) return parseInt(s.replace('-0x', '0x'), 16) * (s[0] === '-' ? -1 : 1);
+      if (/^-?0b[01]+$/.test(s)) return parseInt(s.replace('-0b', '0b').slice(2), 2) * (s[0] === '-' ? -1 : 1);
+      return null;
+    }
+
+    function accepts(expected, given) {
+      const e = norm(expected), g = norm(given);
+      if (!g) return false;
+      if (e === g) return true;
+      const eb = boolOf(e);
+      if (eb !== null) return boolOf(g) === eb;
+      const en = numOf(e), gn = numOf(g);
+      return en !== null && gn !== null && Math.abs(en - gn) < 1e-9;
+    }
+
+    /* numeric problems carry s.val and s.tol */
+    function checkAnswer(p, given) {
+      const s = p.s;
+      if (s.tol !== undefined && s.val !== undefined) {
+        const g = numOf(norm(given));
+        if (g !== null && Math.abs(g - s.val) <= s.tol) return true;
+        return (s.alts || []).some(c => accepts(c, given));
+      }
+      return [s.answer, ...(s.alts || [])].some(c => accepts(c, given));
+    }
+
+    const FMT_HELP = {
+      num: 'a number — a couple of decimals is plenty',
+      dec: 'a whole number',
+      hex: 'answer in hex, e.g. 0x2A',
+      bin: 'answer in binary, e.g. 0b1011',
+      yesno: 'yes or no',
+      expr: 'an expression, e.g. 3x^2 - 2x',
+      mc: 'pick one'
+    };
+
+    /* ============================================================
+       PART 5 — application state
+       ============================================================ */
+    const STORE_KEY = 'cplxlab.progress.v1';
+
+    const app = {
+      tab: 'learn', cur: 0,
+      solved: new Set(),
+      tried: {}, feedback: {}, inputs: {}, pick: {}, hint: {}, reveal: {}, why: {}
+    };
+
+    function save() {try {localStorage.setItem(STORE_KEY, JSON.stringify([...app.solved]));} catch (e) { }}
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) JSON.parse(raw).forEach(id => {if (BY_ID[id]) app.solved.add(id);});
+      } catch (e) { }
+    }
+
+    const isShown = p => app.feedback[p.id] === 'correct' || app.reveal[p.id];
+    const askOf = p => typeof p.ask === 'function' ? p.ask(p.s) : p.ask;
+
+    /* ============================================================
+       PART 6 — views
+       ============================================================ */
+    function view() {
+      const solved = app.solved.size, total = PROBLEMS.length;
+      let h = `<div class="masthead">
+          <h1>Complex Lab</h1>
+          <span class="sub">complex numbers &amp; phasors &mdash; ${total} problems across ${MODULES.length} modules</span>
+        </div>
+        <div class="tab-bar">
+          ${[['learn', 'Learn'], ['problems', `Problems (${solved}/${total})`], ['ref', 'Reference']]
+          .map(([k, t]) => `<button class="tab ${app.tab === k ? 'active' : ''}" onclick="setTab('${k}')">${t}</button>`).join('')}
+        </div>`;
+
+      if (app.tab === 'learn') h += viewLearn();
+      else if (app.tab === 'problems') h += viewList();
+      else h += viewRef();
+
+      document.getElementById('app').innerHTML = h;
+      if (app.tab === 'learn') {
+        const el = document.getElementById('ans');
+        if (el) el.focus();
+      }
+    }
+
+    function viewLearn() {
+      const p = PROBLEMS[app.cur], s = p.s, shown = isShown(p);
+      const mod = MODULES[MOD_INDEX[p.mod]];
+      const firstOfMod = PROBLEMS.findIndex(x => x.mod === p.mod) === app.cur;
+      const inMod = PROBLEMS.filter(x => x.mod === p.mod);
+
+      let h = '';
+      if (firstOfMod) {
+        h += `<div class="modcard">
+            <div class="t">Module ${MOD_INDEX[p.mod] + 1} of ${MODULES.length}</div>
+            <h2>${mod.name}</h2>
+            <p>${mod.blurb}</p>
+          </div>`;
+      }
+
+      h += `<div class="card">
+          <div class="problem-header">
+            <div>
+              <div class="crumb">${mod.name} &middot; ${inMod.indexOf(p) + 1} of ${inMod.length}</div>
+              <h3>${p.title}</h3>
+            </div>
+            <span class="badge badge-${p.diff}">${p.diff}</span>
+          </div>
+          <p class="ask">${askOf(p)}</p>
+          ${p.render(s, shown)}`;
+
+      if (p.fmt === 'mc') {
+        const picked = app.pick[p.id];
+        h += `<div class="choices">` + s.choices.map((c, i) => {
+          let cls = '';
+          if (shown && i === s.ai) cls = 'right';
+          else if (picked === i && app.feedback[p.id] === 'wrong') cls = 'picked';
+          return `<button class="choice ${cls}" ${shown ? 'disabled' : ''} onclick="chooseMC(${i})">
+              <span class="key">${'ABCD'[i]}</span><span>${c}</span></button>`;
+        }).join('') + `</div>`;
+      }
+
+      if (!shown) {
+        h += `<div class="answer-row">`;
+        if (p.fmt !== 'mc') {
+          h += `<input type="text" id="ans" placeholder="${FMT_HELP[p.fmt]}" value="${esc(app.inputs[p.id] || '')}"
+                   oninput="app.inputs['${p.id}']=this.value"
+                   onkeydown="if(event.key==='Enter')submit()">
+            <button class="btn btn-primary" onclick="submit()">Check</button>`;
+        }
+        h += `<button class="linkbtn" onclick="tog('hint','${p.id}')">${app.hint[p.id] ? 'hide hint' : 'hint'}</button>
+            <button class="linkbtn" onclick="tog('reveal','${p.id}')">show me</button>
+          </div>`;
+        if (app.hint[p.id]) h += `<div class="feedback hint">${p.hint}</div>`;
+        if (app.feedback[p.id] === 'wrong') {
+          const n = app.tried[p.id] || 0;
+          h += `<div class="feedback wrong">Not quite &mdash; ${n >= 3 ? 'try the hint, or use <b>show me</b> to walk through it.' : 'have another go.'}</div>`;
+        }
+      } else {
+        const correct = app.feedback[p.id] === 'correct';
+        h += `<div class="feedback ${correct ? 'correct' : 'hint'}">
+            ${correct ? '&#10003; Correct' : 'Answer'}: <span class="mono"><b>${esc(s.answer)}</b></span>
+            &nbsp;<button class="linkbtn" style="color:inherit" onclick="tog('why','${p.id}')">${app.why[p.id] ? 'hide' : 'why this matters'}</button>
+            ${app.why[p.id] ? `<div style="margin-top:8px;color:var(--tx-2)">${p.concept}</div>` : ''}
+          </div>`;
+      }
+
+      h += `<div class="navrow">
+          <button class="btn btn-sm" onclick="nav(-1)" ${app.cur === 0 ? 'disabled style="opacity:.4"' : ''}>&larr; Prev</button>
+          <button class="btn btn-sm" onclick="nav(1)" ${app.cur === PROBLEMS.length - 1 ? 'disabled style="opacity:.4"' : ''}>Next &rarr;</button>
+          <button class="btn btn-sm" onclick="regen()">${p.fmt === 'mc' ? 'Reshuffle' : 'New numbers'}</button>
+          <span class="spacer"></span>
+          <span style="font-size:12px;color:var(--tx-3)">${app.cur + 1} / ${PROBLEMS.length}</span>
+        </div></div>`;
+      return h;
+    }
+
+    function viewList() {
+      const solved = app.solved.size, total = PROBLEMS.length;
+      const byDiff = d => PROBLEMS.filter(p => p.diff === d && app.solved.has(p.id)).length;
+      let h = `<div class="stat-grid">
+          <div class="stat"><div class="stat-val">${solved}</div><div class="stat-lbl">solved</div></div>
+          <div class="stat"><div class="stat-val">${total - solved}</div><div class="stat-lbl">remaining</div></div>
+          <div class="stat"><div class="stat-val">${Math.round(solved / total * 100)}%</div><div class="stat-lbl">complete</div></div>
+          <div class="stat"><div class="stat-val">${byDiff('hard') + byDiff('expert')}</div><div class="stat-lbl">hard+ solved</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${solved / total * 100}%"></div></div>
+        <div class="card">`;
+
+      MODULES.forEach((m, mi) => {
+        const list = PROBLEMS.filter(p => p.mod === m.id);
+        const done = list.filter(p => app.solved.has(p.id)).length;
+        h += `<div class="modhead"><span class="t">${mi + 1}. ${m.name}</span><span class="line"></span><span class="c">${done}/${list.length}</span></div>`;
+        list.forEach(p => {
+          const i = PROBLEMS.indexOf(p), ok = app.solved.has(p.id);
+          h += `<div class="pitem ${ok ? 'solved' : ''} ${i === app.cur ? 'current' : ''}" onclick="go(${i})">
+              <div class="pi-icon ${ok ? 'yes' : 'no'}">${ok ? '&#10003;' : i + 1}</div>
+              <div class="pi-info"><div class="pi-title">${p.title}</div><div class="pi-sub">${askOf(p).replace(/<[^>]+>/g, '')}</div></div>
+              <span class="badge badge-${p.diff}">${p.diff}</span>
+            </div>`;
+        });
+      });
+
+      h += `<div class="navrow"><button class="btn btn-sm" onclick="resetAll()">Reset progress</button></div></div>`;
+      return h;
+    }
+
+
+    function viewRef() {
+      return `<div class="card">
+        <h2>The rules</h2>
+        ${refTable([
+        ['j', 'defined by j² = −1; engineering writes j because i is current'],
+        ['powers of j', '1, j, −1, −j, repeating every 4 — each step is a 90° turn'],
+        ['(a+jb) + (c+jd)', '(a+c) + j(b+d) — componentwise, exactly like vectors'],
+        ['(a+jb)(c+jd)', '(ac − bd) + j(ad + bc) — 4 real multiplies, 2 adds'],
+        ['conjugate z*', 'a − jb — a mirror in the real axis'],
+        ['z z*', 'a² + b² = |z|² — always real, never negative'],
+        ['z₁ / z₂', 'z₁z₂* / |z₂|² — make the denominator real first'],
+        ['|z|', '√(a² + b²) — amplitude; prefer |z|² when you only need to compare'],
+        ['arg z', 'atan2(b, a) — always atan2, never atan(b/a)']
+      ])}
+        <h2 style="margin-top:18px">Polar and exponential form</h2>
+        ${refTable([
+        ['r ∠ θ', 'magnitude r, angle θ — built for multiplication'],
+        ['rect → polar', 'r = √(a²+b²),  θ = atan2(b, a)'],
+        ['polar → rect', 'a = r cos θ,  b = r sin θ  (the I and Q of a carrier)'],
+        ['multiply', 'magnitudes multiply, angles add — scale and rotate'],
+        ['divide', 'magnitudes divide, angles subtract'],
+        ['1/z', 'magnitude 1/r, angle −θ'],
+        ['× j', 'a pure 90° anticlockwise rotation, magnitude unchanged'],
+        ["Euler's formula", 'e^(jθ) = cos θ + j sin θ,  and |e^(jθ)| = 1 always'],
+        ['cos θ', '(e^(jθ) + e^(−jθ))/2 — two counter-rotating unit arrows'],
+        ['sin θ', '(e^(jθ) − e^(−jθ))/2j'],
+        ['e^((σ+jω)t)', 'envelope e^(σt) × rotation e^(jωt) — growth and oscillation, independent'],
+        ["De Moivre", '(r∠θ)ⁿ = rⁿ ∠ nθ'],
+        ['N-th roots of 1', 'e^(j2πk/N), k = 0…N−1 — evenly spaced 360°/N apart, and they sum to 0']
+      ])}
+        <h2 style="margin-top:18px">Where it shows up</h2>
+        ${refTable([
+        ['capacitor', 'Z = 1/(jωC) — magnitude 1/(ωC), phase −90°'],
+        ['inductor', 'Z = jωL — magnitude ωL, phase +90°'],
+        ['series R and X', '|Z| = √(R² + X²) — perpendicular, so Pythagoras not addition'],
+        ['RC low-pass', 'H = 1/(1 + jωRC);  −3 dB and −45° at ωRC = 1;  −20 dB/decade above'],
+        ['phasor V', 'amplitude and phase with e^(jωt) divided out — turns calculus into algebra'],
+        ['discrete pole', 'stable ⇔ |z| < 1 strictly;  |z| is the per-sample growth factor'],
+        ['s-plane pole', 'stable ⇔ Re{s} < 0;  the imaginary part sets the ringing frequency'],
+        ['IQ sample', 'I + jQ;  amplitude = |z|, phase = atan2(Q, I), power = I² + Q²'],
+        ['FFT twiddle', 'W = e^(−j2πk/N) — an N-th root of unity; only N/2 need storing'],
+        ['NCO phase step', '360°·f/fs per sample — must stay under 180° or it aliases']
+      ])}
+        <h2 style="margin-top:18px">Traps</h2>
+        ${refTable([
+        ['atan instead of atan2', 'loses both signs — cannot tell a point from its opposite'],
+        ['adding magnitudes', '|z₁ + z₂| ≠ |z₁| + |z₂| unless they point the same way — that is interference'],
+        ['forgetting to wrap phase', 'accumulated phase must be reduced mod 360° every step'],
+        ['degrees vs radians', 'library trig is in radians; ω is rad/s but Bode plots are in degrees'],
+        ['sign of the exponent', 'e^(−jωt) forward, e^(+jωt) inverse — a flipped sign mirrors your spectrum'],
+        ['|z| = 1 exactly', 'marginally stable, not stable — quantised coefficients can push it either way']
+      ])}
+      </div>`;
+    }
+
+    function refTable(rows) {
+      return `<table class="reft">${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`;
+    }
+
+    /* ---------- actions ---------- */
+    function setTab(t) {app.tab = t; view();}
+    function go(i) {app.cur = i; app.tab = 'learn'; view();}
+    function nav(d) {app.cur = Math.max(0, Math.min(PROBLEMS.length - 1, app.cur + d)); view();}
+    function tog(k, id) {app[k][id] = !app[k][id]; view();}
+
+    function mark(p, ok) {
+      app.tried[p.id] = (app.tried[p.id] || 0) + 1;
+      if (ok) {app.feedback[p.id] = 'correct'; app.solved.add(p.id); save();}
+      else app.feedback[p.id] = 'wrong';
+      view();
+    }
+
+    function submit() {
+      const p = PROBLEMS[app.cur];
+      const given = app.inputs[p.id] || '';
+      if (!given.trim()) return;
+      mark(p, checkAnswer(p, given));
+    }
+
+    function chooseMC(i) {
+      const p = PROBLEMS[app.cur];
+      if (isShown(p)) return;
+      app.pick[p.id] = i;
+      mark(p, i === p.s.ai);
+    }
+
+    function regen() {
+      const p = PROBLEMS[app.cur];
+      p.s = p.setup();
+      app.feedback[p.id] = null;
+      app.reveal[p.id] = false;
+      app.inputs[p.id] = '';
+      app.pick[p.id] = null;
+      view();
+    }
+
+    function resetAll() {
+      if (!confirm('Clear all solved problems?')) return;
+      app.solved.clear();
+      app.feedback = {}; app.inputs = {}; app.pick = {}; app.reveal = {}; app.hint = {}; app.tried = {};
+      save();
+      view();
+    }
+
+    load();
+    view();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,2379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Optim Lab — optimisation for software and embedded engineers</title>
+  <style>
+    :root {
+      --bg: #0a0f1a;
+      --bg-1: #111827;
+      --bg-2: #1a2434;
+      --bg-3: #232f42;
+
+      --tx-1: #f3f4f6;
+      --tx-2: #9ca3af;
+      --tx-3: #6b7280;
+
+      --bd-1: #2b3648;
+      --bd-2: #374151;
+
+      --accent: #60a5fa;
+      --accent-dim: rgba(96, 165, 250, 0.15);
+
+      --on: #4ade80;
+      --off: #f87171;
+      --hl: #fbbf24;
+      --fill: #38bdf8;
+      --unk: #c084fc;
+
+      --r-sm: 5px;
+      --r-md: 8px;
+      --r-lg: 14px;
+
+      --font-sans: Inter, system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--tx-1);
+      background: var(--bg);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 4rem;
+    }
+
+    /* ---------- header / tabs ---------- */
+    .masthead {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .masthead h1 {
+      font-size: 19px;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+    }
+
+    .masthead .sub {
+      font-size: 13px;
+      color: var(--tx-3);
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--bd-1);
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 8px 15px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--tx-2);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+      transition: color .15s, background .15s;
+    }
+
+    .tab.active {
+      color: var(--tx-1);
+      border-bottom-color: var(--accent);
+      font-weight: 550;
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--tx-1);
+      background: rgba(255, 255, 255, .03);
+    }
+
+    .card {
+      background: var(--bg-1);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-lg);
+      padding: 1.25rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 8px 24px rgba(0, 0, 0, .18);
+    }
+
+    .card+.card {
+      margin-top: 1rem;
+    }
+
+    h2 {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: .92em;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--tx-1);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--r-md);
+      white-space: nowrap;
+    }
+
+    .badge-easy {
+      background: rgba(34, 197, 94, .15);
+      color: #86efac;
+    }
+
+    .badge-medium {
+      background: rgba(245, 158, 11, .15);
+      color: #fcd34d;
+    }
+
+    .badge-hard {
+      background: rgba(239, 68, 68, .15);
+      color: #fca5a5;
+    }
+
+    .badge-expert {
+      background: rgba(139, 92, 246, .15);
+      color: #c4b5fd;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin: 16px 0 6px;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
+    }
+
+    /* ---------- module intro ---------- */
+    .modcard {
+      background: linear-gradient(180deg, rgba(96, 165, 250, .10), rgba(96, 165, 250, .02));
+      border: 1px solid rgba(96, 165, 250, .28);
+      border-radius: var(--r-lg);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .modcard .t {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--accent);
+      font-weight: 650;
+    }
+
+    .modcard h2 {
+      margin: 2px 0 5px;
+    }
+
+    .modcard p {
+      font-size: 13.5px;
+      color: var(--tx-2);
+      max-width: 68ch;
+    }
+
+    /* ---------- problem chrome ---------- */
+    .problem-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .crumb {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 600;
+    }
+
+    .ask {
+      color: var(--tx-1);
+      margin-bottom: 12px;
+      font-size: 14.5px;
+    }
+
+    .note {
+      font-size: 13px;
+      color: var(--tx-2);
+      margin: 8px 0 2px;
+      max-width: 78ch;
+    }
+
+    /* ---------- equations ---------- */
+    .eqblk {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--r-md);
+      padding: 9px 13px;
+      margin: 8px 0;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      line-height: 1.7;
+    }
+
+    .eqblk .el {
+      display: block;
+    }
+
+    .eqblk .ec {
+      color: var(--tx-3);
+    }
+
+    .eqblk b {
+      color: var(--hl);
+      font-weight: 600;
+    }
+
+    .eqblk .q {
+      color: var(--unk);
+      font-weight: 700;
+    }
+
+    /* ---------- code block ---------- */
+    .code {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 10px 13px;
+      margin: 8px 0;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.6;
+    }
+
+    .code .k {
+      color: var(--accent);
+    }
+
+    .code .c {
+      color: var(--tx-3);
+    }
+
+    .code .h {
+      color: var(--hl);
+    }
+
+    /* ---------- plots ---------- */
+    .plot {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 9px 11px 6px;
+      margin: 8px 0;
+      overflow-x: auto;
+    }
+
+    .plot .plbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 650;
+      margin-bottom: 4px;
+    }
+
+    .plot svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-width: 320px;
+    }
+
+    .plotgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 10px;
+      margin: 8px 0;
+    }
+
+    .plotgrid .plot {
+      margin: 0;
+    }
+
+    .lgd {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 11.5px;
+      color: var(--tx-2);
+      margin-top: 4px;
+    }
+
+    .lgd i {
+      display: inline-block;
+      width: 14px;
+      height: 3px;
+      border-radius: 2px;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+
+    /* ---------- tables ---------- */
+    .board {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 10px 12px;
+      margin: 8px 0;
+      overflow-x: auto;
+    }
+
+    .board .blbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 650;
+      margin-bottom: 7px;
+    }
+
+    .memt {
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin: 2px 0;
+    }
+
+    .memt th,
+    .memt td {
+      border: 1px solid var(--bd-1);
+      padding: 4px 9px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .memt th {
+      color: var(--tx-3);
+      font-weight: 500;
+      background: var(--bg-1);
+      font-size: 11px;
+    }
+
+    .memt td {
+      background: var(--bg-3);
+      color: var(--tx-1);
+      font-weight: 600;
+    }
+
+    .memt td.lb {
+      background: var(--bg-1);
+      color: var(--tx-2);
+      font-weight: 500;
+      text-align: right;
+      font-size: 11px;
+    }
+
+    .memt td.mk {
+      background: rgba(56, 189, 248, .18);
+      border-color: var(--fill);
+      color: #bae6fd;
+    }
+
+    .memt td.mk2 {
+      background: rgba(251, 191, 36, .16);
+      border-color: var(--hl);
+      color: #fde68a;
+    }
+
+    .memt td.dim {
+      background: var(--bg-1);
+      color: var(--tx-3);
+      font-weight: 400;
+    }
+
+    .memt td.q {
+      color: var(--unk);
+      border-style: dashed;
+      border-color: rgba(192, 132, 252, .55);
+    }
+
+    /* ---------- value cells ---------- */
+    .rrow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .reg {
+      min-width: 118px;
+      background: var(--bg-3);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-sm);
+      padding: 5px 9px;
+    }
+
+    .reg .rn {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--tx-3);
+      letter-spacing: .03em;
+    }
+
+    .reg .rv {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--tx-1);
+      font-weight: 600;
+    }
+
+    .reg.hl {
+      border-color: var(--hl);
+      box-shadow: 0 0 0 1px rgba(251, 191, 36, .45);
+    }
+
+    .reg.new {
+      border-color: var(--on);
+      background: rgba(34, 197, 94, .14);
+    }
+
+    .reg.new .rv {
+      color: #bbf7d0;
+    }
+
+    .reg.q .rv {
+      color: var(--unk);
+    }
+
+    .reg.q {
+      border-style: dashed;
+      border-color: rgba(192, 132, 252, .55);
+    }
+
+    /* ---------- chips ---------- */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .chip {
+      font-size: 11.5px;
+      color: var(--tx-2);
+      background: var(--bg-2);
+      border: 1px solid var(--bd-1);
+      border-radius: 20px;
+      padding: 3px 11px;
+      font-family: var(--font-mono);
+    }
+
+    .chip b {
+      color: var(--tx-1);
+    }
+
+    .chip.hot {
+      border-color: rgba(251, 191, 36, .45);
+      color: #fde68a;
+    }
+
+    .chip.cool {
+      border-color: rgba(56, 189, 248, .45);
+      color: #bae6fd;
+    }
+
+    .chip.good {
+      border-color: rgba(34, 197, 94, .45);
+      color: #bbf7d0;
+    }
+
+    .chip.bad {
+      border-color: rgba(248, 113, 113, .45);
+      color: #fecaca;
+    }
+
+    /* ---------- answers ---------- */
+    .answer-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    input[type=text] {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      padding: 8px 11px;
+      width: 280px;
+      outline: none;
+    }
+
+    input[type=text]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    select {
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 6px 9px;
+      outline: none;
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 13.5px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--bd-2);
+      background: var(--bg-2);
+      color: var(--tx-1);
+      padding: 8px 15px;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--accent);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0a0f1a;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.08);
+    }
+
+    .btn-sm {
+      padding: 5px 11px;
+      font-size: 12.5px;
+    }
+
+    .btn.on {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .linkbtn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      padding: 4px 2px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .choice {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      text-align: left;
+      width: 100%;
+      background: var(--bg-2);
+      border: 1px solid var(--bd-2);
+      border-radius: var(--r-md);
+      color: var(--tx-1);
+      font-family: inherit;
+      font-size: 13.5px;
+      padding: 9px 12px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+
+    .choice:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--bg-3);
+    }
+
+    .choice .key {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--tx-3);
+      border: 1px solid var(--bd-2);
+      border-radius: 4px;
+      padding: 0 6px;
+      line-height: 19px;
+      flex-shrink: 0;
+    }
+
+    .choice.picked {
+      border-color: var(--off);
+      background: rgba(248, 113, 113, .10);
+    }
+
+    .choice.right {
+      border-color: var(--on);
+      background: rgba(34, 197, 94, .12);
+    }
+
+    .choice.right .key,
+    .choice.picked .key {
+      color: var(--tx-1);
+    }
+
+    .choice:disabled {
+      cursor: default;
+      opacity: .85;
+    }
+
+    .feedback {
+      margin-top: 12px;
+      padding: 10px 13px;
+      border-radius: var(--r-md);
+      font-size: 13.5px;
+      border: 1px solid;
+    }
+
+    .feedback.correct {
+      background: rgba(34, 197, 94, .12);
+      border-color: rgba(34, 197, 94, .4);
+      color: #bbf7d0;
+    }
+
+    .feedback.wrong {
+      background: rgba(248, 113, 113, .10);
+      border-color: rgba(248, 113, 113, .4);
+      color: #fecaca;
+    }
+
+    .feedback.hint {
+      background: rgba(251, 191, 36, .09);
+      border-color: rgba(251, 191, 36, .33);
+      color: #fde68a;
+    }
+
+    .navrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--bd-1);
+      flex-wrap: wrap;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    /* ---------- problem list ---------- */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .stat {
+      background: var(--bg-1);
+      border: 1px solid var(--bd-1);
+      border-radius: var(--r-md);
+      padding: 11px 13px;
+    }
+
+    .stat-val {
+      font-size: 21px;
+      font-weight: 650;
+      font-family: var(--font-mono);
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .progress-bar {
+      height: 5px;
+      background: var(--bg-2);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width .25s;
+    }
+
+    .modhead {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 16px 0 6px;
+    }
+
+    .modhead:first-child {
+      margin-top: 0;
+    }
+
+    .modhead .t {
+      font-size: 11.5px;
+      font-weight: 650;
+      color: var(--tx-2);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .modhead .line {
+      flex: 1;
+      height: 1px;
+      background: var(--bd-1);
+    }
+
+    .modhead .c {
+      font-size: 11.5px;
+      color: var(--tx-3);
+      font-family: var(--font-mono);
+    }
+
+    .pitem {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 8px 10px;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .pitem:hover {
+      background: var(--bg-2);
+    }
+
+    .pitem.current {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .pi-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+      border: 1px solid var(--bd-2);
+      color: var(--tx-3);
+    }
+
+    .pi-icon.yes {
+      background: rgba(34, 197, 94, .18);
+      border-color: rgba(34, 197, 94, .5);
+      color: var(--on);
+    }
+
+    .pi-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .pi-title {
+      font-size: 13.5px;
+      font-weight: 550;
+    }
+
+    .pi-sub {
+      font-size: 12px;
+      color: var(--tx-3);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pitem.solved .pi-title {
+      color: var(--tx-2);
+    }
+
+    /* ---------- reference ---------- */
+    .reft {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 4px 0 6px;
+    }
+
+    .reft td {
+      border-bottom: 1px solid var(--bd-1);
+      padding: 6px 8px;
+      vertical-align: top;
+    }
+
+    .reft td:first-child {
+      font-family: var(--font-mono);
+      color: var(--tx-1);
+      white-space: nowrap;
+      width: 38%;
+    }
+
+    .reft td:last-child {
+      color: var(--tx-2);
+    }
+
+
+    /* ---------- inline maths ---------- */
+    .fr {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      margin: 0 3px;
+      line-height: 1.15;
+      font-size: .92em;
+    }
+
+    .fr .fn {
+      border-bottom: 1px solid currentColor;
+      padding: 0 3px;
+    }
+
+    .fr .fd {
+      padding: 0 3px;
+    }
+
+    .mtx {
+      display: inline-grid;
+      gap: 2px 12px;
+      padding: 4px 9px;
+      margin: 0 4px;
+      vertical-align: middle;
+      border-left: 2px solid var(--tx-3);
+      border-right: 2px solid var(--tx-3);
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: .92em;
+    }
+
+    .mtx .mc {
+      text-align: right;
+    }
+
+    .mtl {
+      color: var(--tx-3);
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" id="app"></div>
+
+  <script>
+    /* ============================================================
+       PART 1 — numeric helpers
+       ============================================================ */
+    const PI = Math.PI, TAU = 2 * Math.PI;
+    const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+    function shuffle(a) {const r = a.slice(); for (let i = r.length - 1; i > 0; i--) {const j = rnd(0, i);[r[i], r[j]] = [r[j], r[i]];} return r;}
+    function esc(s) {return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');}
+    const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+    /* round to n decimals and drop trailing zeros: 3.10 -> "3.1", 4.00 -> "4" */
+    function fmtN(v, d = 3) {
+      if (!isFinite(v)) return v > 0 ? '∞' : '-∞';
+      if (Math.abs(v) < 5e-11) v = 0;
+      let s = v.toFixed(d);
+      if (s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, '');
+      return s === '-0' ? '0' : s;
+    }
+    const f2 = v => fmtN(v, 2);
+    const f3 = v => fmtN(v, 3);
+    const gcd = (a, b) => b ? gcd(b, a % b) : Math.abs(a);
+    const lg2 = v => Math.log(v) / Math.LN2;
+
+    /* signed term for building expressions: sgn(-3, 'x') -> " - 3x" */
+    function sgn(c, sym = '') {
+      if (c === 0) return '';
+      const a = Math.abs(c);
+      const mag = (a === 1 && sym) ? '' : fmtN(a, 4);
+      return (c < 0 ? ' &minus; ' : ' + ') + mag + sym;
+    }
+    /* leading term of a polynomial — no " + " in front */
+    function lead(c, sym = '') {
+      const a = Math.abs(c), mag = (a === 1 && sym) ? '' : fmtN(a, 4);
+      return (c < 0 ? '&minus;' : '') + mag + sym;
+    }
+    /* x, x², x³ … as HTML */
+    const pw = (sym, n) => n === 0 ? '' : n === 1 ? sym : `${sym}<sup>${n}</sup>`;
+
+    /* build a polynomial string from coefficients, highest power first:
+       poly([2,0,-3,1]) -> "2x³ &minus; 3x + 1" */
+    function poly(co, sym = 'x') {
+      const n = co.length - 1;
+      let out = '', first = true;
+      co.forEach((c, i) => {
+        if (c === 0) return;
+        const p = n - i, t = pw(sym, p);
+        out += first ? lead(c, t) : sgn(c, t);
+        first = false;
+      });
+      return out || '0';
+    }
+
+    /* multiple-choice helper: shuffled {choices, ai, answer}.
+       `extra` carries any generated state the ask/render need. */
+    function mc(correct, wrong, extra) {
+      const opts = shuffle([correct, ...wrong]);
+      /* extra goes on first so it can never clobber the answer keys */
+      return Object.assign({}, extra || {}, {choices: opts, ai: opts.indexOf(correct), answer: correct});
+    }
+
+    /* numeric answer with a tolerance band. The printed answer keeps enough
+       decimals that it is itself comfortably inside the band. */
+    function num(v, tol, extra) {
+      const d = clamp(Math.ceil(-Math.log10(tol || 1e-3)) + 1, 2, 8);
+      return Object.assign({}, extra || {}, {answer: fmtN(v, d), val: v, tol});
+    }
+    /* yes / no answer */
+    function yn(v, extra) {return Object.assign({}, extra || {}, {answer: v ? 'yes' : 'no'});}
+
+    /* ============================================================
+       PART 2 — render helpers
+       Everything returns an HTML string, so it drops straight into
+       a problem's render(s, shown).
+       ============================================================ */
+    function title(t) {return `<div class="section-title">${t}</div>`;}
+    function note(html) {return `<div class="note">${html}</div>`;}
+    function chips(list) {return `<div class="chips">${list.map(c => `<span class="chip ${c[2] || ''}">${c[0]} <b>${c[1]}</b></span>`).join('')}</div>`;}
+
+    /* boxed formula. Lines starting with "#" are dimmed commentary. */
+    function eq(...lines) {
+      const body = lines.filter(l => l !== null && l !== undefined && l !== '').map(l => {
+        if (l.startsWith('#')) return `<span class="el ec">${l.slice(1).trim()}</span>`;
+        return `<span class="el">${l}</span>`;
+      }).join('');
+      return `<div class="eqblk">${body}</div>`;
+    }
+
+    /* inline fraction */
+    function frac(n, d) {return `<span class="fr"><span class="fn">${n}</span><span class="fd">${d}</span></span>`;}
+
+    /* C / pseudo-code block */
+    function code(src) {
+      const s = esc(src)
+        .replace(/(\b\d+\.\d+\b|\b0x[0-9A-Fa-f]+\b)/g, '<span class="h">$1</span>')
+        .replace(/\/\/[^\n]*/g, '<span class="c">$&</span>')
+        .replace(/\b(float|double|int|long|unsigned|uint8_t|uint16_t|uint32_t|int8_t|int16_t|int32_t|bool|size_t|void|static|const|for|if|else|while|do|return|struct|typedef|break|continue)\b/g, '<span class="k">$1</span>');
+      return `<div class="code">${s}</div>`;
+    }
+
+    /* labelled value cells. rows = [name, value, cls] */
+    function cells(rows, label) {
+      const body = rows.map(([n, v, cls]) =>
+        `<div class="reg ${cls || ''}"><div class="rn">${n}</div><div class="rv">${v}</div></div>`).join('');
+      return `<div class="board">${label ? `<div class="blbl">${label}</div>` : ''}<div class="rrow">${body}</div></div>`;
+    }
+
+    /* generic table: head = [..], rows = [[cell | [cell, cls], ...], ..] */
+    function tbl(head, rows, label) {
+      const th = head.map(h => `<th>${h}</th>`).join('');
+      const tr = rows.map(rw => '<tr>' + rw.map(c => {
+        const [v, cls] = Array.isArray(c) ? c : [c, ''];
+        return `<td class="${cls || ''}">${v}</td>`;
+      }).join('') + '</tr>').join('');
+      return `<div class="board">${label ? `<div class="blbl">${label}</div>` : ''}
+        <table class="memt"><tr>${th}</tr>${tr}</table></div>`;
+    }
+
+    /* a column vector / matrix, as a bracketed grid. rows = [[a,b],[c,d]] */
+    function mtx(rows, label) {
+      const cols = rows[0].length;
+      const body = rows.map(r => r.map(v => `<span class="mc">${v}</span>`).join('')).join('');
+      return `<span class="mtx" style="grid-template-columns:repeat(${cols}, auto)">${body}</span>` +
+        (label ? `<span class="mtl">${label}</span>` : '');
+    }
+
+    /* ---------- plot primitives ---------- */
+    const PAL = ['var(--accent)', 'var(--on)', 'var(--hl)', 'var(--unk)', 'var(--off)'];
+
+    function scales(o) {
+      const W = o.W || 640, H = o.H || 170, L = o.L === undefined ? 44 : o.L,
+        R = o.R === undefined ? 14 : o.R, T = o.T === undefined ? 12 : o.T, B = o.B === undefined ? 26 : o.B;
+      const [x0, x1] = o.x, [y0, y1] = o.y;
+      return {
+        W, H, L, R, T, B, x0, x1, y0, y1,
+        X: v => L + (clamp(v, x0, x1) - x0) / (x1 - x0) * (W - L - R),
+        Y: v => T + (y1 - clamp(v, y0, y1)) / (y1 - y0) * (H - T - B),
+        Xr: v => L + (v - x0) / (x1 - x0) * (W - L - R),
+        Yr: v => T + (y1 - v) / (y1 - y0) * (H - T - B)
+      };
+    }
+
+    function ticks(a, b, n) {
+      const raw = (b - a) / n;
+      const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+      const step = [1, 2, 2.5, 5, 10].find(m => m * mag >= raw * 0.999) * mag;
+      const out = [];
+      for (let v = Math.ceil(a / step) * step; v <= b + step * 1e-6; v += step) out.push(Math.abs(v) < step / 1e6 ? 0 : v);
+      return out;
+    }
+
+    function txt(x, y, s, o = {}) {
+      return `<text x="${f2(x)}" y="${f2(y)}" text-anchor="${o.anchor || 'middle'}" font-size="${o.size || 10}"
+        fill="${o.fill || 'var(--tx-3)'}" font-family="var(--font-mono)" ${o.weight ? `font-weight="${o.weight}"` : ''}
+        ${o.rotate ? `transform="rotate(${o.rotate} ${f2(x)} ${f2(y)})"` : ''}>${s}</text>`;
+    }
+
+    function axesSVG(sc, o) {
+      let g = '';
+      const xt = o.xticks || ticks(sc.x0, sc.x1, o.nxt || 6);
+      const yt = o.yticks || ticks(sc.y0, sc.y1, o.nyt || 4);
+      const xf = o.xfmt || (v => fmtN(v, 2)), yf = o.yfmt || (v => fmtN(v, 2));
+      xt.forEach(v => {
+        const X = sc.Xr(v);
+        if (X < sc.L - .5 || X > sc.W - sc.R + .5) return;
+        g += `<line x1="${f2(X)}" y1="${sc.T}" x2="${f2(X)}" y2="${sc.H - sc.B}" stroke="var(--bd-1)" stroke-width="1"/>`;
+        if (o.noxlab) return;
+        g += txt(X, sc.H - sc.B + 13, esc(xf(v)));
+      });
+      yt.forEach(v => {
+        const Y = sc.Yr(v);
+        if (Y < sc.T - .5 || Y > sc.H - sc.B + .5) return;
+        g += `<line x1="${sc.L}" y1="${f2(Y)}" x2="${sc.W - sc.R}" y2="${f2(Y)}" stroke="var(--bd-1)" stroke-width="1"/>`;
+        g += txt(sc.L - 6, Y + 3.5, esc(yf(v)), {anchor: 'end'});
+      });
+      /* the axes themselves, drawn brighter */
+      if (sc.y0 <= 0 && sc.y1 >= 0) g += `<line x1="${sc.L}" y1="${f2(sc.Yr(0))}" x2="${sc.W - sc.R}" y2="${f2(sc.Yr(0))}" stroke="var(--bd-2)" stroke-width="1.5"/>`;
+      if (sc.x0 <= 0 && sc.x1 >= 0) g += `<line x1="${f2(sc.Xr(0))}" y1="${sc.T}" x2="${f2(sc.Xr(0))}" y2="${sc.H - sc.B}" stroke="var(--bd-2)" stroke-width="1.5"/>`;
+      g += `<rect x="${sc.L}" y="${sc.T}" width="${sc.W - sc.L - sc.R}" height="${sc.H - sc.T - sc.B}" fill="none" stroke="var(--bd-1)"/>`;
+      if (o.xlabel) g += txt(sc.W - sc.R, sc.H - 3, esc(o.xlabel), {anchor: 'end', fill: 'var(--tx-2)', size: 10.5});
+      if (o.ylabel) g += txt(11, sc.T + (sc.H - sc.T - sc.B) / 2, esc(o.ylabel), {rotate: -90, fill: 'var(--tx-2)', size: 10.5});
+      return g;
+    }
+
+    function legend(items) {
+      if (!items || !items.length) return '';
+      return `<div class="lgd">${items.map(([c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join('')}</div>`;
+    }
+
+    function plotBox(label, sc, body, lgd) {
+      return `<div class="plot" style="max-width:${sc.W + 26}px">${label ? `<div class="plbl">${label}</div>` : ''}
+        <svg viewBox="0 0 ${sc.W} ${sc.H}" preserveAspectRatio="xMidYMid meet" role="img">${body}</svg>
+        ${legend(lgd)}</div>`;
+    }
+
+    /* annotations shared by every plot type */
+    function annotate(sc, o) {
+      let g = '';
+      (o.vlines || []).forEach(v => {
+        const X = sc.Xr(v.x);
+        g += `<line x1="${f2(X)}" y1="${sc.T}" x2="${f2(X)}" y2="${sc.H - sc.B}" stroke="${v.color || 'var(--hl)'}"
+          stroke-width="1.4" stroke-dasharray="${v.dash || '4 3'}"/>`;
+        if (v.label) g += txt(X, sc.T + 11, esc(v.label), {fill: v.color || 'var(--hl)', size: 10.5});
+      });
+      (o.hlines || []).forEach(v => {
+        const Y = sc.Yr(v.y);
+        g += `<line x1="${sc.L}" y1="${f2(Y)}" x2="${sc.W - sc.R}" y2="${f2(Y)}" stroke="${v.color || 'var(--hl)'}"
+          stroke-width="1.4" stroke-dasharray="${v.dash || '4 3'}"/>`;
+        if (v.label) g += txt(sc.W - sc.R - 4, Y - 4, esc(v.label), {anchor: 'end', fill: v.color || 'var(--hl)', size: 10.5});
+      });
+      (o.marks || []).forEach(m => {
+        const X = sc.Xr(m.x), Y = sc.Yr(m.y);
+        g += `<circle cx="${f2(X)}" cy="${f2(Y)}" r="4" fill="${m.color || 'var(--hl)'}" stroke="var(--bg-2)" stroke-width="1.5"/>`;
+        if (m.label) g += txt(X, Y - 9, esc(m.label), {fill: m.color || 'var(--hl)', size: 10.5, weight: 600});
+      });
+      (o.texts || []).forEach(t => {
+        g += txt(sc.Xr(t.x), sc.Yr(t.y), esc(t.s), {fill: t.color || 'var(--tx-2)', size: t.size || 10.5, anchor: t.anchor});
+      });
+      return g;
+    }
+
+    function pathOf(pts, sc) {
+      let d = '', pen = false;
+      pts.forEach(([x, y]) => {
+        if (!isFinite(y)) {pen = false; return;}
+        const cy = clamp(y, sc.y0, sc.y1);
+        d += (pen ? 'L' : 'M') + f2(sc.Xr(x)) + ' ' + f2(sc.Yr(cy)) + ' ';
+        pen = true;
+      });
+      return d.trim();
+    }
+
+    /* ---------- continuous-time waveform ---------- */
+    /* series: [{f: t=>y | pts:[[t,y]], color, dash, width, fill, label}] */
+    function plotCT(series, o = {}) {
+      o = Object.assign({x: [-1, 5], y: [-1.4, 1.4], W: 640, H: 170, xlabel: 't', N: 500}, o);
+      const sc = scales(o);
+      let g = axesSVG(sc, o);
+      series.forEach((s, i) => {
+        const col = s.color || PAL[i % PAL.length];
+        let pts = s.pts;
+        if (!pts) {
+          pts = [];
+          for (let k = 0; k <= o.N; k++) {const t = sc.x0 + (sc.x1 - sc.x0) * k / o.N; pts.push([t, s.f(t)]);}
+        }
+        const d = pathOf(pts, sc);
+        if (s.fill) {
+          const base = sc.Yr(clamp(0, sc.y0, sc.y1));
+          g += `<path d="${d} L ${f2(sc.Xr(pts[pts.length - 1][0]))} ${f2(base)} L ${f2(sc.Xr(pts[0][0]))} ${f2(base)} Z"
+            fill="${col}" opacity=".16" stroke="none"/>`;
+        }
+        g += `<path d="${d}" fill="none" stroke="${col}" stroke-width="${s.width || 2}"
+          ${s.dash ? `stroke-dasharray="${s.dash}"` : ''} stroke-linejoin="round" stroke-linecap="round" opacity="${s.op || 1}"/>`;
+      });
+      g += annotate(sc, o);
+      const lgd = series.filter(s => s.label).map((s, i) => [s.color || PAL[series.indexOf(s) % PAL.length], s.label]);
+      return plotBox(o.label, sc, g, o.legend === false ? null : lgd);
+    }
+
+    /* ---------- discrete-time stem plot ---------- */
+    /* seq: array of numbers; o.n0 = index of seq[0] */
+    function plotDT(seq, o = {}) {
+      const n0 = o.n0 === undefined ? 0 : o.n0;
+      const vals = seq.filter(v => isFinite(v));
+      const top = o.ymax !== undefined ? o.ymax : Math.max(1, ...vals.map(Math.abs)) * 1.25;
+      const bot = o.ymin !== undefined ? o.ymin : (Math.min(0, ...vals) < 0 ? -top : -top * 0.25);
+      o = Object.assign({
+        x: [n0 - 1, n0 + seq.length], y: [bot, top], W: 640, H: 170, xlabel: 'n',
+        xticks: seq.map((_, i) => n0 + i).filter((v, i) => seq.length <= 22 || i % 2 === 0)
+      }, o);
+      const sc = scales(o);
+      let g = axesSVG(sc, o);
+      const zero = sc.Yr(clamp(0, sc.y0, sc.y1));
+      const hi = o.hi || [], unknown = o.unknown || [];
+      seq.forEach((v, i) => {
+        const n = n0 + i, X = sc.Xr(n);
+        if (X < sc.L || X > sc.W - sc.R) return;
+        const isQ = unknown.includes(n);
+        const col = isQ ? 'var(--unk)' : (hi.includes(n) ? 'var(--hl)' : (o.color || 'var(--accent)'));
+        if (isQ) {
+          g += `<line x1="${f2(X)}" y1="${f2(zero)}" x2="${f2(X)}" y2="${f2(zero - 26)}" stroke="var(--unk)" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+          g += txt(X, zero - 31, '?', {fill: 'var(--unk)', size: 13, weight: 700});
+          return;
+        }
+        const Y = sc.Yr(v);
+        g += `<line x1="${f2(X)}" y1="${f2(zero)}" x2="${f2(X)}" y2="${f2(Y)}" stroke="${col}" stroke-width="${hi.includes(n) ? 2.4 : 1.8}"/>`;
+        g += `<circle cx="${f2(X)}" cy="${f2(Y)}" r="${hi.includes(n) ? 4.2 : 3.4}" fill="${col}"/>`;
+        if (o.values && v !== 0) g += txt(X, Y + (v >= 0 ? -8 : 13), esc(fmtN(v, 2)), {fill: col, size: 10});
+      });
+      g += annotate(sc, o);
+      return plotBox(o.label, sc, g, o.legend || null);
+    }
+
+    /* ---------- helpers specific to this lab ---------- */
+    /* clip a convex polygon to the half-plane  a·x + b·y ≤ c  (Sutherland–Hodgman) */
+    function clipHalf(poly, a, b, c) {
+      const inside = p => a * p[0] + b * p[1] <= c + 1e-9;
+      const cross = (p, q) => {
+        const dp = a * p[0] + b * p[1] - c, dq = a * q[0] + b * q[1] - c;
+        const t = dp / (dp - dq);
+        return [p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1])];
+      };
+      const out = [];
+      for (let i = 0; i < poly.length; i++) {
+        const p = poly[i], q = poly[(i + 1) % poly.length];
+        const pi = inside(p), qi = inside(q);
+        if (pi) out.push(p);
+        if (pi !== qi) out.push(cross(p, q));
+      }
+      return out;
+    }
+
+    /* feasible region for 2-D linear constraints.
+       cons: [{a, b, c, label}] meaning a·x + b·y ≤ c.  o.ge = true flips one to ≥. */
+    function feasible(cons, o = {}) {
+      o = Object.assign({x: [0, 10], y: [0, 10], W: 400, H: 330, L: 36, B: 26, xlabel: 'x', ylabel: 'y', nxt: 5, nyt: 5}, o);
+      const sc = scales(o);
+      let g = axesSVG(sc, o);
+
+      let poly = [[sc.x0, sc.y0], [sc.x1, sc.y0], [sc.x1, sc.y1], [sc.x0, sc.y1]];
+      cons.forEach(k => {poly = clipHalf(poly, k.a, k.b, k.c);});
+
+      if (poly.length > 2) {
+        const d = poly.map(p => `${f2(sc.Xr(p[0]))} ${f2(sc.Yr(p[1]))}`).join(' L ');
+        g += `<path d="M ${d} Z" fill="var(--accent)" opacity=".16" stroke="var(--accent)" stroke-width="1.4"/>`;
+      }
+
+      /* each constraint drawn as a full line across the box */
+      cons.forEach((k, i) => {
+        const pts = [];
+        [sc.x0, sc.x1].forEach(x => {if (Math.abs(k.b) > 1e-9) pts.push([x, (k.c - k.a * x) / k.b]);});
+        [sc.y0, sc.y1].forEach(y => {if (Math.abs(k.a) > 1e-9) pts.push([(k.c - k.b * y) / k.a, y]);});
+        const inBox = pts.filter(p => p[0] >= sc.x0 - 1e-6 && p[0] <= sc.x1 + 1e-6 && p[1] >= sc.y0 - 1e-6 && p[1] <= sc.y1 + 1e-6);
+        if (inBox.length < 2) return;
+        const [p, q] = [inBox[0], inBox[inBox.length - 1]];
+        const col = k.color || PAL[(i + 1) % PAL.length];
+        g += `<line x1="${f2(sc.Xr(p[0]))}" y1="${f2(sc.Yr(p[1]))}" x2="${f2(sc.Xr(q[0]))}" y2="${f2(sc.Yr(q[1]))}"
+          stroke="${col}" stroke-width="1.8" stroke-dasharray="${k.dash || ''}"/>`;
+        if (k.label) {
+          const mid = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+          g += txt(sc.Xr(mid[0]), sc.Yr(mid[1]) - 5, esc(k.label), {fill: col, size: 10, weight: 600});
+        }
+      });
+
+      /* vertices of the feasible region */
+      if (o.vertices !== false) poly.forEach(p => {
+        g += `<circle cx="${f2(sc.Xr(p[0]))}" cy="${f2(sc.Yr(p[1]))}" r="3.6" fill="var(--tx-1)" stroke="var(--bg-2)" stroke-width="1.4"/>`;
+      });
+
+      g += annotate(sc, o);
+      return plotBox(o.label, sc, g, o.legend || null);
+    }
+
+    /* elliptical contours of  f = a(x−cx)² + b(y−cy)²,  with an optional iterate path */
+    function bowl(o = {}) {
+      const cx = o.cx || 0, cy = o.cy || 0, a = o.a || 1, b = o.b || 1;
+      o = Object.assign({x: [cx - 6, cx + 6], y: [cy - 6, cy + 6], W: 400, H: 330, L: 36, B: 26,
+        xlabel: 'x₁', ylabel: 'x₂', nxt: 5, nyt: 5}, o);
+      const sc = scales(o);
+      let g = axesSVG(sc, o);
+
+      const levels = o.levels || [0.5, 2, 5, 10, 20, 40];
+      levels.forEach(L => {
+        const rx = Math.sqrt(L / a), ry = Math.sqrt(L / b);
+        g += `<ellipse cx="${f2(sc.Xr(cx))}" cy="${f2(sc.Yr(cy))}"
+          rx="${f2(Math.abs(sc.Xr(cx + rx) - sc.Xr(cx)))}" ry="${f2(Math.abs(sc.Yr(cy + ry) - sc.Yr(cy)))}"
+          fill="none" stroke="var(--bd-2)" stroke-width="1"/>`;
+      });
+
+      if (o.path && o.path.length) {
+        const d = o.path.map(p => `${f2(sc.Xr(p[0]))} ${f2(sc.Yr(p[1]))}`).join(' L ');
+        g += `<path d="M ${d}" fill="none" stroke="var(--hl)" stroke-width="2" stroke-linejoin="round"/>`;
+        o.path.forEach((p, i) => {
+          g += `<circle cx="${f2(sc.Xr(p[0]))}" cy="${f2(sc.Yr(p[1]))}" r="${i === 0 ? 4.5 : 3.4}"
+            fill="${i === 0 ? 'var(--off)' : 'var(--hl)'}" stroke="var(--bg-2)" stroke-width="1.4"/>`;
+          if (o.pathLabels && o.pathLabels[i]) g += txt(sc.Xr(p[0]) + 10, sc.Yr(p[1]) - 6, esc(o.pathLabels[i]), {fill: 'var(--hl)', size: 10, anchor: 'start', weight: 600});
+        });
+      }
+
+      g += `<circle cx="${f2(sc.Xr(cx))}" cy="${f2(sc.Yr(cy))}" r="4" fill="var(--on)" stroke="var(--bg-2)" stroke-width="1.4"/>`;
+      g += annotate(sc, o);
+      return plotBox(o.label, sc, g, o.legend || null);
+    }
+
+    /* ============================================================
+       PART 3 — curriculum
+       Modules run in dependency order: nothing here needs an idea
+       that a later module introduces.
+       ============================================================ */
+    const MODULES = [
+      {id: 'setup', name: 'Framing the problem', blurb: 'Every optimisation is three things: what you are choosing, what you are trying to make big or small, and what you are not allowed to do. Getting these three written down honestly is most of the work — a solver applied to a badly framed problem answers the wrong question very efficiently.'},
+      {id: 'landscape', name: 'The shape of the problem', blurb: 'Whether a problem is easy or hopeless is mostly decided by its shape. Convex problems have exactly one basin, so any downhill walk finds the global answer. Non-convex ones have many, and no algorithm can promise you the best.'},
+      {id: 'gradient', name: 'Gradient descent', blurb: 'Compute the slope, step against it, repeat. The whole method fits on one line, and everything difficult about it — step size, convergence rate, zig-zagging, divergence — falls out of the curvature of the function you are walking on.'},
+      {id: 'constrained', name: 'Constrained optimisation', blurb: 'When the best unconstrained answer is not allowed, the optimum moves to the boundary. Lagrange multipliers find it, and the multiplier itself is a price: how much the objective would improve if you relaxed the constraint by one unit.'},
+      {id: 'lp', name: 'Linear programming', blurb: 'A linear objective over linear constraints. The feasible region is a polygon, the optimum is always at a corner, and that single fact turns an infinite search into a finite one. Resource allocation, scheduling and mixing problems all land here.'},
+      {id: 'applied', name: 'Optimisation in engineering', blurb: 'Least squares, coefficient quantisation, greedy versus optimal, energy-versus-deadline trade-offs, and knowing which of these is a solved problem and which is a search you will have to bound.'}
+    ];
+    const MOD_INDEX = Object.fromEntries(MODULES.map((m, i) => [m.id, i]));
+
+    const P_A = [
+      {
+        id: 's1', mod: 'setup', diff: 'easy', fmt: 'mc', title: 'Objective, variable, constraint',
+        ask: 'A firmware build must fit in 256&thinsp;KB of flash while running as fast as possible; you choose the compiler optimisation level. Which is the <em>objective function</em>?',
+        hint: 'The objective is the single number you are trying to push up or down. Everything else is either a choice or a limit.',
+        concept: 'Confusing a constraint with an objective is the most common framing error, and it changes the answer completely. "Fit in flash" is a hard boundary — a build at 255 KB is no better than one at 100 KB. "Run fast" is the thing you are actually trading against. Write the three parts down separately before you touch any solver.',
+        setup() {
+          return mc('execution time, which you are minimising',
+            ['the flash budget of 256&thinsp;KB', 'the compiler optimisation level', 'the size of the compiled binary']);
+        },
+        render(s, shown) {
+          return eq('minimise    execution_time(level)',
+            'subject to  flash_used(level) ≤ 256 KB',
+            'over        level ∈ {O0, O1, O2, O3, Os}',
+            '# three lines: objective, constraint, decision variable')
+            + (shown ? note('The optimisation level is the <em>decision variable</em> — the knob you control. The flash budget is a <em>constraint</em> — a pass/fail limit. Only execution time is the number being minimised.') : '');
+        }
+      },
+      {
+        id: 's2', mod: 'setup', diff: 'easy', fmt: 'yesno', title: 'Is this point feasible?',
+        ask: s => `Constraints are <code>x + y &le; ${s.c1}</code>, <code>${s.a2}x + y &le; ${s.c2}</code>, x &ge; 0, y &ge; 0. Is the point (${s.px}, ${s.py}) feasible?`,
+        hint: 'Substitute the point into every constraint. A single violation makes it infeasible — all of them must hold at once.',
+        concept: 'Feasibility is checked before optimality, always: there is no point ranking solutions that cannot be built. In practice a solver that reports "infeasible" is usually telling you that two of your requirements contradict each other, and finding which pair is the real debugging task.',
+        setup() {
+          const c1 = rnd(8, 14), a2 = rnd(2, 3), c2 = rnd(12, 22);
+          const px = rnd(0, 10), py = rnd(0, 10);
+          const ok = px + py <= c1 && a2 * px + py <= c2 && px >= 0 && py >= 0;
+          return yn(ok, {c1, a2, c2, px, py});
+        },
+        render(s, shown) {
+          const r1 = s.px + s.py, r2 = s.a2 * s.px + s.py;
+          return tbl(['constraint', 'value at the point', 'limit', 'holds?'],
+            [[`x + y ≤ ${s.c1}`, r1, s.c1, [shown ? (r1 <= s.c1 ? '✓' : '✗') : '?', shown ? (r1 <= s.c1 ? 'mk' : 'mk2') : 'q']],
+            [`${s.a2}x + y ≤ ${s.c2}`, r2, s.c2, [shown ? (r2 <= s.c2 ? '✓' : '✗') : '?', shown ? (r2 <= s.c2 ? 'mk' : 'mk2') : 'q']],
+            ['x ≥ 0, y ≥ 0', `${s.px}, ${s.py}`, '≥ 0', [shown ? '✓' : '?', shown ? 'mk' : 'q']]])
+            + feasible([{a: 1, b: 1, c: s.c1, label: `x+y ≤ ${s.c1}`}, {a: s.a2, b: 1, c: s.c2, label: `${s.a2}x+y ≤ ${s.c2}`},
+            {a: -1, b: 0, c: 0}, {a: 0, b: -1, c: 0}],
+              {x: [0, 12], y: [0, 12], marks: [{x: s.px, y: s.py, label: shown ? (s.answer === 'yes' ? 'feasible' : 'outside') : '?', color: shown ? (s.answer === 'yes' ? 'var(--on)' : 'var(--off)') : 'var(--unk)'}]})
+            + (shown ? note(`<b>${s.answer}</b> &mdash; ${s.answer === 'yes' ? 'every constraint holds, so the point lies inside the shaded region.' : `at least one constraint fails, so the point is outside the region.`}`) : '');
+        }
+      },
+      {
+        id: 's3', mod: 'setup', diff: 'easy', fmt: 'num', title: 'Score a candidate',
+        ask: s => `You are maximising <code>P = ${s.cx}x + ${s.cy}y</code>. What is P at the point (${s.px}, ${s.py})?`,
+        hint: 'Just evaluate — no derivatives, no search. This is what a solver does thousands of times.',
+        concept: 'Being able to score a candidate cheaply is the precondition for every search method. If your objective takes ten minutes to evaluate — a full build, a hardware-in-the-loop run — then the algorithm you can afford changes completely, and you start caring about sample efficiency rather than convergence rate.',
+        setup() {
+          const cx = rnd(2, 9), cy = rnd(2, 9), px = rnd(0, 12), py = rnd(0, 12);
+          return num(cx * px + cy * py, 0.01, {cx, cy, px, py});
+        },
+        render(s, shown) {
+          return eq(`P = ${s.cx}x + ${s.cy}y`,
+            shown ? `P(${s.px}, ${s.py}) = ${s.cx}×${s.px} + ${s.cy}×${s.py} = ${s.cx * s.px + s.cy * s.py}` : `P(${s.px}, ${s.py}) = ?`)
+            + (shown ? note(`<b>${s.cx * s.px + s.cy * s.py}</b>. The coefficients say how much each unit of x and y is worth — ${s.cx > s.cy ? 'x' : s.cy > s.cx ? 'y' : 'neither'} ${s.cx === s.cy ? 'dominates; they are equally valuable' : 'is the more valuable of the two, per unit'}.`) : '');
+        }
+      },
+      {
+        id: 's4', mod: 'setup', diff: 'medium', fmt: 'mc', title: 'Unbounded or infeasible',
+        ask: 'A solver reports that your problem is <em>unbounded</em>. What has gone wrong?',
+        hint: 'Unbounded and infeasible are opposite failures. One means no answer is allowed; the other means no answer is best.',
+        concept: 'Unbounded almost always means a missing constraint — you told the solver it could have infinite throughput and forgot to cap the power. Infeasible means your constraints contradict. Both are modelling bugs rather than numerical ones, and both are found by re-reading the three-line statement of the problem, not by changing solver settings.',
+        setup() {
+          return mc('the objective can be improved forever without violating any constraint — a limit is missing',
+            ['the constraints contradict each other, so no point satisfies them all',
+              'the solver ran out of iterations before converging',
+              'the objective is non-convex, so there are several local optima']);
+        },
+        render(s, shown) {
+          return eq('maximise  x        subject to  x ≥ 0',
+            '# nothing stops x growing — unbounded',
+            'maximise  x        subject to  x ≥ 5,  x ≤ 3',
+            '# no x satisfies both — infeasible')
+            + (shown ? note('Unbounded = you forgot a ceiling. Infeasible = you asked for two incompatible things. The second option describes infeasibility, not unboundedness.') : '');
+        }
+      },
+      {
+        id: 's5', mod: 'setup', diff: 'hard', fmt: 'num', title: 'Turn a requirement into a constraint',
+        ask: s => `A task must complete within ${s.T}&thinsp;ms. It does ${s.W} units of work at a rate of <code>r</code> units/ms. What is the smallest r that meets the deadline?`,
+        hint: 'Time taken is work divided by rate. Write the requirement as an inequality in r, then solve it.',
+        concept: 'Requirements arrive as sentences and must become inequalities before anything can be optimised. The rearrangement matters: writing it as r ≥ W/T shows immediately that the binding case is equality, and that is where the optimum will sit whenever going faster costs something — which, for a processor burning energy at a superlinear rate, it always does.',
+        setup() {
+          const T = pick([5, 10, 20, 50]), W = rnd(20, 400);
+          return num(W / T, Math.max(0.005, W / T * 0.01), {T, W});
+        },
+        render(s, shown) {
+          return eq(`time = W / r ≤ ${s.T}`,
+            `⇒  r ≥ ${s.W} / ${s.T}`,
+            shown ? `⇒  r ≥ ${fmtN(s.W / s.T, 4)} units/ms` : '⇒  r ≥ ?')
+            + (shown ? note(`<b>${fmtN(s.W / s.T, 4)}</b> units/ms. Any faster meets the deadline with margin but costs more energy; any slower misses it. The optimum for an energy-minimising scheduler is exactly this rate — no slack, no waste.`) : '');
+        }
+      },
+
+      /* ---------- the shape of the problem ---------- */
+      {
+        id: 'l1', mod: 'landscape', diff: 'easy', fmt: 'mc', title: 'Local versus global',
+        ask: 'What distinguishes a <em>local</em> minimum from a <em>global</em> one?',
+        hint: 'One is a statement about a neighbourhood; the other is a statement about everywhere.',
+        concept: 'Every downhill method finds a local minimum — that is all a slope can tell you, since the gradient is blind beyond the point it is measured at. Guaranteeing a global answer requires either a structural argument (convexity) or an exhaustive one (search the whole space). There is no third option, which is why so much modelling effort goes into making a problem convex.',
+        setup() {
+          return mc('a local minimum is lowest only within some neighbourhood; a global one is lowest everywhere in the feasible set',
+            ['a local minimum has zero gradient; a global one does not',
+              'a local minimum is found by gradient descent, a global one by Newton&rsquo;s method',
+              'a global minimum is unique, a local one never is']);
+        },
+        render(s, shown) {
+          const f = x => 0.1 * Math.pow(x, 4) - 1.2 * x * x + 0.9 * x + 5;
+          return plotCT([{f, label: 'f(x)'}], {x: [-4, 4], y: [0, 12], xlabel: 'x',
+            marks: [{x: -2.6, y: f(-2.6), label: shown ? 'global' : '?', color: shown ? 'var(--on)' : 'var(--unk)'},
+            {x: 2.3, y: f(2.3), label: shown ? 'local only' : '?', color: shown ? 'var(--off)' : 'var(--unk)'}]})
+            + (shown ? note('Both points have zero gradient and both pass the second-derivative test. Nothing measurable <em>at</em> either point distinguishes them — you have to look elsewhere, which is exactly the difficulty.') : '');
+        }
+      },
+      {
+        id: 'l2', mod: 'landscape', diff: 'medium', fmt: 'yesno', title: 'Is it convex?',
+        ask: s => `Is <code>f(x) = ${poly(s.co)}</code> convex over all real x?`,
+        hint: 'A one-dimensional function is convex exactly when f″(x) ≥ 0 everywhere. Differentiate twice and look at the sign.',
+        concept: 'Convexity is the single property that decides whether an optimisation is routine or research. For a convex function every local minimum is global, so a simple descent is provably correct and you can stop when the gradient is small. The moment convexity is lost, "converged" only ever means "stuck somewhere".',
+        setup() {
+          const kind = pick(['quad+', 'quad-', 'quartic', 'cubic']);
+          let co, ok;
+          if (kind === 'quad+') {co = [0, rnd(1, 5), rnd(-6, 6), rnd(-9, 9)]; ok = true;}
+          else if (kind === 'quad-') {co = [0, -rnd(1, 5), rnd(-6, 6), rnd(-9, 9)]; ok = false;}
+          else if (kind === 'quartic') {co = [rnd(1, 3), 0, 0, rnd(-5, 5)]; ok = true;}
+          else {co = [rnd(1, 3), 0, rnd(-4, 4), rnd(-5, 5)]; ok = false;}
+          /* co is [c3, c2, c1, c0] for a cubic, or a quartic flagged separately */
+          return yn(ok, {co: kind === 'quartic' ? [co[0], 0, 0, 0, co[3]] : co, kind});
+        },
+        render(s, shown) {
+          const n = s.co.length - 1;
+          const f = x => s.co.reduce((acc, c, i) => acc + c * Math.pow(x, n - i), 0);
+          const d2 = s.kind === 'quartic' ? `f″(x) = ${12 * s.co[0]}x²  — a square, so never negative`
+            : s.kind === 'cubic' ? `f″(x) = ${6 * s.co[0]}x  — changes sign at x = 0`
+              : `f″(x) = ${2 * s.co[1]}  — constant`;
+          return eq(`f(x) = ${poly(s.co)}`, shown ? d2 : 'f″(x) = ?',
+            '# convex ⇔ f″(x) ≥ 0 for every x')
+            + plotCT([{f, label: 'f(x)'}], {x: [-3, 3], y: [Math.min(...[-3, -2, -1, 0, 1, 2, 3].map(f)) - 2, Math.max(...[-3, -2, -1, 0, 1, 2, 3].map(f)) + 2], xlabel: 'x'})
+            + (shown ? note(`<b>${s.answer}</b>. ${s.kind === 'quad+' ? 'A positive x² coefficient gives a constant positive second derivative — a bowl.'
+              : s.kind === 'quad-' ? 'A negative x² coefficient gives a dome: concave, not convex. Maximising it would be the convex problem.'
+                : s.kind === 'quartic' ? 'x⁴ with a positive coefficient has f″ = 12ax² ≥ 0 everywhere — convex, though it flattens badly near the bottom.'
+                  : 'A cubic always has an inflection where f″ changes sign, so it is convex on one side and concave on the other — never convex overall.'}`) : '');
+        }
+      },
+      {
+        id: 'l3', mod: 'landscape', diff: 'medium', fmt: 'mc', title: 'Why convexity is the whole game',
+        ask: 'For a convex objective over a convex feasible set, what can you guarantee?',
+        hint: 'Think about what could go wrong in a non-convex problem, and which of those failures convexity rules out.',
+        concept: 'Convexity buys you a certificate: a zero gradient inside the region, or a boundary point where you cannot improve, is provably the best answer anywhere. That is why so much practical work is spent reformulating a problem into a convex one — replacing an L0 sparsity count with an L1 norm, for instance — rather than throwing a cleverer search at the original.',
+        setup() {
+          return mc('any local minimum you find is also the global minimum',
+            ['the minimum is unique',
+              'gradient descent converges in a fixed number of steps',
+              'the minimum lies at a vertex of the feasible region']);
+        },
+        render(s, shown) {
+          return eq('convex f, convex set  ⇒  local min = global min',
+            '# a certificate, not just a heuristic')
+            + (shown ? note('Uniqueness needs <em>strict</em> convexity — a flat-bottomed convex function has infinitely many minimisers, all equally good. And the corner claim is specific to linear programmes, not convex ones generally.') : '');
+        }
+      },
+      {
+        id: 'l4', mod: 'landscape', diff: 'hard', fmt: 'num', title: 'Pick the better basin',
+        ask: s => `A tuning curve is <code>f(x) = ${s.a}(x &minus; ${s.p})&sup2;(x &minus; ${s.q})&sup2;</code>. It has two minima. What is the value of f at the lower of them?`,
+        hint: 'A product of two squares is zero when either factor is zero — so both minima sit exactly at zero.',
+        concept: 'This is a deliberately awkward case: two basins that are exactly as good as each other. Real tuning surfaces often look like this, with several settings that meet the specification equally well but differ wildly in robustness. When the objective cannot separate them, you add a secondary criterion — margin, sensitivity, cost — rather than trusting the solver to pick.',
+        setup() {
+          const a = rnd(1, 4), p = rnd(-4, 0), q = rnd(1, 5);
+          return num(0, 0.02, {a, p, q});
+        },
+        render(s, shown) {
+          const f = x => s.a * Math.pow(x - s.p, 2) * Math.pow(x - s.q, 2);
+          return plotCT([{f, label: 'f(x)'}], {x: [s.p - 2, s.q + 2], y: [-2, Math.max(20, f((s.p + s.q) / 2) * 1.4)], xlabel: 'x',
+            marks: [{x: s.p, y: 0, label: shown ? '0' : '?', color: shown ? 'var(--on)' : 'var(--unk)'},
+            {x: s.q, y: 0, label: shown ? '0' : '?', color: shown ? 'var(--on)' : 'var(--unk)'}]})
+            + (shown ? note(`Both minima give f = <b>0</b>, at x = ${s.p} and x = ${s.q}. Neither is "the" answer; a gradient method lands in whichever basin it started in, and the objective alone gives you no reason to prefer one.`) : '');
+        }
+      },
+      {
+        id: 'l5', mod: 'landscape', diff: 'hard', fmt: 'mc', title: 'A non-convex feasible set',
+        ask: 'Your decision variable must be an integer number of cores, 1 to 8. Why does that break convexity?',
+        hint: 'Convexity of a set means the straight line between any two feasible points stays feasible.',
+        concept: 'Integrality is the most common way a practical problem leaves the convex world — cores, packets, tasks, bits of a coefficient. The usual approach is to relax to a continuous problem, solve it easily, and then repair the answer to integers, accepting that rounding may be infeasible or suboptimal and bounding how far off it can be.',
+        setup() {
+          return mc('the midpoint of two feasible points need not be feasible — 2 and 3 cores are allowed, 2.5 is not',
+            ['integers are not closed under addition',
+              'the objective becomes discontinuous at every integer',
+              'gradients cannot be computed for integer variables']);
+        },
+        render(s, shown) {
+          return eq('convex set:  x, y feasible  ⇒  ½x + ½y feasible',
+            '# {1,2,…,8} fails this immediately')
+            + (shown ? note('The objective may be perfectly smooth; it is the <em>set</em> that is broken. That is enough to force a search — branch and bound, or exhaustive enumeration when the space is as small as eight options.') : '');
+        }
+      }
+    ];
+
+    const P_B = [
+      /* ---------- gradient descent ---------- */
+      {
+        id: 'g1', mod: 'gradient', diff: 'easy', fmt: 'num', title: 'Read the gradient',
+        ask: s => `For <code>f(x&#8321;, x&#8322;) = ${lead(s.a, 'x&#8321;&sup2;')}${sgn(s.b, 'x&#8322;&sup2;')}</code>, what is &part;f/&part;x&#8321; at (${s.p1}, ${s.p2})?`,
+        hint: 'Differentiate in x₁ with x₂ frozen. The x₂ term contributes nothing.',
+        concept: 'The gradient is the only thing a first-order method ever sees. Everything downstream — step size, convergence rate, whether the run diverges — is decided by these numbers, so a wrong gradient is the first thing to check when training misbehaves. Comparing an analytic gradient against a finite-difference estimate is the standard sanity check.',
+        setup() {
+          const a = rnd(1, 6), b = rnd(1, 6), p1 = rnd(-5, 5) || 2, p2 = rnd(-5, 5) || 3;
+          return num(2 * a * p1, 0.01, {a, b, p1, p2});
+        },
+        render(s, shown) {
+          return eq(`∂f/∂x₁ = ${2 * s.a}x₁          ∂f/∂x₂ = ${2 * s.b}x₂`,
+            shown ? `∇f(${s.p1}, ${s.p2}) = ( ${2 * s.a * s.p1}, ${2 * s.b * s.p2} )` : `∇f(${s.p1}, ${s.p2}) = ( ?, ? )`)
+            + bowl({a: s.a, b: s.b, cx: 0, cy: 0, path: [[s.p1, s.p2]],
+              pathLabels: [shown ? `∇ = (${2 * s.a * s.p1}, ${2 * s.b * s.p2})` : 'start'],
+              x: [-6, 6], y: [-6, 6], label: 'contours of f — the gradient is perpendicular to them'})
+            + (shown ? note(`<b>${2 * s.a * s.p1}</b>. Downhill from here is the direction (${-2 * s.a * s.p1}, ${-2 * s.b * s.p2}) — straight across the contour lines, not along them.`) : '');
+        }
+      },
+      {
+        id: 'g2', mod: 'gradient', diff: 'medium', fmt: 'num', title: 'One descent step',
+        ask: s => `Minimising <code>f = ${lead(s.a, 'x&#8321;&sup2;')}${sgn(s.b, 'x&#8322;&sup2;')}</code> from (${s.p1}, ${s.p2}) with &eta; = ${s.eta}. What is the new x&#8321;?`,
+        hint: 'x₁ ← x₁ − η·∂f/∂x₁. Compute the partial first, then take the step.',
+        concept: 'Each coordinate is updated independently using its own partial, which is why gradient descent parallelises trivially and why the shape of the bowl matters so much: a coordinate with large curvature moves aggressively for the same η as one with small curvature. That mismatch is what adaptive methods like Adam exist to fix.',
+        setup() {
+          const a = pick([1, 2, 3, 5]), b = pick([1, 2, 3, 5]), eta = pick([0.05, 0.1, 0.2]);
+          const p1 = rnd(-5, 5) || 4, p2 = rnd(-5, 5) || 3;
+          return num(p1 - eta * 2 * a * p1, Math.max(0.005, Math.abs(p1 * (1 - 2 * a * eta)) * 0.01), {a, b, eta, p1, p2});
+        },
+        render(s, shown) {
+          const n1 = s.p1 * (1 - 2 * s.a * s.eta), n2 = s.p2 * (1 - 2 * s.b * s.eta);
+          return eq(`x₁ ← ${s.p1} − ${s.eta} × (${2 * s.a} × ${s.p1})`,
+            `x₂ ← ${s.p2} − ${s.eta} × (${2 * s.b} × ${s.p2})`,
+            shown ? `new point = (${fmtN(n1, 4)}, ${fmtN(n2, 4)})` : 'new point = ( ?, ? )')
+            + bowl({a: s.a, b: s.b, path: shown ? [[s.p1, s.p2], [n1, n2]] : [[s.p1, s.p2]],
+              pathLabels: shown ? ['x⁰', 'x¹'] : ['x⁰'], x: [-6, 6], y: [-6, 6]})
+            + (shown ? note(`x&#8321; = <b>${fmtN(n1, 4)}</b>. Each coordinate shrinks by its own factor: ${fmtN(1 - 2 * s.a * s.eta, 3)} for x&#8321; and ${fmtN(1 - 2 * s.b * s.eta, 3)} for x&#8322;. ${s.a === s.b ? 'Here they match, so the step heads straight at the minimum.' : 'They differ, so the path bends rather than aiming at the centre.'}`) : '');
+        }
+      },
+      {
+        id: 'g3', mod: 'gradient', diff: 'medium', fmt: 'yesno', title: 'Will this learning rate converge?',
+        ask: s => `Descending on <code>f(x) = ${lead(s.a, 'x&sup2;')}</code> with &eta; = ${s.eta}. Does the iterate converge to the minimum?`,
+        hint: 'One step multiplies x by (1 − 2aη). Convergence needs the magnitude of that factor to be strictly under 1.',
+        concept: 'Convergence is a contraction condition, not a matter of taste: η must satisfy 0 < η < 1/a for a bowl of curvature 2a. Exceed it and the iterate oscillates outward and overflows to NaN in a handful of steps. Every "reduce the learning rate" fix is this inequality being restored.',
+        setup() {
+          const a = pick([1, 2, 5, 10]), eta = pick([0.02, 0.05, 0.1, 0.2, 0.5, 0.8]);
+          return yn(Math.abs(1 - 2 * a * eta) < 1, {a, eta});
+        },
+        render(s, shown) {
+          const r = 1 - 2 * s.a * s.eta;
+          const seq = [];
+          let x = 1;
+          for (let k = 0; k < 12; k++) {seq.push(x); x *= r;}
+          return eq(`x ← x − η·${2 * s.a}x = (1 − ${fmtN(2 * s.a * s.eta, 4)})·x`,
+            `contraction factor = ${fmtN(r, 4)}`,
+            '# converges ⇔ |factor| < 1 ⇔ 0 < η < 1/a')
+            + plotDT(seq.map(v => clamp(v, -8, 8)), {n0: 0, xlabel: 'iteration', label: 'starting from x = 1'})
+            + chips([['η', s.eta], ['1/a', fmtN(1 / s.a, 4)], ['factor', fmtN(r, 4)],
+            ['verdict', shown ? (Math.abs(r) < 1 ? 'converges' : 'diverges') : '?', shown ? (Math.abs(r) < 1 ? 'good' : 'bad') : '']])
+            + (shown ? note(`<b>${s.answer}</b>. |${fmtN(r, 4)}| ${Math.abs(r) < 1 ? '< 1, so each step shrinks x' : '≥ 1, so each step is at least as far from the minimum as the last'}. The ceiling here is &eta; &lt; 1/a = ${fmtN(1 / s.a, 4)}${r < 0 && Math.abs(r) < 1 ? ', and above 1/(2a) it converges while alternating sign' : ''}.`) : '');
+        }
+      },
+      {
+        id: 'g4', mod: 'gradient', diff: 'medium', fmt: 'dec', title: 'How many steps to get close',
+        ask: s => `Each step multiplies the distance to the minimum by ${s.r}. How many steps to shrink it by a factor of ${s.fac} or more?`,
+        hint: 'You need rⁿ ≤ 1/factor. Take logs: n ≥ ln(1/factor) / ln(r), then round up to a whole step.',
+        concept: 'Linear convergence means a fixed number of steps buys a fixed number of digits — the cost of accuracy is logarithmic, not linear. That is what makes gradient descent practical even when it is slow, and it is also why a factor near 1 is fatal: at r = 0.999 you need thousands of iterations for a single digit.',
+        setup() {
+          const r = pick([0.5, 0.6, 0.8, 0.9, 0.95]), fac = pick([10, 100, 1000]);
+          const n = Math.ceil(Math.log(1 / fac) / Math.log(r));
+          return {answer: String(n), r, fac, alts: [String(n)]};
+        },
+        render(s, shown) {
+          const n = Math.ceil(Math.log(1 / s.fac) / Math.log(s.r));
+          return eq(`${s.r}ⁿ ≤ 1/${s.fac}`,
+            `n ≥ ln(1/${s.fac}) / ln(${s.r}) = ${fmtN(Math.log(1 / s.fac) / Math.log(s.r), 3)}`,
+            shown ? `n = ${n} steps` : 'n = ?')
+            + plotDT(Array.from({length: Math.min(24, n + 4)}, (_, k) => Math.pow(s.r, k)),
+              {n0: 0, xlabel: 'step', label: 'distance to the minimum',
+                hlines: [{y: 1 / s.fac, label: `1/${s.fac}`}]})
+            + (shown ? note(`<b>${n}</b> steps. Ten times tighter costs another ${Math.ceil(Math.log(0.1) / Math.log(s.r))} steps, not ten times as many — that is what linear convergence means.`) : '');
+        }
+      },
+      {
+        id: 'g5', mod: 'gradient', diff: 'hard', fmt: 'num', title: 'Momentum',
+        ask: s => `Momentum keeps a velocity: <code>v &larr; ${s.beta}v &minus; ${s.eta}g</code>, then <code>x &larr; x + v</code>. With v = ${s.v0}, x = ${s.x0} and gradient g = ${s.g}, what is the new x?`,
+        hint: 'Update v first with the given numbers, then add the new v to x.',
+        concept: 'Momentum averages recent gradients, so consistent directions build up speed while oscillating ones cancel out. On an ill-conditioned bowl — a long narrow valley — plain descent zig-zags across the valley and crawls along it; momentum damps the zig-zag and accelerates the crawl. The cost is one extra vector of state per parameter.',
+        setup() {
+          const beta = pick([0.5, 0.9]), eta = pick([0.1, 0.2]), v0 = rnd(-4, 4), x0 = rnd(-6, 6), g = rnd(-8, 8) || 3;
+          const v1 = beta * v0 - eta * g;
+          return num(x0 + v1, Math.max(0.005, Math.abs(x0 + v1) * 0.01 + 0.005), {beta, eta, v0, x0, g});
+        },
+        render(s, shown) {
+          const v1 = s.beta * s.v0 - s.eta * s.g;
+          return eq(`v ← ${s.beta}×${s.v0} − ${s.eta}×${s.g} = ${fmtN(v1, 4)}`,
+            shown ? `x ← ${s.x0} + ${fmtN(v1, 4)} = ${fmtN(s.x0 + v1, 4)}` : `x ← ${s.x0} + v = ?`)
+            + cells([['β', s.beta], ['η', s.eta], ['v old', s.v0], ['g', s.g],
+            ['v new', shown ? fmtN(v1, 3) : '?', shown ? 'new' : 'q'],
+            ['x new', shown ? fmtN(s.x0 + v1, 3) : '?', shown ? 'new' : 'q']])
+            + (shown ? note(`x = <b>${fmtN(s.x0 + v1, 4)}</b>. Plain descent would have moved only &minus;&eta;g = ${fmtN(-s.eta * s.g, 4)}; the carried velocity ${s.beta * s.v0 > 0 ? 'added to' : 'subtracted from'} that. With &beta; = ${s.beta} the effective step is up to 1/(1&minus;&beta;) = ${fmtN(1 / (1 - s.beta), 2)}&times; larger once the velocity settles.`) : '');
+        }
+      },
+      {
+        id: 'g6', mod: 'gradient', diff: 'hard', fmt: 'num', title: 'The largest safe step',
+        ask: s => `For <code>f(x) = ${lead(s.a, 'x&sup2;')}</code>, the curvature is L = ${2 * s.a}. What is the largest &eta; for which gradient descent still converges?`,
+        hint: 'The factor is 1 − ηL. It stays inside (−1, 1) as long as η < 2/L.',
+        concept: 'η < 2/L is the general rule for any function whose gradient is L-Lipschitz, and 1/L is the safe practical choice. When you cannot compute L, that is exactly what a line search or an adaptive method is estimating on the fly. It also explains why normalising inputs helps: it shrinks L and lets you take bigger steps.',
+        setup() {
+          const a = pick([0.5, 1, 2, 4, 5, 10]);
+          return num(2 / (2 * a), Math.max(0.002, 1 / a * 0.01), {a});
+        },
+        render(s, shown) {
+          const L = 2 * s.a;
+          return eq(`factor = 1 − ηL,   L = ${L}`,
+            '|1 − ηL| < 1   ⇔   0 < η < 2/L',
+            shown ? `η < 2/${L} = ${fmtN(2 / L, 4)}` : 'η < ?')
+            + tbl(['η', '0.5/L', '1/L', '2/L', '2.5/L'],
+              [['factor', fmtN(1 - 0.5, 2), fmtN(1 - 1, 2), fmtN(1 - 2, 2), fmtN(1 - 2.5, 2)],
+              ['behaviour', 'converges', ['one step!', 'mk'], 'oscillates forever', ['diverges', 'mk2']]])
+            + (shown ? note(`<b>${fmtN(2 / L, 4)}</b>. Exactly &eta; = 1/L = ${fmtN(1 / L, 4)} lands on the minimum in a single step for this quadratic; at 2/L it bounces between &plusmn;x forever; beyond that it explodes.`) : '');
+        }
+      },
+      {
+        id: 'g7', mod: 'gradient', diff: 'expert', fmt: 'num', title: 'Condition number and zig-zag',
+        ask: s => `A bowl is <code>f = ${lead(s.a, 'x&#8321;&sup2;')}${sgn(s.b, 'x&#8322;&sup2;')}</code>. What is its condition number (largest curvature divided by smallest)?`,
+        hint: 'The curvatures are 2a and 2b. Divide the larger by the smaller.',
+        concept: 'The condition number sets the convergence rate: gradient descent contracts by roughly (κ−1)/(κ+1) per step, so κ = 1 converges instantly and κ = 100 crawls. This is why feature scaling, preconditioning and batch normalisation all help — they are attacks on κ, not on the algorithm. An ill-conditioned problem is slow no matter how good your step size is.',
+        setup() {
+          const pair = pick([[1, 1], [1, 4], [1, 10], [2, 20], [1, 100], [5, 5]]);
+          const [a, b] = shuffle(pair);
+          return num(Math.max(a, b) / Math.min(a, b), Math.max(0.02, Math.max(a, b) / Math.min(a, b) * 0.01), {a, b});
+        },
+        render(s, shown) {
+          const k = Math.max(s.a, s.b) / Math.min(s.a, s.b);
+          const rate = (k - 1) / (k + 1);
+          const path = [];
+          let x = 5, y = 5;
+          const eta = 1 / (2 * Math.max(s.a, s.b));
+          for (let i = 0; i < 12; i++) {path.push([x, y]); x -= eta * 2 * s.a * x; y -= eta * 2 * s.b * y;}
+          return eq(`curvatures: ${2 * s.a} and ${2 * s.b}`,
+            shown ? `κ = ${Math.max(2 * s.a, 2 * s.b)} / ${Math.min(2 * s.a, 2 * s.b)} = ${fmtN(k, 3)}` : 'κ = ?',
+            shown ? `# per-step contraction ≈ (κ−1)/(κ+1) = ${fmtN(rate, 4)}` : '')
+            + bowl({a: s.a, b: s.b, path, x: [-6, 6], y: [-6, 6],
+              levels: [1, 4, 10, 25, 50, 100], label: 'the descent path at η = 1/L'})
+            + (shown ? note(`&kappa; = <b>${fmtN(k, 4)}</b>. ${k === 1 ? 'Perfectly conditioned — the contours are circles and one step goes straight to the bottom.' : `The contours are ${fmtN(Math.sqrt(k), 2)}&times; longer than they are wide, so the path crosses the valley instead of running down it. Each step shrinks the error by only about ${fmtN(rate, 3)}.`}`) : '');
+        }
+      },
+
+      /* ---------- constrained ---------- */
+      {
+        id: 'c1', mod: 'constrained', diff: 'medium', fmt: 'mc', title: 'What a multiplier means',
+        ask: 'In a constrained optimisation, what does the Lagrange multiplier &lambda; tell you?',
+        hint: 'It has units of objective-per-unit-of-constraint. That is a price.',
+        concept: 'λ is a shadow price: relax the constraint by one unit and the optimum improves by about λ. That makes it directly actionable — if λ on your power budget is large, buying more power budget is worth it; if it is near zero, the constraint is not what is holding you back. Solvers report multipliers precisely because they answer "what should I change?".',
+        setup() {
+          return mc('the rate at which the optimum would improve if the constraint were relaxed by one unit',
+            ['the distance from the unconstrained optimum to the constrained one',
+              'the number of constraints that are active at the optimum',
+              'the curvature of the objective along the constraint']);
+        },
+        render(s, shown) {
+          return eq('L(x, λ) = f(x) − λ(g(x) − c)',
+            '∂L/∂x = 0   and   g(x) = c',
+            'λ = df*/dc',
+            '# the multiplier is literally a derivative of the optimum with respect to the budget')
+            + (shown ? note('A large &lambda; means the constraint is expensive and worth loosening; &lambda; = 0 means the constraint is not binding and you could drop it entirely without changing the answer.') : '');
+        }
+      },
+      {
+        id: 'c2', mod: 'constrained', diff: 'medium', fmt: 'num', title: 'Split a budget',
+        ask: s => `Minimise <code>x&sup2; + y&sup2;</code> subject to <code>x + y = ${s.k}</code>. What is the minimum value?`,
+        hint: 'By symmetry the two variables should be equal. Set x = y = k/2 and evaluate.',
+        concept: 'Minimising a sum of squares under a fixed total always splits evenly — that is why balanced loads beat lopsided ones for anything with a quadratic cost, from power dissipation across parallel drivers to buffer occupancy across queues. The same argument, run backwards, is why peak-limited systems care about crest factor.',
+        setup() {
+          const k = rnd(2, 20) * 2;
+          return num(k * k / 2, Math.max(0.02, k * k / 2 * 0.005), {k});
+        },
+        render(s, shown) {
+          const half = s.k / 2, v = s.k * s.k / 2;
+          return eq(`L = x² + y² − λ(x + y − ${s.k})`,
+            '∂L/∂x = 2x − λ = 0,   ∂L/∂y = 2y − λ = 0   ⇒   x = y',
+            shown ? `x = y = ${half},  f = ${half}² + ${half}² = ${fmtN(v, 3)}` : 'x = y = ?,  f = ?')
+            + feasible([{a: 1, b: 1, c: s.k, label: `x + y = ${s.k}`, color: 'var(--hl)'}],
+              {x: [0, s.k * 1.2], y: [0, s.k * 1.2], vertices: false,
+                marks: [{x: half, y: half, label: shown ? `(${half}, ${half})` : '?', color: shown ? 'var(--on)' : 'var(--unk)'}]})
+            + (shown ? note(`<b>${fmtN(v, 4)}</b> at x = y = ${half}. An uneven split such as (${s.k}, 0) gives ${s.k * s.k} — twice as much, for the same total.`) : '');
+        }
+      },
+      {
+        id: 'c3', mod: 'constrained', diff: 'medium', fmt: 'num', title: 'The value of the multiplier',
+        ask: s => `For the same problem — minimise <code>x&sup2; + y&sup2;</code> subject to <code>x + y = ${s.k}</code> — what is &lambda; at the optimum?`,
+        hint: 'From ∂L/∂x = 2x − λ = 0 you get λ = 2x, and you already know x at the optimum.',
+        concept: 'Here λ = k, and df*/dk = d(k²/2)/dk = k confirms it: the multiplier really is the sensitivity of the optimum to the budget. That check — differentiate the optimal value with respect to the constraint and compare with λ — is the quickest way to convince yourself a multiplier is right.',
+        setup() {
+          const k = rnd(2, 20) * 2;
+          return num(k, Math.max(0.02, k * 0.005), {k});
+        },
+        render(s, shown) {
+          return eq(`x = y = ${s.k / 2}`,
+            shown ? `λ = 2x = ${s.k}` : 'λ = 2x = ?',
+            shown ? `check:  f* = k²/2,  df*/dk = k = ${s.k} ✓` : '# check it against df*/dk')
+            + (shown ? note(`&lambda; = <b>${s.k}</b>. So raising the budget from ${s.k} to ${s.k + 1} would cost about ${s.k} more in the objective — and the exact figure, ${fmtN((s.k + 1) * (s.k + 1) / 2 - s.k * s.k / 2, 2)}, confirms it.`) : '');
+        }
+      },
+      {
+        id: 'c4', mod: 'constrained', diff: 'hard', fmt: 'num', title: 'Best use of a fixed perimeter',
+        ask: s => `A PCB keep-out rectangle must have a perimeter of exactly ${s.P}&thinsp;mm. What is the largest area it can enclose, in mm&sup2;?`,
+        hint: 'Perimeter 2(w + h) = P fixes w + h. Maximise wh under that sum — the symmetric split wins again.',
+        concept: 'A fixed sum with a product to maximise always resolves to the equal split, and its mirror image — a fixed product with a sum to minimise — is why square-ish aspect ratios keep appearing in layout, cache-block shapes and tiling loops. The binding constraint pins one degree of freedom and the symmetry of the objective pins the rest.',
+        setup() {
+          const P = rnd(5, 30) * 4;
+          return num(Math.pow(P / 4, 2), Math.max(0.05, Math.pow(P / 4, 2) * 0.005), {P});
+        },
+        render(s, shown) {
+          const side = s.P / 4, A = side * side;
+          return eq(`2(w + h) = ${s.P}   ⇒   w + h = ${s.P / 2}`,
+            'maximise wh  ⇒  w = h  (the symmetric point)',
+            shown ? `w = h = ${side},  area = ${fmtN(A, 3)} mm²` : 'w = h = ?,  area = ?')
+            + plotCT([{f: w => w * (s.P / 2 - w), label: 'area(w)', fill: true}],
+              {x: [0, s.P / 2], y: [0, A * 1.2], xlabel: 'w (mm)', ylabel: 'area',
+                marks: [{x: side, y: A, label: shown ? fmtN(A, 0) : '?', color: shown ? 'var(--on)' : 'var(--unk)'}]})
+            + (shown ? note(`<b>${fmtN(A, 4)} mm&sup2;</b> — a square of side ${side}&thinsp;mm. A ${fmtN(side * 1.5, 1)} &times; ${fmtN(s.P / 2 - side * 1.5, 1)} rectangle has the same perimeter but only ${fmtN(side * 1.5 * (s.P / 2 - side * 1.5), 1)} mm&sup2;.`) : '');
+        }
+      },
+      {
+        id: 'c5', mod: 'constrained', diff: 'expert', fmt: 'mc', title: 'Complementary slackness',
+        ask: 'At the optimum, one of your inequality constraints holds with room to spare. What does KKT say about its multiplier?',
+        hint: 'Either the constraint is pressing against you, or its price is zero. It cannot be both.',
+        concept: 'Complementary slackness — λᵢ·(slack) = 0 — partitions your constraints into the few that are actually binding and the many that are along for the ride. Identifying the active set is the real work in a constrained solve, and it is why active-set methods exist: once you know which constraints bind, the problem collapses to a much smaller equality-constrained one.',
+        setup() {
+          return mc('its multiplier is zero — an inactive constraint has no price',
+            ['its multiplier is negative', 'its multiplier equals the slack', 'its multiplier is unconstrained in sign']);
+        },
+        render(s, shown) {
+          return eq('λᵢ ≥ 0,   gᵢ(x) ≤ 0,   λᵢ · gᵢ(x) = 0',
+            '# for each i: either the constraint is tight, or its multiplier is zero')
+            + (shown ? note('An inactive constraint could be deleted without changing the answer, so relaxing it buys nothing — a shadow price of exactly zero. The binding ones carry all the pressure.') : '');
+        }
+      }
+    ];
+
+    const P_C = [
+      /* ---------- linear programming ---------- */
+      {
+        id: 'p1', mod: 'lp', diff: 'easy', fmt: 'mc', title: 'What makes it a linear programme',
+        ask: 'Which problem is a linear programme?',
+        hint: 'Every variable must appear to the first power only, in both the objective and every constraint. No products of variables, no squares.',
+        concept: 'LP is worth recognising because it is completely solved: simplex and interior-point methods handle enormous instances reliably, and the answer comes with a proof of optimality plus shadow prices for free. Spotting that your allocation problem is an LP rather than a general non-linear one is often the single most valuable modelling step.',
+        setup() {
+          return mc('maximise 3x + 2y  subject to  x + y ≤ 10,  x, y ≥ 0',
+            ['maximise 3x&sup2; + 2y  subject to  x + y ≤ 10',
+              'maximise 3x + 2y  subject to  xy ≤ 10',
+              'maximise 3x + 2y  subject to  x + y ≤ 10,  x integer']);
+        },
+        render(s, shown) {
+          return eq('maximise    cᵀx',
+            'subject to  Ax ≤ b,   x ≥ 0',
+            '# linear objective, linear constraints, continuous variables')
+            + (shown ? note('A square in the objective makes it quadratic; a product of variables makes the constraint non-convex; an integrality requirement makes it an integer programme, which is NP-hard. Only the first option is a true LP.') : '');
+        }
+      },
+      {
+        id: 'p2', mod: 'lp', diff: 'easy', fmt: 'num', title: 'Where two constraints meet',
+        ask: s => `Constraints <code>x + y = ${s.c1}</code> and <code>${s.a2}x + y = ${s.c2}</code> cross at a vertex. What is x there?`,
+        hint: 'Subtract the first equation from the second — the y terms cancel and x falls straight out.',
+        concept: 'Vertices are where constraints intersect, and since an LP optimum always sits at a vertex, solving small systems like this is literally what the simplex method does as it hops from corner to corner. Doing one by hand is worth it once, to see that there is no magic in the algorithm.',
+        setup() {
+          const a2 = rnd(2, 4), c1 = rnd(6, 16);
+          const x = rnd(1, 5);
+          const c2 = a2 * x + (c1 - x);
+          return num(x, 0.02, {a2, c1, c2});
+        },
+        render(s, shown) {
+          const x = (s.c2 - s.c1) / (s.a2 - 1), y = s.c1 - x;
+          return eq(`(${s.a2}x + y) − (x + y) = ${s.c2} − ${s.c1}`,
+            `${s.a2 - 1}x = ${s.c2 - s.c1}`,
+            shown ? `x = ${fmtN(x, 4)},  y = ${fmtN(y, 4)}` : 'x = ?')
+            + feasible([{a: 1, b: 1, c: s.c1, label: `x+y ≤ ${s.c1}`}, {a: s.a2, b: 1, c: s.c2, label: `${s.a2}x+y ≤ ${s.c2}`},
+            {a: -1, b: 0, c: 0}, {a: 0, b: -1, c: 0}],
+              {x: [0, Math.max(s.c1, s.c2 / s.a2) * 1.2], y: [0, Math.max(s.c1, s.c2) * 1.1],
+                marks: [{x, y, label: shown ? `(${fmtN(x, 2)}, ${fmtN(y, 2)})` : '?', color: shown ? 'var(--on)' : 'var(--unk)'}]})
+            + (shown ? note(`x = <b>${fmtN(x, 4)}</b>, y = ${fmtN(y, 4)}. Two equations, two unknowns — every vertex of a 2-D feasible region is found this way.`) : '');
+        }
+      },
+      {
+        id: 'p3', mod: 'lp', diff: 'medium', fmt: 'mc', title: 'Why the answer is always a corner',
+        ask: 'For a bounded linear programme, why does an optimal solution always sit at a vertex of the feasible region?',
+        hint: 'Think about what the objective does as you slide along a straight edge of the region.',
+        concept: 'A linear objective has a constant gradient, so along any edge it increases steadily in one direction — you can always keep sliding until you hit a corner. That turns a continuum of candidates into a finite list, and it is the entire reason LP is tractable. It also fails the moment the objective curves, which is why quadratic programmes need different machinery.',
+        setup() {
+          return mc('the objective has a constant gradient, so along any edge you can always improve until you reach an endpoint',
+            ['the feasible region only contains its vertices',
+              'the gradient vanishes at the vertices',
+              'the constraints are only active at the vertices']);
+        },
+        render(s, shown) {
+          return feasible([{a: 1, b: 1, c: 9, label: 'x+y ≤ 9'}, {a: 3, b: 1, c: 15, label: '3x+y ≤ 15'},
+          {a: -1, b: 0, c: 0}, {a: 0, b: -1, c: 0}],
+            {x: [0, 10], y: [0, 10], label: 'slide the objective line until it just leaves the region',
+              vlines: [], texts: [{x: 3, y: 6, s: 'optimum lands on a corner'}]})
+            + (shown ? note('If a whole edge is optimal — the objective happens to be parallel to it — then its endpoints are optimal too, so a vertex always works. That is why solvers only ever need to look at corners.') : '');
+        }
+      },
+      {
+        id: 'p4', mod: 'lp', diff: 'hard', fmt: 'num', title: 'Solve a two-variable LP',
+        ask: s => `Maximise <code>${s.cx}x + ${s.cy}y</code> subject to <code>x + y &le; ${s.c1}</code>, <code>${s.a2}x + y &le; ${s.c2}</code>, x, y &ge; 0. What is the maximum?`,
+        hint: 'List the vertices — the origin, the two axis intercepts, and the intersection of the two lines — then score each with the objective and take the best.',
+        concept: 'This is the whole method in miniature: enumerate the corners, evaluate, pick the winner. Simplex is just a way of doing it without visiting every corner, by always moving to a neighbour that improves the objective. For two variables, brute force over the vertices is faster than setting up anything cleverer.',
+        setup() {
+          const c1 = rnd(8, 14), a2 = rnd(2, 3), c2 = rnd(14, 26);
+          const cx = rnd(2, 9), cy = rnd(2, 9);
+          const xi = (c2 - c1) / (a2 - 1), yi = c1 - xi;
+          const verts = [[0, 0], [0, Math.min(c1, c2)], [Math.min(c1, c2 / a2), 0]];
+          if (xi >= 0 && yi >= 0) verts.push([xi, yi]);
+          const best = Math.max(...verts.map(v => cx * v[0] + cy * v[1]));
+          return num(best, Math.max(0.02, best * 0.005), {c1, a2, c2, cx, cy, verts});
+        },
+        render(s, shown) {
+          const scored = s.verts.map(v => [`(${fmtN(v[0], 2)}, ${fmtN(v[1], 2)})`, fmtN(s.cx * v[0] + s.cy * v[1], 3)]);
+          const best = Math.max(...s.verts.map(v => s.cx * v[0] + s.cy * v[1]));
+          const bi = s.verts.findIndex(v => s.cx * v[0] + s.cy * v[1] === best);
+          return feasible([{a: 1, b: 1, c: s.c1, label: `x+y ≤ ${s.c1}`}, {a: s.a2, b: 1, c: s.c2, label: `${s.a2}x+y ≤ ${s.c2}`},
+          {a: -1, b: 0, c: 0}, {a: 0, b: -1, c: 0}],
+            {x: [0, s.c1 * 1.2], y: [0, s.c1 * 1.2],
+              marks: shown ? [{x: s.verts[bi][0], y: s.verts[bi][1], label: fmtN(best, 2), color: 'var(--on)'}] : []})
+            + tbl(['vertex', 'objective'], scored.map((r, i) =>
+              [r[0], shown ? [i === bi ? `<b>${r[1]}</b>` : r[1], i === bi ? 'mk' : ''] : ['?', 'q']]), 'score every corner')
+            + (shown ? note(`The best corner is ${scored[bi][0]} with <b>${fmtN(best, 4)}</b>. Nothing in the interior can beat it — a linear objective has no interior optimum.`) : '');
+        }
+      },
+      {
+        id: 'p5', mod: 'lp', diff: 'hard', fmt: 'num', title: 'Shadow price of a resource',
+        ask: s => `An LP optimum uses all ${s.b} units of a resource, and its multiplier is &lambda; = ${s.lam}. Roughly how much would the objective improve if you obtained ${s.extra} more units?`,
+        hint: 'λ is the improvement per unit. Multiply by the number of extra units.',
+        concept: 'Shadow prices turn an optimisation into a purchasing decision: if λ on memory bandwidth is 40 frames-per-second per GB/s, and a faster part costs a known amount, you can compare directly. The linear estimate holds only while the same set of constraints stays binding — buy enough extra and a different bottleneck takes over and λ drops.',
+        setup() {
+          const b = rnd(10, 100), lam = pick([0.5, 1.5, 2, 3.5, 8]), extra = rnd(2, 10);
+          return num(lam * extra, Math.max(0.02, lam * extra * 0.005), {b, lam, extra});
+        },
+        render(s, shown) {
+          return eq(`Δf* ≈ λ · Δb = ${s.lam} × ${s.extra}`,
+            shown ? `= ${fmtN(s.lam * s.extra, 4)}` : '= ?',
+            '# valid while the same constraints stay active')
+            + (shown ? note(`About <b>${fmtN(s.lam * s.extra, 4)}</b>. This is a local estimate: past some point another constraint becomes the bottleneck, &lambda; for this resource collapses, and further purchases buy nothing.`) : '');
+        }
+      },
+      {
+        id: 'p6', mod: 'lp', diff: 'hard', fmt: 'mc', title: 'Rounding an LP answer',
+        ask: 'Your LP says allocate 3.7 servers. You round to 4. What is the risk?',
+        hint: 'Rounding moves the point. Ask what could be true of the new point that was not true of the old one.',
+        concept: 'The LP relaxation gives a bound, not a plan: its value is always at least as good as the true integer optimum, so it tells you what you cannot beat. Rounding may violate a constraint, and even when it does not, it can be arbitrarily far from the best integer answer. Branch and bound uses the relaxation as a bound while searching properly.',
+        setup() {
+          return mc('the rounded point may violate a constraint, and even if feasible may be far from the best integer solution',
+            ['rounding always stays feasible but loses a little objective value',
+              'rounding up is always safe; only rounding down risks infeasibility',
+              'the LP optimum is already integer whenever the constraints are']);
+        },
+        render(s, shown) {
+          return eq('LP optimum      ≥      best integer solution',
+            '# the relaxation is a bound you can trust; the rounded point is not a solution you can trust')
+            + (shown ? note('If the binding constraint were "servers ≤ 3.7", rounding up breaks it outright. The relaxation is still useful — it caps how good any integer answer could be, which is what lets branch and bound prune.') : '');
+        }
+      },
+
+      /* ---------- applied ---------- */
+      {
+        id: 'a1', mod: 'applied', diff: 'medium', fmt: 'num', title: 'Least squares is a solved optimisation',
+        ask: s => `Fit <code>y = wx</code> through the origin to the points <code>${s.pts.map(p => `(${p[0]}, ${p[1]})`).join(', ')}</code>. What is the least-squares w?`,
+        hint: 'Minimise Σ(wxᵢ − yᵢ)². Differentiate with respect to w, set to zero, and you get w = Σxy / Σx².',
+        concept: 'Least squares is quadratic in the parameters, so setting the gradient to zero gives a closed form — no iteration, no learning rate, no convergence to worry about. This is why calibration routines, sensor linearisation and simple regressions are one-liners on a microcontroller: accumulate two sums and divide.',
+        setup() {
+          const w = pick([1.5, 2, 2.5, 3]);
+          const pts = [1, 2, 3, 4].map(x => [x, Math.round((w * x + rnd(-1, 1) * 0.5) * 2) / 2]);
+          const sxy = pts.reduce((a, p) => a + p[0] * p[1], 0);
+          const sxx = pts.reduce((a, p) => a + p[0] * p[0], 0);
+          return num(sxy / sxx, Math.max(0.005, sxy / sxx * 0.01), {pts, sxy, sxx});
+        },
+        render(s, shown) {
+          const w = s.sxy / s.sxx;
+          return eq('minimise Σ(wxᵢ − yᵢ)²   ⇒   2Σxᵢ(wxᵢ − yᵢ) = 0',
+            `w = Σxy / Σx² = ${s.sxy} / ${s.sxx}`,
+            shown ? `= ${fmtN(w, 5)}` : '= ?')
+            + plotCT([{f: x => w * x, label: shown ? `y = ${fmtN(w, 3)}x` : 'best fit', color: 'var(--hl)'}],
+              {x: [0, 5], y: [0, Math.max(...s.pts.map(p => p[1])) * 1.3], xlabel: 'x', ylabel: 'y',
+                marks: s.pts.map(p => ({x: p[0], y: p[1], color: 'var(--accent)'}))})
+            + (shown ? note(`w = <b>${fmtN(w, 5)}</b>. Two running sums are enough — &Sigma;xy and &Sigma;x&sup2; — so this fits in a few bytes of state and updates online as samples arrive.`) : '');
+        }
+      },
+      {
+        id: 'a2', mod: 'applied', diff: 'medium', fmt: 'num', title: 'Quantising a coefficient',
+        ask: s => `A filter coefficient is ${s.c}. Stored in Q${s.q} fixed point (multiply by 2<sup>${s.q}</sup>, round to an integer), what is the resulting coefficient error?`,
+        hint: 'Scale, round, scale back, and subtract the original. Report the size of the difference.',
+        concept: 'Quantising coefficients is a constrained optimisation nobody writes down: you want the response closest to the ideal, but you may only pick from a lattice of representable values. Rounding each coefficient independently is the greedy answer and is usually fine; near a stability boundary it is not, and you have to search the neighbouring lattice points for the best overall response.',
+        setup() {
+          const q = pick([8, 12, 15]), c = Math.round(Math.random() * 1900) / 1000 - 0.95;
+          const qc = Math.round(c * Math.pow(2, q)) / Math.pow(2, q);
+          return num(Math.abs(qc - c), Math.max(1e-7, Math.abs(qc - c) * 0.05 + 1e-6), {q, c, qc});
+        },
+        render(s, shown) {
+          const scale = Math.pow(2, s.q), raw = s.c * scale;
+          return eq(`${s.c} × 2^${s.q} = ${fmtN(raw, 4)}   →   round to ${Math.round(raw)}`,
+            `back: ${Math.round(raw)} / 2^${s.q} = ${fmtN(s.qc, 8)}`,
+            shown ? `error = ${fmtN(Math.abs(s.qc - s.c), 8)}` : 'error = ?')
+            + chips([['ideal', s.c], ['stored', Math.round(raw)], ['actual', fmtN(s.qc, 7)],
+            ['step size', fmtN(1 / scale, 8)], ['error', shown ? fmtN(Math.abs(s.qc - s.c), 7) : '?']])
+            + (shown ? note(`<b>${fmtN(Math.abs(s.qc - s.c), 8)}</b>. The worst possible error is half a step, ${fmtN(0.5 / scale, 8)} — so Q${s.q} pins every coefficient to within that, whatever the value.`) : '');
+        }
+      },
+      {
+        id: 'a3', mod: 'applied', diff: 'hard', fmt: 'num', title: 'Greedy is not always optimal',
+        ask: s => `A ${s.cap}-unit buffer must hold items of size <code>${s.sz.join(', ')}</code> with values <code>${s.vals.join(', ')}</code>, each taken whole or not at all. What is the best total value?`,
+        hint: 'Only a few subsets fit. Enumerate them and take the best — do not just grab the highest value-per-unit first.',
+        concept: 'The 0/1 knapsack is the archetypal problem where greedy fails: taking the best value-density first can block a pair that together beat it. It is NP-hard in general, though a dynamic program solves it in O(n·capacity), which is fine when the capacity is small — a very common situation in embedded allocation.',
+        setup() {
+          const sz = shuffle([3, 4, 5, 6]).slice(0, 3);
+          const vals = sz.map(x => x * rnd(2, 5));
+          const cap = rnd(7, 10);
+          let best = 0;
+          for (let m = 0; m < 8; m++) {
+            let w = 0, v = 0;
+            for (let i = 0; i < 3; i++) if (m & (1 << i)) {w += sz[i]; v += vals[i];}
+            if (w <= cap) best = Math.max(best, v);
+          }
+          return num(best, 0.02, {sz, vals, cap});
+        },
+        render(s, shown) {
+          const rows = [];
+          for (let m = 1; m < 8; m++) {
+            let w = 0, v = 0;
+            const items = [];
+            for (let i = 0; i < 3; i++) if (m & (1 << i)) {w += s.sz[i]; v += s.vals[i]; items.push(i + 1);}
+            rows.push([`{${items.join(', ')}}`, w, v, w <= s.cap ? '✓' : '✗']);
+          }
+          const best = Math.max(...rows.filter(r => r[3] === '✓').map(r => r[2]));
+          return tbl(['items', 'size', 'value', 'fits?'],
+            [[`sizes`, s.sz.join(' / '), s.vals.join(' / '), `cap ${s.cap}`],
+            ...rows.map(r => shown ? [r[0], r[1], [r[2] === best && r[3] === '✓' ? `<b>${r[2]}</b>` : r[2], r[2] === best && r[3] === '✓' ? 'mk' : ''], r[3]] : [r[0], r[1], ['?', 'q'], '?'])],
+            'every subset')
+            + (shown ? note(`Best feasible value is <b>${best}</b>. Greedy by value-per-unit picks ${(() => {
+              const order = s.sz.map((z, i) => [s.vals[i] / z, i]).sort((a, b) => b[0] - a[0]);
+              let w = 0, v = 0;
+              const got = [];
+              order.forEach(([, i]) => {if (w + s.sz[i] <= s.cap) {w += s.sz[i]; v += s.vals[i]; got.push(i + 1);}});
+              return `{${got.join(', ')}} for ${v}`;
+            })()} — ${(() => {
+              const order = s.sz.map((z, i) => [s.vals[i] / z, i]).sort((a, b) => b[0] - a[0]);
+              let w = 0, v = 0;
+              order.forEach(([, i]) => {if (w + s.sz[i] <= s.cap) {w += s.sz[i]; v += s.vals[i];}});
+              return v === best ? 'which happens to be optimal here, but only by luck' : 'which is worse than the optimum';
+            })()}.`) : '');
+        }
+      },
+      {
+        id: 'a4', mod: 'applied', diff: 'hard', fmt: 'num', title: 'Race to idle, or slow down?',
+        ask: s => `A core\'s power is <code>P = ${s.k}f&sup2;</code> watts at frequency f (in GHz), and a job needs ${s.W} cycles. Run at the lowest f that still meets a ${s.T}&thinsp;s deadline. What is the energy used, in joules?`,
+        hint: 'The lowest feasible frequency is f = W/T. Energy is power × time = kf²·(W/f) = k·f·W.',
+        concept: 'Because dynamic power grows faster than linearly with frequency, energy per job falls as you slow down — so the energy-optimal schedule runs as slowly as the deadline allows, not as fast as possible. Real parts complicate this with static leakage, which pushes back towards racing to idle, and the crossover between the two is a genuine design calculation.',
+        setup() {
+          const k = pick([1, 2, 4]), W = pick([1, 2, 4, 8]), T = pick([1, 2, 4]);
+          const f = W / T;
+          return num(k * f * W, Math.max(0.02, k * f * W * 0.005), {k, W, T, f});
+        },
+        render(s, shown) {
+          const f = s.W / s.T, E = s.k * f * s.W;
+          return eq(`f = W/T = ${s.W}/${s.T} = ${fmtN(f, 3)} GHz`,
+            `E = P × t = (${s.k}f²) × (W/f) = ${s.k}·f·W`,
+            shown ? `E = ${s.k} × ${fmtN(f, 3)} × ${s.W} = ${fmtN(E, 4)} J` : 'E = ?')
+            + plotCT([{f: x => s.k * x * s.W, label: 'energy vs frequency'}],
+              {x: [f * 0.4, f * 2.5], y: [0, s.k * f * 2.5 * s.W * 1.1], xlabel: 'f (GHz)', ylabel: 'E (J)',
+                vlines: [{x: f, label: 'slowest that meets the deadline'}],
+                marks: [{x: f, y: E, label: shown ? fmtN(E, 2) : '?', color: shown ? 'var(--on)' : 'var(--unk)'}]})
+            + (shown ? note(`<b>${fmtN(E, 4)} J</b>. Running twice as fast would finish early but burn ${fmtN(2 * E, 3)}&thinsp;J — double, for no benefit once the deadline is met. Leakage, which burns power whenever the core is on, is the effect that argues the other way.`) : '');
+        }
+      },
+      {
+        id: 'a5', mod: 'applied', diff: 'medium', fmt: 'num', title: 'Two descent steps on a real loss',
+        ask: s => `Minimise <code>L(w) = (w&middot;${s.x} &minus; ${s.y})&sup2;</code> from w = ${s.w0} with &eta; = ${s.eta}. What is w after <em>two</em> steps?`,
+        hint: 'dL/dw = 2x(wx − y). Take one step, recompute the gradient at the new w, then take a second.',
+        concept: 'Recomputing the gradient at the new point is the part people skip — reusing the old gradient is a different (and worse) algorithm. Two steps by hand also make the contraction visible: the error is multiplied by (1 − 2ηx²) each time, so the input magnitude x directly controls stability. Large unnormalised features are how a perfectly good learning rate becomes divergent.',
+        setup() {
+          const x = pick([1, 2]), y = rnd(2, 12), w0 = rnd(0, 4), eta = pick([0.05, 0.1, 0.2]);
+          const g1 = 2 * x * (w0 * x - y), w1 = w0 - eta * g1;
+          const g2 = 2 * x * (w1 * x - y), w2 = w1 - eta * g2;
+          return num(w2, Math.max(0.005, Math.abs(w2) * 0.01), {x, y, w0, eta});
+        },
+        render(s, shown) {
+          const g1 = 2 * s.x * (s.w0 * s.x - s.y), w1 = s.w0 - s.eta * g1;
+          const g2 = 2 * s.x * (w1 * s.x - s.y), w2 = w1 - s.eta * g2;
+          const target = s.y / s.x;
+          return eq(`dL/dw = 2x(wx − y) = ${2 * s.x}(${s.x}w − ${s.y})`,
+            `step 1: g = ${fmtN(g1, 4)},  w = ${fmtN(w1, 5)}`,
+            shown ? `step 2: g = ${fmtN(g2, 4)},  w = ${fmtN(w2, 5)}` : 'step 2: g = ?,  w = ?')
+            + tbl(['step', 'w', 'gradient', 'loss'],
+              [['0', fmtN(s.w0, 4), fmtN(g1, 4), fmtN(Math.pow(s.w0 * s.x - s.y, 2), 4)],
+              ['1', fmtN(w1, 4), fmtN(g2, 4), fmtN(Math.pow(w1 * s.x - s.y, 2), 4)],
+              ['2', shown ? [`<b>${fmtN(w2, 4)}</b>`, 'mk'] : ['?', 'q'], '—', shown ? fmtN(Math.pow(w2 * s.x - s.y, 2), 4) : '?']])
+            + (shown ? note(`w = <b>${fmtN(w2, 5)}</b>, heading for the exact answer y/x = ${fmtN(target, 4)}. Each step multiplies the remaining error by ${fmtN(1 - 2 * s.eta * s.x * s.x, 4)}.`) : '');
+        }
+      },
+      {
+        id: 'a6', mod: 'applied', diff: 'medium', fmt: 'mc', title: 'Pick the right tool',
+        ask: 'You must choose 12 boolean feature flags to minimise binary size, and each build takes 4 minutes. Which approach fits?',
+        hint: 'Count the search space, and count how many evaluations you can afford. There is no gradient here.',
+        concept: 'Matching the method to the structure is most of applied optimisation. A discrete space with no gradient and an expensive objective rules out descent entirely; 2¹² = 4096 builds at four minutes each is eleven days, so exhaustive search is out too. That leaves a guided search — greedy with a few passes, or Bayesian optimisation — plus the honest observation that flags are usually near-independent, which is what makes greedy work at all.',
+        setup() {
+          return mc('a guided discrete search — greedy one flag at a time, then a few refinement passes',
+            ['gradient descent on the flag values',
+              'exhaustive search over all 2¹² combinations',
+              'a linear programme with the flags relaxed to [0, 1]']);
+        },
+        render(s, shown) {
+          return chips([['search space', '2¹² = 4096'], ['cost each', '4 min'], ['exhaustive', '≈ 11 days', 'bad'],
+          ['greedy, 2 passes', '≈ 3 hours', 'good']])
+            + (shown ? note('Booleans have no gradient to descend, and the LP relaxation gives fractional flags that mean nothing. Greedy works here because flag effects are mostly independent — worth checking with a couple of refinement passes rather than assuming.') : '');
+        }
+      },
+      {
+        id: 'a7', mod: 'applied', diff: 'expert', fmt: 'num', title: 'Balance the load',
+        ask: s => `${s.n} parallel drivers share a total current of ${s.I}&thinsp;A. Each dissipates <code>${s.R}I&sup2;</code> watts. Minimise total dissipation — what is it, in watts?`,
+        hint: 'By symmetry each driver carries I/n. Total power is n·R·(I/n)² — simplify before you compute.',
+        concept: 'Total dissipation falls as 1/n when you share a load between n identical elements, because the loss is quadratic in current. This is why paralleling MOSFETs, splitting a bus across more lanes, or spreading a workload across more cores at lower clock all win — and why an imbalance is punished quadratically, so the hot element in a badly matched pair dominates the total.',
+        setup() {
+          const n = rnd(2, 6), I = rnd(2, 12), R = pick([0.01, 0.05, 0.1, 0.2]);
+          return num(R * I * I / n, Math.max(0.0005, R * I * I / n * 0.01), {n, I, R});
+        },
+        render(s, shown) {
+          const P = s.R * s.I * s.I / s.n;
+          return eq(`each carries I/n = ${s.I}/${s.n} = ${fmtN(s.I / s.n, 4)} A`,
+            `P_total = n·R·(I/n)² = R·I²/n`,
+            shown ? `= ${s.R}×${s.I}²/${s.n} = ${fmtN(P, 5)} W` : '= ?')
+            + tbl(['split', 'currents', 'total power'],
+              [['even', `${s.n} × ${fmtN(s.I / s.n, 2)} A`, shown ? [`<b>${fmtN(P, 4)} W</b>`, 'mk'] : ['?', 'q']],
+              ['all on one', `${s.I} A, rest 0`, fmtN(s.R * s.I * s.I, 4) + ' W']])
+            + (shown ? note(`<b>${fmtN(P, 5)} W</b> — a factor of ${s.n} below the single-device case. Because loss is quadratic, an uneven split always costs more: the imbalance penalty grows with the square of the deviation.`) : '');
+        }
+      }
+    ];
+
+    const PROBLEMS = [...P_A, ...P_B, ...P_C].sort((a, b) => MOD_INDEX[a.mod] - MOD_INDEX[b.mod]);
+    const BY_ID = Object.fromEntries(PROBLEMS.map(p => [p.id, p]));
+    PROBLEMS.forEach(p => {p.s = p.setup();});
+
+    /* ============================================================
+       PART 4 — answer checking
+       Accept any reasonable spelling of the same value.
+       ============================================================ */
+    function norm(v) {return String(v).trim().toLowerCase().replace(/[\s_,]/g, '').replace(/[−–—]/g, '-');}
+
+    function boolOf(s) {
+      if (['yes', 'y', 'true', 't'].includes(s)) return true;
+      if (['no', 'n', 'false', 'f'].includes(s)) return false;
+      return null;
+    }
+
+    function numOf(s) {
+      if (/^-?\d*\.?\d+(e[-+]?\d+)?$/.test(s)) return parseFloat(s);
+      if (/^-?\d*\.?\d+\/-?\d*\.?\d+$/.test(s)) {const [a, b] = s.split('/').map(Number); return a / b;}
+      if (/^-?0x[0-9a-f]+$/.test(s)) return parseInt(s.replace('-0x', '0x'), 16) * (s[0] === '-' ? -1 : 1);
+      if (/^-?0b[01]+$/.test(s)) return parseInt(s.replace('-0b', '0b').slice(2), 2) * (s[0] === '-' ? -1 : 1);
+      return null;
+    }
+
+    function accepts(expected, given) {
+      const e = norm(expected), g = norm(given);
+      if (!g) return false;
+      if (e === g) return true;
+      const eb = boolOf(e);
+      if (eb !== null) return boolOf(g) === eb;
+      const en = numOf(e), gn = numOf(g);
+      return en !== null && gn !== null && Math.abs(en - gn) < 1e-9;
+    }
+
+    /* numeric problems carry s.val and s.tol */
+    function checkAnswer(p, given) {
+      const s = p.s;
+      if (s.tol !== undefined && s.val !== undefined) {
+        const g = numOf(norm(given));
+        if (g !== null && Math.abs(g - s.val) <= s.tol) return true;
+        return (s.alts || []).some(c => accepts(c, given));
+      }
+      return [s.answer, ...(s.alts || [])].some(c => accepts(c, given));
+    }
+
+    const FMT_HELP = {
+      num: 'a number — a couple of decimals is plenty',
+      dec: 'a whole number',
+      hex: 'answer in hex, e.g. 0x2A',
+      bin: 'answer in binary, e.g. 0b1011',
+      yesno: 'yes or no',
+      expr: 'an expression, e.g. 3x^2 - 2x',
+      mc: 'pick one'
+    };
+
+    /* ============================================================
+       PART 5 — application state
+       ============================================================ */
+    const STORE_KEY = 'optlab.progress.v1';
+
+    const app = {
+      tab: 'learn', cur: 0,
+      solved: new Set(),
+      tried: {}, feedback: {}, inputs: {}, pick: {}, hint: {}, reveal: {}, why: {}
+    };
+
+    function save() {try {localStorage.setItem(STORE_KEY, JSON.stringify([...app.solved]));} catch (e) { }}
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) JSON.parse(raw).forEach(id => {if (BY_ID[id]) app.solved.add(id);});
+      } catch (e) { }
+    }
+
+    const isShown = p => app.feedback[p.id] === 'correct' || app.reveal[p.id];
+    const askOf = p => typeof p.ask === 'function' ? p.ask(p.s) : p.ask;
+
+    /* ============================================================
+       PART 6 — views
+       ============================================================ */
+    function view() {
+      const solved = app.solved.size, total = PROBLEMS.length;
+      let h = `<div class="masthead">
+          <h1>Optim Lab</h1>
+          <span class="sub">objectives, constraints &amp; gradients &mdash; ${total} problems across ${MODULES.length} modules</span>
+        </div>
+        <div class="tab-bar">
+          ${[['learn', 'Learn'], ['problems', `Problems (${solved}/${total})`], ['ref', 'Reference']]
+          .map(([k, t]) => `<button class="tab ${app.tab === k ? 'active' : ''}" onclick="setTab('${k}')">${t}</button>`).join('')}
+        </div>`;
+
+      if (app.tab === 'learn') h += viewLearn();
+      else if (app.tab === 'problems') h += viewList();
+      else h += viewRef();
+
+      document.getElementById('app').innerHTML = h;
+      if (app.tab === 'learn') {
+        const el = document.getElementById('ans');
+        if (el) el.focus();
+      }
+    }
+
+    function viewLearn() {
+      const p = PROBLEMS[app.cur], s = p.s, shown = isShown(p);
+      const mod = MODULES[MOD_INDEX[p.mod]];
+      const firstOfMod = PROBLEMS.findIndex(x => x.mod === p.mod) === app.cur;
+      const inMod = PROBLEMS.filter(x => x.mod === p.mod);
+
+      let h = '';
+      if (firstOfMod) {
+        h += `<div class="modcard">
+            <div class="t">Module ${MOD_INDEX[p.mod] + 1} of ${MODULES.length}</div>
+            <h2>${mod.name}</h2>
+            <p>${mod.blurb}</p>
+          </div>`;
+      }
+
+      h += `<div class="card">
+          <div class="problem-header">
+            <div>
+              <div class="crumb">${mod.name} &middot; ${inMod.indexOf(p) + 1} of ${inMod.length}</div>
+              <h3>${p.title}</h3>
+            </div>
+            <span class="badge badge-${p.diff}">${p.diff}</span>
+          </div>
+          <p class="ask">${askOf(p)}</p>
+          ${p.render(s, shown)}`;
+
+      if (p.fmt === 'mc') {
+        const picked = app.pick[p.id];
+        h += `<div class="choices">` + s.choices.map((c, i) => {
+          let cls = '';
+          if (shown && i === s.ai) cls = 'right';
+          else if (picked === i && app.feedback[p.id] === 'wrong') cls = 'picked';
+          return `<button class="choice ${cls}" ${shown ? 'disabled' : ''} onclick="chooseMC(${i})">
+              <span class="key">${'ABCD'[i]}</span><span>${c}</span></button>`;
+        }).join('') + `</div>`;
+      }
+
+      if (!shown) {
+        h += `<div class="answer-row">`;
+        if (p.fmt !== 'mc') {
+          h += `<input type="text" id="ans" placeholder="${FMT_HELP[p.fmt]}" value="${esc(app.inputs[p.id] || '')}"
+                   oninput="app.inputs['${p.id}']=this.value"
+                   onkeydown="if(event.key==='Enter')submit()">
+            <button class="btn btn-primary" onclick="submit()">Check</button>`;
+        }
+        h += `<button class="linkbtn" onclick="tog('hint','${p.id}')">${app.hint[p.id] ? 'hide hint' : 'hint'}</button>
+            <button class="linkbtn" onclick="tog('reveal','${p.id}')">show me</button>
+          </div>`;
+        if (app.hint[p.id]) h += `<div class="feedback hint">${p.hint}</div>`;
+        if (app.feedback[p.id] === 'wrong') {
+          const n = app.tried[p.id] || 0;
+          h += `<div class="feedback wrong">Not quite &mdash; ${n >= 3 ? 'try the hint, or use <b>show me</b> to walk through it.' : 'have another go.'}</div>`;
+        }
+      } else {
+        const correct = app.feedback[p.id] === 'correct';
+        h += `<div class="feedback ${correct ? 'correct' : 'hint'}">
+            ${correct ? '&#10003; Correct' : 'Answer'}: <span class="mono"><b>${esc(s.answer)}</b></span>
+            &nbsp;<button class="linkbtn" style="color:inherit" onclick="tog('why','${p.id}')">${app.why[p.id] ? 'hide' : 'why this matters'}</button>
+            ${app.why[p.id] ? `<div style="margin-top:8px;color:var(--tx-2)">${p.concept}</div>` : ''}
+          </div>`;
+      }
+
+      h += `<div class="navrow">
+          <button class="btn btn-sm" onclick="nav(-1)" ${app.cur === 0 ? 'disabled style="opacity:.4"' : ''}>&larr; Prev</button>
+          <button class="btn btn-sm" onclick="nav(1)" ${app.cur === PROBLEMS.length - 1 ? 'disabled style="opacity:.4"' : ''}>Next &rarr;</button>
+          <button class="btn btn-sm" onclick="regen()">${p.fmt === 'mc' ? 'Reshuffle' : 'New numbers'}</button>
+          <span class="spacer"></span>
+          <span style="font-size:12px;color:var(--tx-3)">${app.cur + 1} / ${PROBLEMS.length}</span>
+        </div></div>`;
+      return h;
+    }
+
+    function viewList() {
+      const solved = app.solved.size, total = PROBLEMS.length;
+      const byDiff = d => PROBLEMS.filter(p => p.diff === d && app.solved.has(p.id)).length;
+      let h = `<div class="stat-grid">
+          <div class="stat"><div class="stat-val">${solved}</div><div class="stat-lbl">solved</div></div>
+          <div class="stat"><div class="stat-val">${total - solved}</div><div class="stat-lbl">remaining</div></div>
+          <div class="stat"><div class="stat-val">${Math.round(solved / total * 100)}%</div><div class="stat-lbl">complete</div></div>
+          <div class="stat"><div class="stat-val">${byDiff('hard') + byDiff('expert')}</div><div class="stat-lbl">hard+ solved</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${solved / total * 100}%"></div></div>
+        <div class="card">`;
+
+      MODULES.forEach((m, mi) => {
+        const list = PROBLEMS.filter(p => p.mod === m.id);
+        const done = list.filter(p => app.solved.has(p.id)).length;
+        h += `<div class="modhead"><span class="t">${mi + 1}. ${m.name}</span><span class="line"></span><span class="c">${done}/${list.length}</span></div>`;
+        list.forEach(p => {
+          const i = PROBLEMS.indexOf(p), ok = app.solved.has(p.id);
+          h += `<div class="pitem ${ok ? 'solved' : ''} ${i === app.cur ? 'current' : ''}" onclick="go(${i})">
+              <div class="pi-icon ${ok ? 'yes' : 'no'}">${ok ? '&#10003;' : i + 1}</div>
+              <div class="pi-info"><div class="pi-title">${p.title}</div><div class="pi-sub">${askOf(p).replace(/<[^>]+>/g, '')}</div></div>
+              <span class="badge badge-${p.diff}">${p.diff}</span>
+            </div>`;
+        });
+      });
+
+      h += `<div class="navrow"><button class="btn btn-sm" onclick="resetAll()">Reset progress</button></div></div>`;
+      return h;
+    }
+
+
+    function viewRef() {
+      return `<div class="card">
+        <h2>Framing</h2>
+        ${refTable([
+        ['decision variables', 'the knobs you control — what the solver is allowed to change'],
+        ['objective f(x)', 'the single number being minimised or maximised'],
+        ['constraints', 'hard pass/fail limits; equality g(x) = c or inequality g(x) ≤ c'],
+        ['feasible region', 'the set of points satisfying every constraint at once'],
+        ['infeasible', 'the constraints contradict — no point satisfies them all'],
+        ['unbounded', 'the objective improves forever — you are missing a limit'],
+        ['active constraint', 'one that holds with equality at the optimum; it is what binds you'],
+        ['relaxation', 'drop or soften a constraint to get an easy bound on the true optimum']
+      ])}
+        <h2 style="margin-top:18px">Shape</h2>
+        ${refTable([
+        ['convex function', 'f″ ≥ 0 everywhere (1-D), or the chord never dips below the curve'],
+        ['convex set', 'the straight line between any two feasible points stays feasible'],
+        ['why it matters', 'convex f over a convex set ⇒ every local minimum is global'],
+        ['integrality', 'breaks convexity of the set — forces search, not descent'],
+        ['local minimum', 'lowest in some neighbourhood; nothing measured at the point reveals more'],
+        ['condition number κ', 'largest curvature ÷ smallest; sets how badly descent zig-zags'],
+        ['stationary point', 'f′ = 0; sorted into min/max/saddle by the second derivative']
+      ])}
+        <h2 style="margin-top:18px">Gradient methods</h2>
+        ${refTable([
+        ['∇f', 'vector of partials; points uphill, perpendicular to the contours'],
+        ['descent step', 'x ← x − η∇f'],
+        ['convergence', 'needs η < 2/L, where L is the largest curvature; η = 1/L is the safe choice'],
+        ['on f = ax²', 'factor 1 − 2aη per step; η = 1/(2a) lands exactly on the minimum in one step'],
+        ['rate', 'error × (κ−1)/(κ+1) per step — linear convergence, logarithmic cost per digit'],
+        ['momentum', 'v ← βv − η∇f, x ← x + v; damps zig-zag, up to 1/(1−β)× the effective step'],
+        ["Newton's method", 'x ← x − f′/f″; quadratic convergence, but needs the second derivative'],
+        ['gradient check', 'compare the analytic gradient against a finite difference before trusting it']
+      ])}
+        <h2 style="margin-top:18px">Constrained and linear</h2>
+        ${refTable([
+        ['Lagrangian', 'L = f(x) − λ(g(x) − c);  solve ∂L/∂x = 0 together with g(x) = c'],
+        ['multiplier λ', 'the shadow price: df*/dc, the improvement per unit of relaxed constraint'],
+        ['complementary slackness', 'λᵢ·(slack) = 0 — an inactive constraint has zero price'],
+        ['linear programme', 'linear objective, linear constraints, continuous variables'],
+        ['vertex optimality', 'a bounded LP always has an optimum at a corner of the feasible polygon'],
+        ['solving a 2-var LP', 'list the vertices, score each with the objective, take the best'],
+        ['integer programme', 'LP plus integrality — NP-hard; the LP relaxation gives a bound, not a plan'],
+        ['rounding', 'may be infeasible, and even when feasible may be far from the integer optimum']
+      ])}
+        <h2 style="margin-top:18px">Engineering results worth remembering</h2>
+        ${refTable([
+        ['least squares through origin', 'w = Σxy / Σx² — closed form, two running sums, no iteration'],
+        ['fixed sum, minimise Σ squares', 'split evenly — balanced loads beat lopsided ones'],
+        ['fixed sum, maximise product', 'split evenly again — the square is the best rectangle'],
+        ['n parallel elements', 'I²R loss falls as 1/n; imbalance is punished quadratically'],
+        ['energy vs frequency', 'P ∝ f² ⇒ energy per job ∝ f — run as slowly as the deadline allows'],
+        ['Q-format quantisation', 'worst-case coefficient error is half a step, 2^−(q+1)'],
+        ['greedy', 'optimal for fractional knapsack, not for 0/1 — check before trusting it'],
+        ['no gradient available', 'discrete or expensive objectives need guided search, not descent']
+      ])}
+      </div>`;
+    }
+
+    function refTable(rows) {
+      return `<table class="reft">${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`;
+    }
+
+    /* ---------- actions ---------- */
+    function setTab(t) {app.tab = t; view();}
+    function go(i) {app.cur = i; app.tab = 'learn'; view();}
+    function nav(d) {app.cur = Math.max(0, Math.min(PROBLEMS.length - 1, app.cur + d)); view();}
+    function tog(k, id) {app[k][id] = !app[k][id]; view();}
+
+    function mark(p, ok) {
+      app.tried[p.id] = (app.tried[p.id] || 0) + 1;
+      if (ok) {app.feedback[p.id] = 'correct'; app.solved.add(p.id); save();}
+      else app.feedback[p.id] = 'wrong';
+      view();
+    }
+
+    function submit() {
+      const p = PROBLEMS[app.cur];
+      const given = app.inputs[p.id] || '';
+      if (!given.trim()) return;
+      mark(p, checkAnswer(p, given));
+    }
+
+    function chooseMC(i) {
+      const p = PROBLEMS[app.cur];
+      if (isShown(p)) return;
+      app.pick[p.id] = i;
+      mark(p, i === p.s.ai);
+    }
+
+    function regen() {
+      const p = PROBLEMS[app.cur];
+      p.s = p.setup();
+      app.feedback[p.id] = null;
+      app.reveal[p.id] = false;
+      app.inputs[p.id] = '';
+      app.pick[p.id] = null;
+      view();
+    }
+
+    function resetAll() {
+      if (!confirm('Clear all solved problems?')) return;
+      app.solved.clear();
+      app.feedback = {}; app.inputs = {}; app.pick = {}; app.reveal = {}; app.hint = {}; app.tried = {};
+      save();
+      view();
+    }
+
+    load();
+    view();
+  </script>
+</body>
+
+</html>
